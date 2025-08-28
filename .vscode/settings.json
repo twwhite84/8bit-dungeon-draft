@@ -1,0 +1,7 @@
+{
+  "editor.formatOnSave": true,
+  "C_Cpp.clang_format_fallbackStyle": "LLVM",
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "makefile.configureOnOpen": false
+}
