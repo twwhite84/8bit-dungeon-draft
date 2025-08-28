@@ -1,7 +1,7 @@
+#include "init.h"
 #include "renderer.h"
 #include "shared.h"
 
-void init();
 void update();
 
 const int FRAME_DELAY = 60 * (1 / 1000);
@@ -10,7 +10,8 @@ const int FRAME_DELAY = 60 * (1 / 1000);
 
 // main function needs this signature to make SDL happy
 int main(int argc, char *args[]) {
-  init();
+  init_ram();
+  init_renderer();
 
   SDL_Event e;
   bool done = false;
@@ -37,14 +38,6 @@ int main(int argc, char *args[]) {
   SDL_Quit();
 
   return 0;
-}
-
-/*----------------------------------------------------------------------------*/
-
-void init() {
-  init_renderer();
-  memset(beebram, 0, sizeof(beebram));
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
