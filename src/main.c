@@ -1,6 +1,8 @@
+#include "depacker.h"
 #include "init.h"
 #include "renderer.h"
 #include "shared.h"
+#include <stdbool.h>
 
 void update();
 
@@ -53,4 +55,9 @@ void update() {
   beebram[start + 5] = 0xAF;
   beebram[start + 6] = 0xAF;
   beebram[start + 7] = 0xAF;
+
+  // expand map 1 into the room buffer
+  uint16_t map_addr = mapIDtoAddr(0);
+  inflate(map_addr, TILEBUFFER);
+  return;
 }

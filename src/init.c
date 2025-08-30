@@ -1,4 +1,6 @@
 #include "shared.h"
+#include <stddef.h>
+#include <string.h>
 
 void init_ram() {
 

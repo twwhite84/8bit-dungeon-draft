@@ -1,10 +1,12 @@
 #include "renderer.h"
+#include "shared.h"
 
 typedef struct {
   void *pixels;
   int pitch;
 } CanvasContext;
 
+SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *canvas;
 
