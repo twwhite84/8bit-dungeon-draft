@@ -6,11 +6,13 @@ typedef struct {
   int pitch;
 } CanvasContext;
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *canvas;
+SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
+static SDL_Texture *canvas = NULL;
 
-void plot(int x, int y, int color, CanvasContext ctx);
+static void plot(int x, int y, int color, CanvasContext ctx);
+
+/*----------------------------------------------------------------------------*/
 
 void init_renderer() {
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -34,6 +36,8 @@ void init_renderer() {
     printf("ERROR: %s\n", SDL_GetError());
   }
 }
+
+/*----------------------------------------------------------------------------*/
 
 void render() {
   CanvasContext ctx;
@@ -64,7 +68,9 @@ void render() {
   SDL_RenderPresent(renderer);
 }
 
-void plot(int x, int y, int color, CanvasContext ctx) {
+/*----------------------------------------------------------------------------*/
+
+static void plot(int x, int y, int color, CanvasContext ctx) {
   uint32_t *pixel_buffer = (uint32_t *)ctx.pixels;
 
   // 32-bit pixel buffer, so 4 bytes per pixel
