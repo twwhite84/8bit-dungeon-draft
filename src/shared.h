@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-#define WIDTH 320
-#define HEIGHT 256
 #define STORED_ROWS 13
 #define STORED_COLUMNS 20
 #define CAMERA_ROWS (2 * STORED_ROWS)
 #define CAMERA_COLUMNS (2 * STORED_COLUMNS)
+#define CAMERA_WIDTH (8 * CAMERA_COLUMNS)
+#define CAMERA_HEIGHT (8 * CAMERA_ROWS)
 
 #define TILEBUFFER 0x3733
 #define TILEMAPS 0x43C0

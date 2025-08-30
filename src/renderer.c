@@ -17,8 +17,8 @@ void init_renderer() {
     printf("ERROR: %s\n", SDL_GetError());
 
   window = SDL_CreateWindow("BEEB MODE 4", SDL_WINDOWPOS_CENTERED,
-                            SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
-                            SDL_WINDOW_SHOWN);
+                            SDL_WINDOWPOS_CENTERED, EXTERNAL_WIDTH,
+                            EXTERNAL_HEIGHT, SDL_WINDOW_SHOWN);
   if (!window) {
     printf("ERROR: %s\n", SDL_GetError());
   }
@@ -28,7 +28,8 @@ void init_renderer() {
     printf("ERROR: %s\n", SDL_GetError());
 
   canvas = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                             SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+                             SDL_TEXTUREACCESS_STREAMING, INTERNAL_WIDTH,
+                             INTERNAL_HEIGHT);
   if (!canvas) {
     printf("ERROR: %s\n", SDL_GetError());
   }

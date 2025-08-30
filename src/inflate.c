@@ -1,4 +1,4 @@
-#include "depacker.h"
+#include "inflate.h"
 #include <stdbool.h>
 
 // depacker modes
@@ -6,15 +6,15 @@
 #define TILEMAP_RLE 1
 #define TEXT 2
 
-void inflate(uint16_t src_addr, uint16_t dest_addr);
-void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr);
-uint16_t mapIDtoAddr(uint8_t id);
+static void inflate(uint16_t src_addr, uint16_t dest_addr);
+static void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr);
+static uint16_t mapIDtoAddr(uint8_t id);
 
 /*----------------------------------------------------------------------------*/
 
 // [npacked, mode, bp, bp, ...]
 // this function wont just be for tilemaps, so use src and dest addresses
-void inflate(uint16_t src, uint16_t dest) {
+static void inflate(uint16_t src, uint16_t dest) {
   uint16_t outidx = 0;
   uint8_t inidx = 2, a = 0, b = 0, outbyte = 0, seq = 0;
   bool newpair = true;
@@ -80,19 +80,13 @@ void inflate(uint16_t src, uint16_t dest) {
     // a is value, b is run
     if (newpair && mode == TILEMAP_RLE) {
       while (b > 0) {
-        // beebram[dest + outidx++] = a;
-
         upsize(outidx++, a, dest);
-
         b--;
       }
     }
 
     // a is value, b is value
     if (newpair && mode == TILEMAP) {
-      // beebram[dest + outidx++] = a;
-      // beebram[dest + outidx++] = b;
-
       upsize(outidx++, a, dest);
       upsize(outidx++, b, dest);
     }
@@ -101,7 +95,7 @@ void inflate(uint16_t src, uint16_t dest) {
 
 /*----------------------------------------------------------------------------*/
 
-void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
+static void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
   FloorResults fr = floordiv(inidx, STORED_COLUMNS);
   uint8_t inrow = fr.q, incol = fr.r;
 
@@ -121,9 +115,13 @@ void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
 
 /*----------------------------------------------------------------------------*/
 
-uint16_t mapIDtoAddr(uint8_t id) {
+static uint16_t mapIDtoAddr(uint8_t id) {
   // plug in the id, get the map address back
   uint16_t pointer = TILEMAPS + 2 * id;
   uint16_t map_addr = beebram[pointer] + (uint16_t)(beebram[pointer + 1] << 8);
   return map_addr;
 }
+
+/*----------------------------------------------------------------------------*/
+
+void inflate_map(uint8_t mapID) { inflate(mapIDtoAddr(mapID), TILEBUFFER); }
