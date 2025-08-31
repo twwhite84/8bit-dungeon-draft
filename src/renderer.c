@@ -61,22 +61,17 @@ void eraseTile(uint8_t i, uint8_t j) {
   }
 }
 
-uint16_t getTileTextureAddr(uint8_t tid) {
-  // suppose i am given the number 12
-  //  p0   p1   p2   p3    p4   p5   p6   p7    p8   p9   p10  p11   p12  ...
-  // [3C00 3C02 3C04 3C06][3C08 3C0A 3C0C 3C0E][3C10 3C12 3C14 3C16][3C18 ...]
+/*----------------------------------------------------------------------------*/
 
-  uint16_t tex_ptr_loc = 0x3C00 + 2 * tid;
-  // uint16_t tex_ptr = beebram[tex_ptr_loc] + beebram[tex_ptr_loc + 1] << 8;
-  uint16_t tex_ptr_lb = beebram[tex_ptr_loc];
-  uint16_t tex_ptr_hb = beebram[tex_ptr_loc + 1];
-  uint16_t tex_ptr = tex_ptr_lb + (tex_ptr_hb << 8);
-  return tex_ptr;
+uint16_t getTileTextureAddr(uint8_t tid) {
+  uint16_t ptr_location = 0x3C00 + 2 * tid;
+  uint16_t ptr = beebram[ptr_location] + (beebram[ptr_location + 1] << 8);
+  return ptr;
 }
 
 /*----------------------------------------------------------------------------*/
 
-void render() {
+void renderBeebram() {
   CanvasContext ctx;
   if (SDL_LockTexture(canvas, NULL, &ctx.pixels, &ctx.pitch) < 0) {
     printf("\nERROR: Couldnt lock texture. %s", SDL_GetError());

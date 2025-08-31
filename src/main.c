@@ -4,18 +4,19 @@
 #include "shared.h"
 #include <stdbool.h>
 
+void init();
+void input();
 void update();
+void render();
 
-const int FRAME_DELAY = 60 * (1 / 1000);
+const int FRAME_CAP = 33; // ~33.3ms for 30fps
 
 /*----------------------------------------------------------------------------*/
 
 // main function needs this signature to make SDL happy
 int main(int argc, char *args[]) {
-  init_ram();
-  init_renderer();
-  inflate_map(0);
-  eraseScreen();
+
+  init();
 
   SDL_Event e;
   bool done = false;
@@ -29,12 +30,13 @@ int main(int argc, char *args[]) {
     }
 
     update();
+
     render();
 
     // LIMIT TO 60FPS
     et = SDL_GetTicks() - et;
-    if (et < FRAME_DELAY) {
-      SDL_Delay(FRAME_DELAY - et);
+    if (et < FRAME_CAP) {
+      SDL_Delay(FRAME_CAP - et);
     }
   }
 
@@ -46,16 +48,21 @@ int main(int argc, char *args[]) {
 
 /*----------------------------------------------------------------------------*/
 
-void update() {
-  // make row 1, column 1 tile a plain white block
-  // uint16_t start = 0x5948;
-  // beebram[start + 0] = 0xF5;
-  // beebram[start + 1] = 0xF5;
-  // beebram[start + 2] = 0xF5;
-  // beebram[start + 3] = 0xF5;
-  // beebram[start + 4] = 0xAF;
-  // beebram[start + 5] = 0xAF;
-  // beebram[start + 6] = 0xAF;
-  // beebram[start + 7] = 0xAF;
-  return;
+void init() {
+  init_ram();
+  init_renderer();
+  inflate_map(0);
+  eraseScreen();
 }
+
+/*----------------------------------------------------------------------------*/
+
+void input() {}
+
+/*----------------------------------------------------------------------------*/
+
+void update() {}
+
+/*----------------------------------------------------------------------------*/
+
+void render() { renderBeebram(); }

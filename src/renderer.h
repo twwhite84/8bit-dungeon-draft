@@ -10,7 +10,7 @@
 
 extern SDL_Window *window;
 
-void render();
+void renderBeebram();
 void init_renderer();
 void eraseScreen();
 void eraseTile(uint8_t i, uint8_t j);
