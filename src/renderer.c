@@ -90,7 +90,7 @@ void render() {
         uint16_t memloc = screenbase + i * 0x140 + j * 8 + s;
         uint8_t stripe = beebram[memloc];
         for (int p = 7; p >= 0; p--) {
-          int value = ((stripe >> p) & 0x01);
+          int value = ((stripe >> (7 - p)) & 0x01);
           int x = j * 8 + p;
           int y = i * 8 + s;
           plot(x, y, value, ctx);
