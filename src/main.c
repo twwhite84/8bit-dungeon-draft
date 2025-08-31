@@ -4,30 +4,28 @@
 #include "shared.h"
 #include <stdbool.h>
 
+typedef struct {
+  int screen_mode;
+} UserState;
+
 void init();
-void input();
+bool input();
 void update();
 void render();
-
-const int FRAME_CAP = 33; // ~33.3ms for 30fps
 
 /*----------------------------------------------------------------------------*/
 
 // main function needs this signature to make SDL happy
 int main(int argc, char *args[]) {
+  const int FRAME_CAP = 33; // ~33.3ms for 30fps
+  bool gameActive = true;
 
   init();
 
-  SDL_Event e;
-  bool done = false;
-  while (!done) {
+  while (gameActive) {
     uint32_t et = SDL_GetTicks();
 
-    // INPUTS
-    while (SDL_PollEvent(&e)) {
-      if (e.type == SDL_QUIT)
-        done = true;
-    }
+    gameActive = input();
 
     update();
 
@@ -51,13 +49,20 @@ int main(int argc, char *args[]) {
 void init() {
   init_ram();
   init_renderer();
-  inflate_map(0);
+  inflate_map(1);
   eraseScreen();
 }
 
 /*----------------------------------------------------------------------------*/
 
-void input() {}
+bool input() {
+  SDL_Event e;
+  while (SDL_PollEvent(&e)) {
+    if (e.type == SDL_QUIT)
+      return false;
+  }
+  return true;
+}
 
 /*----------------------------------------------------------------------------*/
 
