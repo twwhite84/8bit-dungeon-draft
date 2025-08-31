@@ -1,0 +1,24 @@
+DEF PROC_EraseScreen
+  FOR i%=0 TO (26-1)
+    FOR j%=0 TO (40-1)
+      PROC_EraseTile(i%,j%)
+    NEXT j%
+  NEXT i%
+ENDPROC
+
+--------------------------------------------------------------------------------
+
+DEF PROC_EraseTile(i%,j%)
+  tid%=?(&4238+40*i%+j%)
+  tileptr%=FN_GetTilePtr(tid%)
+  screenpos%=&5800+(i%*&140)+(j%*8)
+  FOR s%=7 TO 0 STEP -1
+    ?(screenpos%+s%)=?(tileptr%+s%)
+  NEXT s%
+ENDPROC
+
+--------------------------------------------------------------------------------
+
+DEF FN_GetTilePtr(tid%)
+  ptr%=&4000+(8*tid%)
+=ptr%

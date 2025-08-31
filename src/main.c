@@ -14,6 +14,8 @@ const int FRAME_DELAY = 60 * (1 / 1000);
 int main(int argc, char *args[]) {
   init_ram();
   init_renderer();
+  inflate_map(0);
+  eraseScreen();
 
   SDL_Event e;
   bool done = false;
@@ -46,16 +48,14 @@ int main(int argc, char *args[]) {
 
 void update() {
   // make row 1, column 1 tile a plain white block
-  uint16_t start = 0x5948;
-  beebram[start + 0] = 0xF5;
-  beebram[start + 1] = 0xF5;
-  beebram[start + 2] = 0xF5;
-  beebram[start + 3] = 0xF5;
-  beebram[start + 4] = 0xAF;
-  beebram[start + 5] = 0xAF;
-  beebram[start + 6] = 0xAF;
-  beebram[start + 7] = 0xAF;
-
-  inflate_map(0);
+  // uint16_t start = 0x5948;
+  // beebram[start + 0] = 0xF5;
+  // beebram[start + 1] = 0xF5;
+  // beebram[start + 2] = 0xF5;
+  // beebram[start + 3] = 0xF5;
+  // beebram[start + 4] = 0xAF;
+  // beebram[start + 5] = 0xAF;
+  // beebram[start + 6] = 0xAF;
+  // beebram[start + 7] = 0xAF;
   return;
 }
