@@ -10,13 +10,26 @@
 #define CAMERA_WIDTH (8 * CAMERA_COLUMNS)
 #define CAMERA_HEIGHT (8 * CAMERA_ROWS)
 
-#define TILEDEFS 0x3C00
-#define TILEBUFFER 0x3733
-#define TILEMAPS 0x43C0
+#define TEXTURES 0X2500 // 48 quads
+#define MASKS 0X3100    // 16 quads
+#define QUADDEFS 0x3300 // 64 defs
+#define ANIMDEFS 0X3500 // 32 index table + defs
+#define STATENTS 0X3600 // 32 entities
+#define PLAYER 0x3700
+#define MOVEENTS 0x3720 // 10 entities
+#define TILEBUFFER 0x3900
+#define CAMERA 0x3D10
+#define OFFBUFFER 0X3D30
+#define TILEMAPS 0x3D90 // 32 maps
+#define LITEMAPS 0X4DB0 // 17 maps
+
+// #define TILEDEFS 0x3C00
+// #define TILEBUFFER 0x3733
+// #define TILEMAPS 0x43C0
 
 typedef struct {
-  uint8_t q;
-  uint8_t r;
+    uint8_t q;
+    uint8_t r;
 } FloorResults;
 
 extern uint8_t beebram[0x8000];

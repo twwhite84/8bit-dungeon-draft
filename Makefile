@@ -24,7 +24,7 @@ OBJ = $(SRC:$(SRC_DIR)/%.c=$(OUT_DIR)/%.o)
 
 .PHONY: all clean
 
-all: $(OUT)
+all: clean $(OUT)
 
 # Link object files to create the executable
 $(OUT): $(OBJ)
