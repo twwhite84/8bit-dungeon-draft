@@ -23,10 +23,6 @@
 #define TILEMAPS 0x3D90 // 32 maps
 #define LITEMAPS 0X4DB0 // 17 maps
 
-// #define TILEDEFS 0x3C00
-// #define TILEBUFFER 0x3733
-// #define TILEMAPS 0x43C0
-
 typedef struct {
     uint8_t q;
     uint8_t r;

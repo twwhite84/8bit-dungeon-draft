@@ -8,6 +8,7 @@ void init_ram() {
 
     /*-------------------- QUADS & TEXTURES --------------------*/
 
+    // TILEMAP IDS GOTO QUADS, SO KEEP NON-TILEMAP TEXTURES HIGH
     const int qTiled = QUADDEFS + 8 * 0;
     const int qMesh = QUADDEFS + 8 * 1;
     const int qTread = QUADDEFS + 8 * 2;
@@ -15,6 +16,8 @@ void init_ram() {
     const int qDirt = QUADDEFS + 8 * 4;
     const int qSquare = QUADDEFS + 8 * 5;
     const int qCrate = QUADDEFS + 8 * 6;
+    const int qDoor = QUADDEFS + 8 * 31;
+    const int qDoorLocked = QUADDEFS + 8 * 32;
 
     const int tTiled0 = TEXTURES + 8 * 0; // Q0
     const int tMesh0 = TEXTURES + 8 * 1;  // Q1
@@ -34,6 +37,14 @@ void init_ram() {
     const int tCrate1 = TEXTURES + 8 * 15;
     const int tCrate2 = TEXTURES + 8 * 16;
     const int tCrate3 = TEXTURES + 8 * 17;
+    const int tDoor0 = TEXTURES + 8 * 18; // Q7
+    const int tDoor1 = TEXTURES + 8 * 19;
+    const int tDoor2 = TEXTURES + 8 * 20;
+    const int tDoor3 = TEXTURES + 8 * 21;
+    const int tDoorLocked0 = TEXTURES + 8 * 22; // Q8
+    const int tDoorLocked1 = TEXTURES + 8 * 23;
+    const int tDoorLocked2 = TEXTURES + 8 * 24;
+    const int tDoorLocked3 = TEXTURES + 8 * 25;
 
     // floor: tiled	[0,0,0,0]
     memcpy(&beebram[qTiled], (uint16_t[]){tTiled0, tTiled0, tTiled0, tTiled0}, 8);
@@ -73,6 +84,20 @@ void init_ram() {
     memcpy(&beebram[tCrate1], (uint8_t[]){0xFE, 0xFA, 0x06, 0x36, 0x76, 0xE6, 0xC6, 0x86}, 8);
     memcpy(&beebram[tCrate2], (uint8_t[]){0xC7, 0xCE, 0xDC, 0xF8, 0xF0, 0xBF, 0xFF, 0x00}, 8);
     memcpy(&beebram[tCrate3], (uint8_t[]){0xC6, 0xE6, 0x76, 0x3E, 0x1E, 0xFA, 0xFE, 0x00}, 8);
+
+    //  door: closed [0,1,2,3]
+    memcpy(&beebram[qDoor], (uint16_t[]){tDoor0, tDoor1, tDoor2, tDoor3}, 8);
+    memcpy(&beebram[tDoor0], (uint8_t[]){0X55, 0X28, 0X55, 0X28, 0X54, 0X2B, 0X55, 0X2A}, 8);
+    memcpy(&beebram[tDoor1], (uint8_t[]){0X54, 0XAA, 0X54, 0XAA, 0X14, 0XAA, 0X14, 0XAA}, 8);
+    memcpy(&beebram[tDoor2], (uint8_t[]){0X55, 0X2A, 0X55, 0X2A, 0X54, 0X29, 0X55, 0X28}, 8);
+    memcpy(&beebram[tDoor3], (uint8_t[]){0X14, 0XAA, 0X14, 0XAA, 0X14, 0XEA, 0X54, 0XAA}, 8);
+
+    //  door: locked [0,1,2,3]
+    memcpy(&beebram[qDoorLocked], (uint16_t[]){tDoorLocked0, tDoorLocked1, tDoorLocked2, tDoorLocked3}, 8);
+    memcpy(&beebram[tDoorLocked0], (uint8_t[]){0x55, 0x28, 0x55, 0x28, 0x54, 0x3B, 0x67, 0x42}, 8);
+    memcpy(&beebram[tDoorLocked1], (uint8_t[]){0x54, 0xAA, 0x54, 0xAA, 0x14, 0xAA, 0x14, 0xAA}, 8);
+    memcpy(&beebram[tDoorLocked2], (uint8_t[]){0x43, 0x66, 0x65, 0x26, 0x7C, 0x29, 0x55, 0x28}, 8);
+    memcpy(&beebram[tDoorLocked3], (uint8_t[]){0x14, 0xAA, 0x14, 0xAA, 0x14, 0xEA, 0x54, 0xAA}, 8);
 
     /*-------------------- TILEMAPS --------------------*/
 
