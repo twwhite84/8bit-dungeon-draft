@@ -1,7 +1,7 @@
 {
   "editor.formatOnSave": true,
-  "C_Cpp.clang_format_fallbackStyle": "LLVM",
+  "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
   "editor.detectIndentation": false,
-  "editor.tabSize": 2,
+  "editor.tabSize": 4,
   "makefile.configureOnOpen": false
 }

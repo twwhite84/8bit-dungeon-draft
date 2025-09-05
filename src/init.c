@@ -49,11 +49,11 @@ static const int qDoor = QUADDEFS + 8 * 32;
 static const int qDoorLocked = QUADDEFS + 8 * 33;
 
 // TILEMAPS
-static const int map0 = TILEMAPS + 0x20 + 0;
-static const int map1 = TILEMAPS + 0x20 + 90;
+static const int map1 = TILEMAPS + 0x20 + 0;
+static const int map2 = TILEMAPS + 0x20 + 90;
 
 // STATIC ENTITIES
-static const int seDoorLockedM0 = STATENTS + 0x40 + 0;
+static const int seDoorLockedM1 = STATENTS + 0x40 + 0;
 
 // STATIC ENTITY TYPES
 static const int DOOR_LOCKED = 0;
@@ -117,10 +117,10 @@ static void init_quads() {
 
 static void init_tilemaps() {
     // index supports up to 16 maps
-    memcpy(&beebram[TILEMAPS + 0 * 2], (uint8_t[]){map0 & 0xFF, map0 >> 8}, 2);
-    memcpy(&beebram[TILEMAPS + 1 * 2], (uint8_t[]){map1 & 0xFF, map1 >> 8}, 2);
+    memcpy(&beebram[TILEMAPS + 0 * 2], (uint8_t[]){map1 & 0xFF, map1 >> 8}, 2);
+    memcpy(&beebram[TILEMAPS + 1 * 2], (uint8_t[]){map2 & 0xFF, map2 >> 8}, 2);
 
-    memcpy(&beebram[map0],
+    memcpy(&beebram[map1],
            (uint8_t[]){
                0x5a, 0x01, 0x1b, 0x4a, 0x12, 0x18, 0x6d, 0x28, 0x48, 0x61,
                0xb8, 0x86, 0x1b, 0x88, 0x62, 0x88, 0x63, 0x29, 0x06, 0x42,
@@ -133,7 +133,7 @@ static void init_tilemaps() {
                0x04, 0xc3, 0x10, 0x4c, 0x21, 0x04, 0xa1, 0x19, 0x0a, 0x12},
            (size_t)90);
 
-    memcpy(&beebram[map1],
+    memcpy(&beebram[map2],
            (uint8_t[]){
                0x45, 0x01, 0x01, 0x0a, 0x50, 0xac, 0x04, 0x28, 0x4c, 0x11,
                0x0c, 0x2b, 0x01, 0x0a, 0x13, 0x08, 0x42, 0x0a, 0xc0, 0x42,
@@ -149,12 +149,12 @@ static void init_tilemaps() {
 
 void init_entities() {
     // INDEX
-    memcpy(&beebram[STATENTS + 0 * 2], (uint8_t[]){seDoorLockedM0 & 0xFF, seDoorLockedM0 >> 8}, 2);
+    memcpy(&beebram[STATENTS + 0 * 2], (uint8_t[]){seDoorLockedM1 & 0xFF, seDoorLockedM1 >> 8}, 2);
 
     // DEFS
-    memcpy(&beebram[seDoorLockedM0], (uint8_t[]){
+    memcpy(&beebram[seDoorLockedM1], (uint8_t[]){
                                          (DOOR_LOCKED << 4) | 1,              // TYPE | SIZE
-                                         0, 10, 10,                           // ROOM_ID, I, J
+                                         1, 10, 10,                           // ROOM_ID, I, J
                                          qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF
                                      },
            (size_t)6);

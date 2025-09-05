@@ -12,7 +12,8 @@ extern SDL_Window *window;
 
 void renderBeebram();
 void init_renderer();
-void eraseScreen();
+void drawTilebuffer();
 void eraseTile(uint8_t i, uint8_t j);
+uint16_t getTileTextureAddr(uint8_t tid);
 
 #endif

@@ -256,7 +256,7 @@ static void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
 
 static uint16_t mapIDtoAddr(uint8_t id) {
     // plug in the id, get the map address back
-    uint16_t pointer = TILEMAPS + 2 * id;
+    uint16_t pointer = TILEMAPS + 2 * (id - 1);
     uint16_t map_addr = beebram[pointer] + (uint16_t)(beebram[pointer + 1] << 8);
     return map_addr;
 }

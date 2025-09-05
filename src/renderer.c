@@ -11,7 +11,6 @@ static SDL_Renderer *renderer = NULL;
 static SDL_Texture *canvas = NULL;
 
 static void plot(int x, int y, int color, CanvasContext ctx);
-static uint16_t getTileTextureAddr(uint8_t tid);
 
 /*----------------------------------------------------------------------------*/
 
@@ -40,7 +39,7 @@ void init_renderer() {
 
 /*----------------------------------------------------------------------------*/
 
-void eraseScreen() {
+void drawTilebuffer() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
             eraseTile(i, j);
@@ -50,6 +49,7 @@ void eraseScreen() {
 
 /*----------------------------------------------------------------------------*/
 
+// i,j are in 26x40 layout
 void eraseTile(uint8_t i, uint8_t j) {
     uint8_t tid = beebram[TILEBUFFER + 40 * i + j];
     uint16_t tileptr = getTileTextureAddr(tid);
