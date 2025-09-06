@@ -3,25 +3,27 @@
 
 #include <stdint.h>
 
-#define STORED_ROWS 13
-#define STORED_COLUMNS 20
-#define CAMERA_ROWS (2 * STORED_ROWS)
-#define CAMERA_COLUMNS (2 * STORED_COLUMNS)
-#define CAMERA_WIDTH (8 * CAMERA_COLUMNS)
-#define CAMERA_HEIGHT (8 * CAMERA_ROWS)
+enum {
+    STORED_ROWS = 13,
+    STORED_COLUMNS = 20,
+    CAMERA_ROWS = (2 * STORED_ROWS),
+    CAMERA_COLUMNS = (2 * STORED_COLUMNS),
+    CAMERA_WIDTH = (8 * CAMERA_COLUMNS),
+    CAMERA_HEIGHT = (8 * CAMERA_ROWS),
 
-#define TEXTURES 0X2500 // 48 quads
-#define MASKS 0X3100    // 16 quads
-#define QUADDEFS 0x3300 // 64 defs
-#define ANIMDEFS 0X3500 // 32 index table + defs
-#define STATENTS 0X3600 // 32 entities
-#define PLAYER 0x3780
-#define MOVEENTS 0x37A0 // 10 entities
-#define TILEBUFFER 0x3980
-#define CAMERA 0x3D90
-#define OFFBUFFER 0X3DB0
-#define TILEMAPS 0x3E10 // 32 maps
-#define LITEMAPS 0X4F30 // 17 maps
+    TEXTURES = 0x2500, // 48 quads
+    MASKS = 0x3100,    // 16 quads
+    QUADDEFS = 0x3300, // 64 defs
+    ANIMDEFS = 0x3500, // 32 index table + defs
+    STATENTS = 0x3600, // 32 entities
+    PLAYER = 0x3780,
+    MOVEENTS = 0x37A0, // 10 entities
+    TILEBUFFER = 0x3980,
+    CAMERA = 0x3D90,
+    OFFBUFFER = 0x3DB0,
+    TILEMAPS = 0x3E10, // 32 maps
+    LITEMAPS = 0x4F30  // 17 maps
+};
 
 typedef struct {
     uint8_t q;

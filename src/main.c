@@ -232,6 +232,58 @@ void drawStatents() {
             beebram[screenpos + s] = beebram[tileptr + s];
         }
 
+        // bg is in the offbuffer, now paint the statent over it
+        // the statents ptr_vizdef will point to a quad pointing to 4 textures
+        // this should give the 4 textures for the locked door icon
+        uint16_t q0ptr = beebram[ptr_vizdef + 0] + (beebram[ptr_vizdef + 1] << 8); // 0x25b0
+        uint16_t q1ptr = beebram[ptr_vizdef + 2] + (beebram[ptr_vizdef + 3] << 8); // 0x25b8
+        uint16_t q2ptr = beebram[ptr_vizdef + 4] + (beebram[ptr_vizdef + 5] << 8); // 0x25c0
+        uint16_t q3ptr = beebram[ptr_vizdef + 6] + (beebram[ptr_vizdef + 7] << 8); // 0x25c8
+
+        // because ptr_vizdef (0x3408) < QUADS + 48*2*4 (0x3480), we know no compositing is used
+        // so we simply overwrite the offbuffer
+        screenpos = OFFBUFFER;
+        for (int s = 7; s >= 0; s--) {
+            beebram[screenpos + s] = beebram[q0ptr + s];
+        }
+        screenpos += 8;
+
+        tileptr = getTileTextureAddr(tileIDTR);
+        for (int s = 7; s >= 0; s--) {
+            beebram[screenpos + s] = beebram[q1ptr + s];
+        }
+        screenpos += 8;
+
+        tileptr = getTileTextureAddr(tileIDBL);
+        for (int s = 7; s >= 0; s--) {
+            beebram[screenpos + s] = beebram[q2ptr + s];
+        }
+        screenpos += 8;
+
+        tileptr = getTileTextureAddr(tileIDBR);
+        for (int s = 7; s >= 0; s--) {
+            beebram[screenpos + s] = beebram[q3ptr + s];
+        }
+
+        // slap the offbuffer back to screen, only need first 4 tiles in TL/TR/BL/BR
+        uint16_t TL = 0x5800 + i * 0x0140 + j * 8;
+        uint16_t TR = TL + 8;
+        uint16_t BL = TL + 0x0140;
+        uint16_t BR = BL + 8;
+
+        for (int s = 7; s >= 0; s--) {
+            beebram[TL + s] = beebram[OFFBUFFER + s];
+        }
+        for (int s = 7; s >= 0; s--) {
+            beebram[TR + s] = beebram[OFFBUFFER + 8 + s];
+        }
+        for (int s = 7; s >= 0; s--) {
+            beebram[BL + s] = beebram[OFFBUFFER + 16 + s];
+        }
+        for (int s = 7; s >= 0; s--) {
+            beebram[BR + s] = beebram[OFFBUFFER + 24 + s];
+        }
+
         continue;
     }
 }
