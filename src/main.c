@@ -161,6 +161,12 @@ void drawStatents() {
     // this means we will fetch more tiles than strictly necessary but its ok
 
     // for each entity in view of the camera
+
+    uint8_t bgtileids[4];
+    uint16_t screenpos;
+    uint16_t texture_ptrs[4];
+    uint16_t penbase;
+
     for (uint16_t i = (CAMERA + 0x0D); i < ((CAMERA + 0x0D) + 10); i += 2) {
 
         uint16_t ptr_statent = beebram[i] + (beebram[i + 1] << 8);
@@ -191,35 +197,26 @@ void drawStatents() {
     plaindef:
 
         // fetch tileids from the tilebuffer corresponding to 16x16px entity area
-        uint8_t bgtileids[8] = {
-            beebram[TILEBUFFER + se_i * 40 + se_j],
-            beebram[TILEBUFFER + se_i * 40 + se_j + 1],
-            beebram[TILEBUFFER + (se_i + 1) * 40 + se_j],
-            beebram[TILEBUFFER + (se_i + 1) * 40 + se_j + 1]};
+        memcpy(&bgtileids[0], &beebram[TILEBUFFER + se_i * 40 + se_j], (size_t)1);
+        memcpy(&bgtileids[1], &beebram[TILEBUFFER + se_i * 40 + se_j + 1], (size_t)1);
+        memcpy(&bgtileids[2], &beebram[TILEBUFFER + (se_i + 1) * 40 + se_j], (size_t)1);
+        memcpy(&bgtileids[3], &beebram[TILEBUFFER + (se_i + 1) * 40 + se_j + 1], (size_t)1);
 
         // paint those background tile pixels into the offbuffer
-        uint16_t screenpos = OFFBUFFER;
+        screenpos = OFFBUFFER;
         for (int i = 0; i < 4; i++) {
-            uint16_t texture_addr = getTileTextureAddr(bgtileids[i]);
+            uint16_t bg_texture_addr = getTileTextureAddr(bgtileids[i]);
             uint16_t screenpos = OFFBUFFER;
             for (int s = 7; s >= 0; s--) {
-                beebram[screenpos + s] = beebram[texture_addr + s];
+                beebram[screenpos + s] = beebram[bg_texture_addr + s];
             }
             screenpos += 8;
         }
 
-        // get the texture addresses from the quad (via ptr_vizdef)
-        uint16_t texture_ptrs[8] = {
-            beebram[se_vizdef + 0] + (beebram[se_vizdef + 1] << 8), // 0x25b0
-            beebram[se_vizdef + 2] + (beebram[se_vizdef + 3] << 8), // 0x25b8
-            beebram[se_vizdef + 4] + (beebram[se_vizdef + 5] << 8), // 0x25c0
-            beebram[se_vizdef + 6] + (beebram[se_vizdef + 7] << 8)  // 0x25c8
-        };
-
         // no compositing for a plaindef, so just overwrite the offbuffer
         screenpos = OFFBUFFER;
         for (int i = 0; i < 4; i++) {
-            uint16_t texture = texture_ptrs[i];
+            uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
             for (int s = 7; s >= 0; s--) {
                 beebram[screenpos + s] = beebram[texture + s];
             }
@@ -227,7 +224,7 @@ void drawStatents() {
         }
 
         // paint the 4 tiles used in the offbuffer back to screen
-        uint16_t penbase = 0x5800 + se_i * 0x140 + se_j * 8;
+        penbase = 0x5800 + se_i * 0x140 + se_j * 8;
         for (int s = 7; s >= 0; s--) {
             beebram[penbase + s] = beebram[OFFBUFFER + s];
             beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
