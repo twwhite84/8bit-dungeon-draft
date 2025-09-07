@@ -9,7 +9,7 @@ static void init_entities();
 
 /*------------------------------ MEMORY OFFSETS ------------------------------*/
 
-// TEXTURES
+// TEXTURES 0x2500 to 0x3300 (0xE00, or 3584 bytes)
 static const int tTiled0 = TEXTURES + 8 * 0; // Q0
 static const int tMesh0 = TEXTURES + 8 * 1;  // Q1
 static const int tMesh1 = TEXTURES + 8 * 2;
@@ -36,8 +36,17 @@ static const int tDoorLocked0 = TEXTURES + 8 * 22; // Q33
 static const int tDoorLocked1 = TEXTURES + 8 * 23;
 static const int tDoorLocked2 = TEXTURES + 8 * 24;
 static const int tDoorLocked3 = TEXTURES + 8 * 25;
+static const int tBall0 = TEXTURES + 8 * 26; // Q48
+static const int tBall1 = TEXTURES + 8 * 27;
+static const int tBall2 = TEXTURES + 8 * 28;
+static const int tBall3 = TEXTURES + 8 * 29;
+static const int tBallMask0 = TEXTURES + 8 * 30; // Q49
+static const int tBallMask1 = TEXTURES + 8 * 31;
+static const int tBallMask2 = TEXTURES + 8 * 32;
+static const int tBallMask3 = TEXTURES + 8 * 33;
 
-// QUADS. TILEMAP IDS RESOLVE TO QUADS, SO KEEP NON-TILEMAP QUADS > 31
+// QUADS
+// these quads correspond to 0-31 tilemap ids (32 of these)
 static const int qTiled = QUADDEFS + 8 * 0;
 static const int qMesh = QUADDEFS + 8 * 1;
 static const int qTread = QUADDEFS + 8 * 2;
@@ -45,18 +54,26 @@ static const int qDiamond = QUADDEFS + 8 * 3;
 static const int qDirt = QUADDEFS + 8 * 4;
 static const int qSquare = QUADDEFS + 8 * 5;
 static const int qCrate = QUADDEFS + 8 * 6;
+
+// these quads correspond to 32-47 object textures (16 of these)
 static const int qDoor = QUADDEFS + 8 * 32;
 static const int qDoorLocked = QUADDEFS + 8 * 33;
+
+// these quads correspond to 48-63 composite pairs (8 of these)
+static const int qBall = QUADDEFS + 8 * 48;
+static const int qBallMask = QUADDEFS + 8 * 49;
 
 // TILEMAPS
 static const int map1 = TILEMAPS + 0x20 + 0;
 static const int map2 = TILEMAPS + 0x20 + 90;
 
-// STATIC ENTITIES
+// STATIC ENTITIES (0x40 is index length, then + previous entity size)
 static const int seDoorLockedM1 = STATENTS + 0x40 + 0;
+static const int seBallM1 = STATENTS + 0x40 + 6;
 
 // STATIC ENTITY TYPES
 static const int DOOR_LOCKED = 0;
+static const int PICKUP = 1;
 
 /*----------------------------------------------------------------------------*/
 
@@ -97,6 +114,15 @@ static void init_textures() {
     memcpy(&beebram[tDoorLocked1], (uint8_t[]){0x54, 0xAA, 0x54, 0xAA, 0x14, 0xAA, 0x14, 0xAA}, 8);
     memcpy(&beebram[tDoorLocked2], (uint8_t[]){0x43, 0x66, 0x65, 0x26, 0x7C, 0x29, 0x55, 0x28}, 8);
     memcpy(&beebram[tDoorLocked3], (uint8_t[]){0x14, 0xAA, 0x14, 0xAA, 0x14, 0xEA, 0x54, 0xAA}, 8);
+
+    memcpy(&beebram[tBall0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x0F, 0x0F, 0x1F, 0x1F}, 8);
+    memcpy(&beebram[tBall1], (uint8_t[]){0x00, 0x00, 0x00, 0xC0, 0xF0, 0xF0, 0xF8, 0xF8}, 8);
+    memcpy(&beebram[tBall2], (uint8_t[]){0x0F, 0x17, 0x0A, 0x05, 0x02, 0x00, 0x00, 0x00}, 8);
+    memcpy(&beebram[tBall3], (uint8_t[]){0xF8, 0xD0, 0xA0, 0x50, 0x80, 0x00, 0x00, 0x00}, 8);
+    memcpy(&beebram[tBallMask0], (uint8_t[]){0x00, 0x00, 0x03, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F}, 8);
+    memcpy(&beebram[tBallMask1], (uint8_t[]){0x00, 0x00, 0xC0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
+    memcpy(&beebram[tBallMask2], (uint8_t[]){0x3F, 0x3F, 0x1F, 0x1F, 0x0F, 0x03, 0x00, 0x00}, 8);
+    memcpy(&beebram[tBallMask3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xF8, 0xF0, 0xC0, 0x00, 0x00}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -111,6 +137,8 @@ static void init_quads() {
     memcpy(&beebram[qCrate], (uint16_t[]){tCrate0, tCrate1, tCrate2, tCrate3}, 8);
     memcpy(&beebram[qDoor], (uint16_t[]){tDoor0, tDoor1, tDoor2, tDoor3}, 8);
     memcpy(&beebram[qDoorLocked], (uint16_t[]){tDoorLocked0, tDoorLocked1, tDoorLocked2, tDoorLocked3}, 8);
+    memcpy(&beebram[qBall], (uint16_t[]){tBall0, tBall1, tBall2, tBall3}, 8);
+    memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, tBallMask1, tBallMask2, tBallMask3}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -150,13 +178,21 @@ static void init_tilemaps() {
 void init_entities() {
     // INDEX
     memcpy(&beebram[STATENTS + 0 * 2], (uint8_t[]){seDoorLockedM1 & 0xFF, seDoorLockedM1 >> 8}, 2);
+    memcpy(&beebram[STATENTS + 1 * 2], (uint8_t[]){seBallM1 & 0xFF, seBallM1 >> 8}, 2);
 
     // DEFS
     memcpy(&beebram[seDoorLockedM1], (uint8_t[]){
                                          (DOOR_LOCKED << 4) | 1,              // TYPE | SIZE
-                                         1, 10, 10,                           // ROOM_ID, I, J
+                                         1, 6, 26,                            // ROOM_ID, I, J
                                          qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF
                                      },
+           (size_t)6);
+
+    memcpy(&beebram[seBallM1], (uint8_t[]){
+                                   (PICKUP << 4) | 1,       // TYPE | SIZE
+                                   1, 10, 20,               // ROOM_ID, I, J
+                                   qBall & 0xFF, qBall >> 8 // PTR_VIZDEF
+                               },
            (size_t)6);
     return;
 }

@@ -162,6 +162,7 @@ void drawStatents() {
 
     // cyclce through statents in the camera
     for (uint16_t i = (CAMERA + 0x0D); i < ((CAMERA + 0x0D) + 10); i += 2) {
+
         // for each statent pointer, go to the statent and get the length
         uint16_t ptr_statent = beebram[i] + (beebram[i + 1] << 8);
         if (ptr_statent == 0)
