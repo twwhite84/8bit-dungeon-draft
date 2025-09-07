@@ -160,129 +160,79 @@ void drawStatents() {
 
     // this means we will fetch more tiles than strictly necessary but its ok
 
-    // cyclce through statents in the camera
+    // for each entity in view of the camera
     for (uint16_t i = (CAMERA + 0x0D); i < ((CAMERA + 0x0D) + 10); i += 2) {
 
-        // for each statent pointer, go to the statent and get the length
         uint16_t ptr_statent = beebram[i] + (beebram[i + 1] << 8);
         if (ptr_statent == 0)
             break;
 
-        // static entities offsets
-        // 0: type | length
-        // 1: room_id
-        // 2: room_i
-        // 3: room_j
-        // 4: ptr_vizdef
-        uint8_t type = beebram[ptr_statent] >> 4;
-        uint8_t length = beebram[ptr_statent] & 0b00001111;
-        uint8_t room_id = beebram[ptr_statent + 1];
-        uint8_t i = beebram[ptr_statent + 2];
-        uint8_t j = beebram[ptr_statent + 3];
-        uint16_t ptr_vizdef = beebram[ptr_statent + 4] + (beebram[ptr_statent + 5] << 8);
+        // entity fields
+        uint8_t se_type = beebram[ptr_statent] >> 4;
+        uint8_t se_length = beebram[ptr_statent] & 0b00001111;
+        uint8_t se_roomID = beebram[ptr_statent + 1];
+        uint8_t se_i = beebram[ptr_statent + 2];
+        uint8_t se_j = beebram[ptr_statent + 3];
+        uint16_t se_vizdef = beebram[ptr_statent + 4] + (beebram[ptr_statent + 5] << 8);
 
-        // if 0x3300 < ptr_vizdef < 0x3500, we are looking at a quaddef
+        if (se_vizdef < 0x3500)
+            goto quaddef;
 
-        // if 0x3500 < ptr_vizdef < 0x3600, we are looking at an animdef
+    animdef:
+        continue;
 
-        // just do a quaddef for now
+    quaddef:
+        if (se_vizdef < (0x3300 + 48 * 8))
+            goto plaindef;
 
-        // if 0x3480 (0x3300 + 48*8) < quaddef < 0x3500, that's a composite pair
+    compdef:
+        continue;
 
-        // first fill the offbuffer with relevant tiles for i,j from the tilebuffer
-        // the (i,j) for the static entity will be the 26x40 version, not 13x20
+    plaindef:
 
-        // copy from tilebuffer to offbuffer:
-        //[i+0_j+0, i+0_j+1, i+0_j+2]
-        //[i+1_j+0, i+1_j+1, i+1_j+2]
-        //[i+2_j+0, i+2_j+1, i+2_j+2]
+        // fetch tileids from the tilebuffer corresponding to 16x16px entity area
+        uint8_t bgtileids[8] = {
+            beebram[TILEBUFFER + se_i * 40 + se_j],
+            beebram[TILEBUFFER + se_i * 40 + se_j + 1],
+            beebram[TILEBUFFER + (se_i + 1) * 40 + se_j],
+            beebram[TILEBUFFER + (se_i + 1) * 40 + se_j + 1]};
 
-        // tilebuffer holds tileIDs, 26x40 resolution from [0x3980, 0x3D90), 1 byte per tileid
-
-        // offbuffer holds pixels, from [0x3DB0, 0x3DB4), 1 byte per tileid
-
-        // lets get our tileIDs from the tilebuffer first, there will be 4 of them
-        // our static entity is located at (10,10), i think this is tread tile
-        uint8_t tileIDTL = beebram[TILEBUFFER + i * 40 + j];           // 8
-        uint8_t tileIDTR = beebram[TILEBUFFER + i * 40 + j + 1];       // 9
-        uint8_t tileIDBL = beebram[TILEBUFFER + (i + 1) * 40 + j];     // 10
-        uint8_t tileIDBR = beebram[TILEBUFFER + (i + 1) * 40 + j + 1]; // 11
-
-        // resolve to the textures and paint to the offbuffer
-        uint16_t tileptr = getTileTextureAddr(tileIDTL); // gives 0x2520, 0x20 is 32 which is correct
+        // paint those background tile pixels into the offbuffer
         uint16_t screenpos = OFFBUFFER;
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[tileptr + s];
-        }
-        screenpos += 8;
-
-        tileptr = getTileTextureAddr(tileIDTR);
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[tileptr + s];
-        }
-        screenpos += 8;
-
-        tileptr = getTileTextureAddr(tileIDBL);
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[tileptr + s];
-        }
-        screenpos += 8;
-
-        tileptr = getTileTextureAddr(tileIDBR);
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[tileptr + s];
+        for (int i = 0; i < 4; i++) {
+            uint16_t texture_addr = getTileTextureAddr(bgtileids[i]);
+            uint16_t screenpos = OFFBUFFER;
+            for (int s = 7; s >= 0; s--) {
+                beebram[screenpos + s] = beebram[texture_addr + s];
+            }
+            screenpos += 8;
         }
 
-        // bg is in the offbuffer, now paint the statent over it
-        // the statents ptr_vizdef will point to a quad pointing to 4 textures
-        // this should give the 4 textures for the locked door icon
-        uint16_t q0ptr = beebram[ptr_vizdef + 0] + (beebram[ptr_vizdef + 1] << 8); // 0x25b0
-        uint16_t q1ptr = beebram[ptr_vizdef + 2] + (beebram[ptr_vizdef + 3] << 8); // 0x25b8
-        uint16_t q2ptr = beebram[ptr_vizdef + 4] + (beebram[ptr_vizdef + 5] << 8); // 0x25c0
-        uint16_t q3ptr = beebram[ptr_vizdef + 6] + (beebram[ptr_vizdef + 7] << 8); // 0x25c8
+        // get the texture addresses from the quad (via ptr_vizdef)
+        uint16_t texture_ptrs[8] = {
+            beebram[se_vizdef + 0] + (beebram[se_vizdef + 1] << 8), // 0x25b0
+            beebram[se_vizdef + 2] + (beebram[se_vizdef + 3] << 8), // 0x25b8
+            beebram[se_vizdef + 4] + (beebram[se_vizdef + 5] << 8), // 0x25c0
+            beebram[se_vizdef + 6] + (beebram[se_vizdef + 7] << 8)  // 0x25c8
+        };
 
-        // because ptr_vizdef (0x3408) < QUADS + 48*2*4 (0x3480), we know no compositing is used
-        // so we simply overwrite the offbuffer
+        // no compositing for a plaindef, so just overwrite the offbuffer
         screenpos = OFFBUFFER;
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[q0ptr + s];
-        }
-        screenpos += 8;
-
-        tileptr = getTileTextureAddr(tileIDTR);
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[q1ptr + s];
-        }
-        screenpos += 8;
-
-        tileptr = getTileTextureAddr(tileIDBL);
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[q2ptr + s];
-        }
-        screenpos += 8;
-
-        tileptr = getTileTextureAddr(tileIDBR);
-        for (int s = 7; s >= 0; s--) {
-            beebram[screenpos + s] = beebram[q3ptr + s];
+        for (int i = 0; i < 4; i++) {
+            uint16_t texture = texture_ptrs[i];
+            for (int s = 7; s >= 0; s--) {
+                beebram[screenpos + s] = beebram[texture + s];
+            }
+            screenpos += 8;
         }
 
-        // slap the offbuffer back to screen, only need first 4 tiles in TL/TR/BL/BR
-        uint16_t TL = 0x5800 + i * 0x0140 + j * 8;
-        uint16_t TR = TL + 8;
-        uint16_t BL = TL + 0x0140;
-        uint16_t BR = BL + 8;
-
+        // paint the 4 tiles used in the offbuffer back to screen
+        uint16_t penbase = 0x5800 + se_i * 0x140 + se_j * 8;
         for (int s = 7; s >= 0; s--) {
-            beebram[TL + s] = beebram[OFFBUFFER + s];
-        }
-        for (int s = 7; s >= 0; s--) {
-            beebram[TR + s] = beebram[OFFBUFFER + 8 + s];
-        }
-        for (int s = 7; s >= 0; s--) {
-            beebram[BL + s] = beebram[OFFBUFFER + 16 + s];
-        }
-        for (int s = 7; s >= 0; s--) {
-            beebram[BR + s] = beebram[OFFBUFFER + 24 + s];
+            beebram[penbase + s] = beebram[OFFBUFFER + s];
+            beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
+            beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
+            beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
         }
 
         continue;
