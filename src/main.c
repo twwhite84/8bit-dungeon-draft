@@ -162,8 +162,8 @@ void drawStatents() {
 
     // for each entity in view of the camera
 
-    uint16_t screenpos;
     uint16_t penbase;
+    uint16_t offbase;
 
     for (uint16_t i = (CAMERA + 0x0D); i < ((CAMERA + 0x0D) + 10); i += 2) {
 
@@ -190,28 +190,30 @@ void drawStatents() {
             goto plaindef;
 
     compdef:
-        // paint relevant background pixels into the offbuffer using tileIDs in tilebuffer
-        for (int i = 2; i >= 0; i--) {
-            for (int j = 2; j >= 0; j--) {
+
+        // fetch corresponding background tiles and paint to offbuffer
+        offbase = OFFBUFFER;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
                 uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
                 uint16_t bg_texture_addr = getTileTextureAddr(tileID);
                 for (int s = 7; s >= 0; s--) {
-                    beebram[OFFBUFFER + i * 16 + j * 8 + s] = beebram[bg_texture_addr + s];
+                    beebram[offbase + s] = beebram[bg_texture_addr + s];
                 }
+                offbase += 8;
             }
         }
 
-        // paint static entity textures into the offbuffer with compositing
-        for (int i = 2; i >= 0; i--) {
-            for (int j = 2; j >= 0; j--) {
-                uint16_t texture_base = beebram[se_vizdef + i * 4 + j * 2] + (beebram[se_vizdef + i * 4 + j * 2 + 1] << 8);
-                uint16_t mask_base = texture_base + 32;
-                uint16_t off_base = OFFBUFFER + i * 16 + j * 8;
-                for (int s = 7; s >= 0; s--) {
-                    beebram[off_base + s] &= (beebram[mask_base + s] ^ 0xFF);
-                    beebram[off_base + s] |= (beebram[texture_base + s] & beebram[mask_base + s]);
-                }
+        // paint static entity textures into the offbuffer, compositing for a compdef
+        offbase = OFFBUFFER;
+        for (int i = 0; i < 4; i++) {
+            uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
+            uint16_t mask = texture + 32;
+            for (int s = 7; s >= 0; s--) {
+                beebram[offbase + s] &= (beebram[mask + s] ^ 0xFF);
+                beebram[offbase + s] |= (beebram[texture + s] & beebram[mask + s]);
             }
+            offbase += 8;
         }
 
         // paint the offbuffer back to screen at static entity's coordinates
@@ -227,28 +229,27 @@ void drawStatents() {
 
     plaindef:
 
-        // paint relevant background pixels into the offbuffer using tileIDs in tilebuffer
-        screenpos = OFFBUFFER;
+        // fetch corresponding background tiles and paint to offbuffer
+        offbase = OFFBUFFER;
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
                 uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
                 uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-                uint16_t screenpos = OFFBUFFER;
                 for (int s = 7; s >= 0; s--) {
-                    beebram[screenpos + s] = beebram[bg_texture_addr + s];
+                    beebram[offbase + s] = beebram[bg_texture_addr + s];
                 }
-                screenpos += 8;
+                offbase += 8;
             }
         }
 
         // paint static entity textures into the offbuffer, no compositing for a plaindef
-        screenpos = OFFBUFFER;
+        offbase = OFFBUFFER;
         for (int i = 0; i < 4; i++) {
             uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
             for (int s = 7; s >= 0; s--) {
-                beebram[screenpos + s] = beebram[texture + s];
+                beebram[offbase + s] = beebram[texture + s];
             }
-            screenpos += 8;
+            offbase += 8;
         }
 
         // paint the offbuffer back to screen at static entity's coordinates
