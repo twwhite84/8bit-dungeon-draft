@@ -190,7 +190,7 @@ void init_entities() {
 
     memcpy(&beebram[seBallM1], (uint8_t[]){
                                    (PICKUP << 4) | 1,       // TYPE | SIZE
-                                   1, 10, 20,               // ROOM_ID, I, J
+                                   1, 8, 8,                 // ROOM_ID, I, J
                                    qBall & 0xFF, qBall >> 8 // PTR_VIZDEF
                                },
            (size_t)6);
