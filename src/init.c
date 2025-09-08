@@ -67,14 +67,6 @@ static const int qBallMask = QUADDEFS + 8 * 49;
 static const int map1 = TILEMAPS + 0x20 + 0;
 static const int map2 = TILEMAPS + 0x20 + 90;
 
-// STATIC ENTITIES (0x40 is index length, then + previous entity size)
-static const int seDoorLockedM1 = STATENTS + 0x40 + 0;
-static const int seBallM1 = STATENTS + 0x40 + 6;
-
-// STATIC ENTITY TYPES
-static const int DOOR_LOCKED = 0;
-static const int PICKUP = 1;
-
 /*----------------------------------------------------------------------------*/
 
 void init_ram() {
@@ -176,23 +168,36 @@ static void init_tilemaps() {
 /*----------------------------------------------------------------------------*/
 
 void init_entities() {
+    // STATIC ENTITIES (0x40 is index length, then + previous entity size)
+    // static const int seDoorLockedM1 = STATENTS + 0x40 + 0;
+    // static const int seBallM1 = STATENTS + 0x40 + 6;
+
+    // STATIC ENTITY TYPES
+    // static const int DOOR_LOCKED = 0;
+    // static const int PICKUP = 1;
+
     // INDEX
-    memcpy(&beebram[STATENTS + 0 * 2], (uint8_t[]){seDoorLockedM1 & 0xFF, seDoorLockedM1 >> 8}, 2);
-    memcpy(&beebram[STATENTS + 1 * 2], (uint8_t[]){seBallM1 & 0xFF, seBallM1 >> 8}, 2);
+    uint16_t se_doorLockedM1 = STATENTS + 0x40;
+    memcpy(&beebram[STATENTS + 0 * 2], (uint8_t[]){se_doorLockedM1 & 0xFF, se_doorLockedM1 >> 8}, 2);
 
-    // DEFS
-    memcpy(&beebram[seDoorLockedM1], (uint8_t[]){
-                                         (DOOR_LOCKED << 4) | 1,              // TYPE | SIZE
-                                         1, 6, 26,                            // ROOM_ID, I, J
-                                         qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF
-                                     },
-           (size_t)6);
+    uint16_t se_ballM1 = se_doorLockedM1 + 10;
+    memcpy(&beebram[STATENTS + 1 * 2], (uint8_t[]){se_ballM1 & 0xFF, se_ballM1 >> 8}, 2);
 
-    memcpy(&beebram[seBallM1], (uint8_t[]){
-                                   (PICKUP << 4) | 1,       // TYPE | SIZE
-                                   1, 9, 8,                 // ROOM_ID, I, J
-                                   qBall & 0xFF, qBall >> 8 // PTR_VIZDEF
-                               },
+    // DEFS. I,J is in 26x40
+    memcpy(&beebram[se_doorLockedM1], (uint8_t[]){
+                                          (SE_DOORLOCKED << 4) | 2, 1,         // TYPE | SIZE, ROOMID,
+                                          4, 26,                               // ROOM_ID, I, J
+                                          qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF
+                                          6, 26,                               // ROOM_ID, I, J
+                                          qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF
+                                      },
+           (size_t)10);
+
+    memcpy(&beebram[se_ballM1], (uint8_t[]){
+                                    (SE_PICKUP << 4) | 1, 1, // TYPE | SIZE, ROOMID,
+                                    9, 8,                    // ROOM_ID, I, J
+                                    qBall & 0xFF, qBall >> 8 // PTR_VIZDEF
+                                },
            (size_t)6);
     return;
 }

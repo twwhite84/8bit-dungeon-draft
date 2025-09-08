@@ -22,7 +22,10 @@ enum {
     CAMERA = 0x3D90,
     OFFBUFFER = 0x3DB0,
     TILEMAPS = 0x3E10, // 32 maps
-    LITEMAPS = 0x4F30  // 17 maps
+    LITEMAPS = 0x4F30, // 17 maps
+
+    SE_DOORLOCKED = 0,
+    SE_PICKUP = 1
 };
 
 typedef struct {
