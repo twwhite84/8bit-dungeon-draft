@@ -86,6 +86,7 @@ void init_ram() {
     init_quads();
     init_tilemaps();
     init_entities();
+    init_animdefs();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -221,14 +222,25 @@ void init_entities() {
                                 },
            (size_t)6);
 
+    // memcpy(&beebram[se_forceField01M1], (uint8_t[]){
+    //                                         (SE_DOORLOCKED << 4) | 3, 1,            // TYPE | SIZE, ROOMID,
+    //                                         8, 4,                                   // I, J
+    //                                         qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
+    //                                         8, 6,                                   // I, J
+    //                                         qForceField1 & 0xFF, qForceField1 >> 8, // PTR_VIZDEF
+    //                                         8, 8,                                   // I, J
+    //                                         qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
+    //                                     },
+    //        (size_t)14);
+
     memcpy(&beebram[se_forceField01M1], (uint8_t[]){
-                                            (SE_DOORLOCKED << 4) | 3, 1,            // TYPE | SIZE, ROOMID,
-                                            8, 4,                                   // I, J
-                                            qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
-                                            8, 6,                                   // I, J
-                                            qForceField1 & 0xFF, qForceField1 >> 8, // PTR_VIZDEF
-                                            8, 8,                                   // I, J
-                                            qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
+                                            (SE_DOORLOCKED << 4) | 3, 1,          // TYPE | SIZE, ROOMID,
+                                            8, 4,                                 // I, J
+                                            aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF
+                                            8, 6,                                 // I, J
+                                            aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF
+                                            8, 8,                                 // I, J
+                                            aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF
                                         },
            (size_t)14);
     return;

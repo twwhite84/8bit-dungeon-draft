@@ -181,11 +181,34 @@ void drawStatents() {
             uint8_t se_TLj = beebram[ptr_statent + 3 + 4 * t];                                               // 7
             uint16_t se_vizdef = beebram[ptr_statent + 4 + 4 * t] + (beebram[ptr_statent + 5 + 4 * t] << 8); // 8 and 9
 
-            if (se_vizdef < 0x3500)
+            if (se_vizdef >= 0x3300 && se_vizdef < 0x3500) {
                 goto quaddef;
+            }
+
+            else if (se_vizdef >= 0x3500 && se_vizdef < 0x3540) {
+                goto animdef;
+            }
+
+            else {
+                continue;
+            }
 
         animdef:
-            continue;
+            // figure out what the current frame is
+
+            // set the se_vizdef to point to that, then jump to quaddef block
+
+            // animdef:
+            // [frames | yoyo]
+            // [period 0 | 1 | 2 | 3]
+            // [ptr_frame0]
+            // [ptr_frame1]
+
+            // temp: just get the pointer to frame 0
+            uint16_t def = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
+            uint16_t frame0 = beebram[def + 2] + (beebram[def + 3] << 8);
+            se_vizdef = frame0;
+            goto quaddef;
 
         quaddef:
             if (se_vizdef < (0x3300 + 48 * 8))
