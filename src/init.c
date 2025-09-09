@@ -36,6 +36,7 @@ static const int tDoorLocked0 = TEXTURES + 8 * 22; // Q33
 static const int tDoorLocked1 = TEXTURES + 8 * 23;
 static const int tDoorLocked2 = TEXTURES + 8 * 24;
 static const int tDoorLocked3 = TEXTURES + 8 * 25;
+
 static const int tBall0 = TEXTURES + 8 * 26; // Q48
 static const int tBall1 = TEXTURES + 8 * 27;
 static const int tBall2 = TEXTURES + 8 * 28;
@@ -44,6 +45,23 @@ static const int tBallMask0 = TEXTURES + 8 * 30; // Q49
 static const int tBallMask1 = TEXTURES + 8 * 31;
 static const int tBallMask2 = TEXTURES + 8 * 32;
 static const int tBallMask3 = TEXTURES + 8 * 33;
+
+static const int tForceField00 = TEXTURES + 8 * 34; // Q50
+static const int tForceField01 = TEXTURES + 8 * 35;
+static const int tForceField02 = TEXTURES + 8 * 36;
+static const int tForceField03 = TEXTURES + 8 * 37;
+static const int tForceFieldMask00 = TEXTURES + 8 * 38; // Q51
+static const int tForceFieldMask01 = TEXTURES + 8 * 39;
+static const int tForceFieldMask02 = TEXTURES + 8 * 40;
+static const int tForceFieldMask03 = TEXTURES + 8 * 41;
+static const int tForceField10 = TEXTURES + 8 * 42; // Q52
+static const int tForceField11 = TEXTURES + 8 * 43;
+static const int tForceField12 = TEXTURES + 8 * 44;
+static const int tForceField13 = TEXTURES + 8 * 45;
+static const int tForceFieldMask10 = TEXTURES + 8 * 46; // Q53
+static const int tForceFieldMask11 = TEXTURES + 8 * 47;
+static const int tForceFieldMask12 = TEXTURES + 8 * 48;
+static const int tForceFieldMask13 = TEXTURES + 8 * 49;
 
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
@@ -62,6 +80,10 @@ static const int qDoorLocked = QUADDEFS + 8 * 33;
 // these quads correspond to 48-63 composite pairs (8 of these)
 static const int qBall = QUADDEFS + 8 * 48;
 static const int qBallMask = QUADDEFS + 8 * 49;
+static const int qForceField0 = QUADDEFS + 8 * 50;
+static const int qForceFieldMask0 = QUADDEFS + 8 * 51;
+static const int qForceField1 = QUADDEFS + 8 * 52;
+static const int qForceFieldMask1 = QUADDEFS + 8 * 53;
 
 // TILEMAPS
 static const int map1 = TILEMAPS + 0x20 + 0;
@@ -107,6 +129,7 @@ static void init_textures() {
     memcpy(&beebram[tDoorLocked2], (uint8_t[]){0x43, 0x66, 0x65, 0x26, 0x7C, 0x29, 0x55, 0x28}, 8);
     memcpy(&beebram[tDoorLocked3], (uint8_t[]){0x14, 0xAA, 0x14, 0xAA, 0x14, 0xEA, 0x54, 0xAA}, 8);
 
+    // def-mask pairs must always go 4xdef, 4xmask
     memcpy(&beebram[tBall0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x0F, 0x0F, 0x1F, 0x1F}, 8);
     memcpy(&beebram[tBall1], (uint8_t[]){0x00, 0x00, 0x00, 0xC0, 0xF0, 0xF0, 0xF8, 0xF8}, 8);
     memcpy(&beebram[tBall2], (uint8_t[]){0x0F, 0x17, 0x0A, 0x05, 0x02, 0x00, 0x00, 0x00}, 8);
@@ -115,6 +138,15 @@ static void init_textures() {
     memcpy(&beebram[tBallMask1], (uint8_t[]){0x00, 0x00, 0xC0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
     memcpy(&beebram[tBallMask2], (uint8_t[]){0x3F, 0x3F, 0x1F, 0x1F, 0x0F, 0x03, 0x00, 0x00}, 8);
     memcpy(&beebram[tBallMask3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xF8, 0xF0, 0xC0, 0x00, 0x00}, 8);
+
+    memcpy(&beebram[tForceField00], (uint8_t[]){0x00, 0x0C, 0x12, 0x21, 0xCC, 0x12, 0x21, 0xCC}, 8);
+    memcpy(&beebram[tForceField01], (uint8_t[]){0x00, 0x0C, 0x12, 0x21, 0xCC, 0x12, 0x21, 0xCC}, 8);
+    memcpy(&beebram[tForceField02], (uint8_t[]){0x12, 0x21, 0xCC, 0x12, 0x21, 0xC0, 0x00, 0x00}, 8);
+    memcpy(&beebram[tForceField03], (uint8_t[]){0x12, 0x21, 0xCC, 0x12, 0x21, 0xC0, 0x00, 0x00}, 8);
+    memcpy(&beebram[tForceFieldMask00], (uint8_t[]){0x00, 0x0C, 0x12, 0x21, 0xCC, 0x12, 0x21, 0xCC}, 8);
+    memcpy(&beebram[tForceFieldMask01], (uint8_t[]){0x00, 0x0C, 0x12, 0x21, 0xCC, 0x12, 0x21, 0xCC}, 8);
+    memcpy(&beebram[tForceFieldMask02], (uint8_t[]){0x12, 0x21, 0xCC, 0x12, 0x21, 0xC0, 0x00, 0x00}, 8);
+    memcpy(&beebram[tForceFieldMask03], (uint8_t[]){0x12, 0x21, 0xCC, 0x12, 0x21, 0xC0, 0x00, 0x00}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -131,6 +163,8 @@ static void init_quads() {
     memcpy(&beebram[qDoorLocked], (uint16_t[]){tDoorLocked0, tDoorLocked1, tDoorLocked2, tDoorLocked3}, 8);
     memcpy(&beebram[qBall], (uint16_t[]){tBall0, tBall1, tBall2, tBall3}, 8);
     memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, tBallMask1, tBallMask2, tBallMask3}, 8);
+    memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField01, tForceField02, tForceField03}, 8);
+    memcpy(&beebram[qForceFieldMask0], (uint16_t[]){tForceFieldMask00, tForceFieldMask01, tForceFieldMask02, tForceFieldMask03}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -183,21 +217,35 @@ void init_entities() {
     uint16_t se_ballM1 = se_doorLockedM1 + 10;
     memcpy(&beebram[STATENTS + 1 * 2], (uint8_t[]){se_ballM1 & 0xFF, se_ballM1 >> 8}, 2);
 
+    uint16_t se_forceField01M1 = se_ballM1 + 6;
+    memcpy(&beebram[STATENTS + 2 * 2], (uint8_t[]){se_forceField01M1 & 0xFF, se_forceField01M1 >> 8}, 2);
+
     // DEFS. I,J is in 26x40
     memcpy(&beebram[se_doorLockedM1], (uint8_t[]){
                                           (SE_DOORLOCKED << 4) | 2, 1,         // TYPE | SIZE, ROOMID,
-                                          4, 26,                               // ROOM_ID, I, J
+                                          4, 26,                               // I, J
                                           qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF
-                                          6, 26,                               // ROOM_ID, I, J
+                                          6, 26,                               // I, J
                                           qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF
                                       },
            (size_t)10);
 
     memcpy(&beebram[se_ballM1], (uint8_t[]){
                                     (SE_PICKUP << 4) | 1, 1, // TYPE | SIZE, ROOMID,
-                                    9, 8,                    // ROOM_ID, I, J
+                                    9, 8,                    // I, J
                                     qBall & 0xFF, qBall >> 8 // PTR_VIZDEF
                                 },
            (size_t)6);
+
+    memcpy(&beebram[se_forceField01M1], (uint8_t[]){
+                                            (SE_DOORLOCKED << 4) | 3, 1,            // TYPE | SIZE, ROOMID,
+                                            8, 4,                                   // I, J
+                                            qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
+                                            8, 6,                                   // I, J
+                                            qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
+                                            8, 8,                                   // I, J
+                                            qForceField0 & 0xFF, qForceField0 >> 8, // PTR_VIZDEF
+                                        },
+           (size_t)14);
     return;
 }
