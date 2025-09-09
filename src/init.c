@@ -6,6 +6,7 @@ static void init_textures();
 static void init_quads();
 static void init_tilemaps();
 static void init_entities();
+static void init_animdefs();
 
 /*------------------------------ MEMORY OFFSETS ------------------------------*/
 
@@ -69,6 +70,9 @@ static const int qForceField1 = QUADDEFS + 8 * 35;
 // these quads correspond to 48-63 composite pairs (8 of these)
 static const int qBall = QUADDEFS + 8 * 48;
 static const int qBallMask = QUADDEFS + 8 * 49;
+
+// ANIMDEFS
+static const int aFField_idx = ANIMDEFS + 2 * 0;
 
 // TILEMAPS
 static const int map1 = TILEMAPS + 0x20 + 0;
@@ -228,4 +232,21 @@ void init_entities() {
                                         },
            (size_t)14);
     return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void init_animdefs() {
+    // index: 2 byte pointers
+    uint16_t aFField_def = ANIMDEFS + 0x40;
+    memcpy(&beebram[aFField_idx], (uint8_t[]){aFField_def & 0xFF, aFField_def >> 8}, 2);
+
+    // defs:
+    memcpy(&beebram[aFField_def], (uint8_t[]){
+                                      (2 << 4) | 0,                           // [frames|yoyo]
+                                      (2 << 6) | (2 << 4) | (0 << 2) | 0,     // [period 0 | 1 | 2 | 3]
+                                      qForceField0 & 0xFF, qForceField0 >> 8, // [ptr_quad_0]
+                                      qForceField1 & 0xFF, qForceField1 >> 8, // [ptr_quad_1]
+                                  },
+           (size_t)6);
 }
