@@ -112,6 +112,8 @@ void update() {
         gf.jump_to_L2 = false;
     }
 
+    return;
+
     // walk the camera buffer and update any static entity animdefs
     uint16_t camera_se_base = CAMERA + 0x0D;
     uint8_t se_base_offset = 0;
@@ -127,13 +129,14 @@ void update() {
             if (se_vizdef_addr >= ANIMDEFS) {
                 fprintf(stderr, "animdef at %x\n", se_vizdef_addr);
 
-                // it's a vizdef, so update its current frame
-
+                // it's an animdef, so update its current frame
                 // the issue here is that the current frame is stored on the vizdef
-
                 // but in a se of 3 tiles that same vizdef gets reused
-
                 // so move the current frame to the se
+
+                // increment the elapsed frames
+
+                //
             }
             continue;
         }
@@ -207,7 +210,8 @@ void drawStatents() {
         // entity fields
         uint8_t se_type = beebram[ptr_statent] >> 4;
         uint8_t se_length = beebram[ptr_statent] & 0b00001111;
-        uint8_t se_roomID = beebram[ptr_statent + 1];
+        uint8_t se_current_frame = (beebram[ptr_statent + 1] & 0b11000000) >> 6;
+        uint8_t se_roomID = beebram[ptr_statent + 1] & 0b00111111;
 
         for (int t = 0; t < se_length; t++) {
             uint8_t se_TLi = beebram[ptr_statent + 2 + 4 * t];                                               // 6
@@ -239,12 +243,11 @@ void drawStatents() {
 
             // temp: just get the pointer to frame 0
             uint16_t def = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
-            uint8_t frames = (beebram[def + 0] >> 6) & 0b00000011;
-            uint8_t current = (beebram[def + 0] >> 4) & 0b00000011;
-            uint8_t elapsed = (beebram[def + 0] >> 2) & 0b00000011;
-            uint8_t yoyo = (beebram[def + 0] >> 0) & 0b00000011;
+            uint8_t frames = (beebram[def + 0] & 0b11000000) >> 6;
+            uint8_t elapsed = (beebram[def + 0] & 0b00111100) >> 2;
+            uint8_t yoyo = beebram[def + 0] & 0b00000011;
 
-            uint16_t frame = beebram[def + 2 + (1 * current)] + (beebram[def + 2 + (1 * current) + 1] << 8);
+            uint16_t frame = beebram[def + 3 + (1 * se_current_frame)] + (beebram[def + 3 + (1 * se_current_frame) + 1] << 8);
             se_vizdef = frame;
             goto quaddef;
 
