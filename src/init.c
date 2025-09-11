@@ -255,7 +255,7 @@ void init_animdefs() {
 
     // defs:
     memcpy(&beebram[aFField_def], (uint8_t[]){
-                                      (2 << 4) | 0,                           // [frames|yoyo]
+                                      (2 << 6) | (0 << 4) | (0 << 2) | 0,     // [frames|current|elapsed|yoyo]
                                       (2 << 6) | (2 << 4) | (0 << 2) | 0,     // [period 0 | 1 | 2 | 3]
                                       qForceField0 & 0xFF, qForceField0 >> 8, // [ptr_quad_0]
                                       qForceField1 & 0xFF, qForceField1 >> 8, // [ptr_quad_1]
