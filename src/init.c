@@ -219,7 +219,7 @@ void init_entities() {
     memcpy(&beebram[se_ballM1], (uint8_t[]){
                                     (0 << 3) | SE_PICKUP,    // ELAPSED_FRAMES (5) | TYPE (3)
                                     (0 << 6) | 1,            // LENGTH-1 (2) | ROOMID (6)
-                                    9, 8,                    // I (8), J (8)
+                                    10, 8,                   // I (8), J (8)
                                     qBall & 0xFF, qBall >> 8 // PTR_VIZDEF (16)
                                 },
            (size_t)6);

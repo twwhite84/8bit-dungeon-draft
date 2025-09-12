@@ -112,39 +112,33 @@ void update() {
         gf.jump_to_L2 = false;
     }
 
-    return;
-
-    // walk the camera buffer and update any static entity animdefs
+    // walk the camera buffer and update any static entities which have animated tiles
     uint16_t camera_se_base = CAMERA + 0x0D;
     uint8_t se_base_offset = 0;
+
     for (int i = 0; i < 5; i++) {
+
+        // fetch the next static entity
         uint16_t se_ptr_addr = camera_se_base + se_base_offset;
-
-        // go to the se and process each of its vizdefs
         uint16_t se_addr = beebram[se_ptr_addr] + (beebram[se_ptr_addr + 1] << 8);
-        uint16_t se_length = beebram[se_addr + 0] & 0b00001111;
-        for (int vdidx = 0; vdidx < se_length; vdidx++) {
-            uint16_t se_vizdef_ptr_addr = se_addr + 4 + 4 * vdidx;
-            uint16_t se_vizdef_addr = beebram[se_vizdef_ptr_addr] + (beebram[se_vizdef_ptr_addr + 1] << 8);
-            if (se_vizdef_addr >= ANIMDEFS) {
-                fprintf(stderr, "animdef at %x\n", se_vizdef_addr);
 
-                // it's an animdef, so update its current frame
-                // the issue here is that the current frame is stored on the vizdef
-                // but in a se of 3 tiles that same vizdef gets reused
-                // so move the current frame to the se
+        // get its first vizdef (you only need one to determine the entire lot's type)
+        uint16_t se_vizdef_ptr_addr = se_addr + 4;
+        uint16_t se_vizdef_addr = beebram[se_vizdef_ptr_addr] + (beebram[se_vizdef_ptr_addr + 1] << 8);
 
-                // increment the elapsed frames
-
-                //
-            }
-            continue;
+        // if vizdef is an animdef, update the static entity's elapsed frame count
+        if (se_vizdef_addr >= ANIMDEFS) {
+            // fprintf(stderr, "animdef at %x\n", se_vizdef_addr);
+            uint8_t elapsed_frames = (beebram[se_addr + 0] & 0b11111000) >> 3;
+            elapsed_frames++;
+            beebram[se_addr + 0] = (beebram[se_addr + 0] & 0b00000111) | (elapsed_frames << 3);
         }
-
-        // go to the vizdef
 
         se_base_offset += 2;
     }
+
+    // redraw the static entities
+    drawStatents();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -229,12 +223,44 @@ void drawStatents() {
             // PERIOD_2 (4) | PERIOD_3 (4)
             // PTR_QUADDEF_x (16)
 
-            // temp: just get the pointer to frame 0
             uint16_t animdef = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
-            uint8_t frames = (beebram[animdef + 0] & 0b11100000) >> 5;
+            uint8_t frames = ((beebram[animdef + 0] & 0b11100000) >> 5) + 1;
             uint8_t current = (beebram[animdef + 0] & 0b00011100) >> 2;
             uint8_t yoyo = beebram[animdef + 0] & 0b00000011;
+            uint8_t period;
 
+            // fetch the period for the current frame index
+            switch (current) {
+            case 0:
+                period = (beebram[animdef + 1] & 0b11110000) >> 4;
+                break;
+
+            case 1:
+                period = (beebram[animdef + 1] & 0b00001111);
+                break;
+
+            case 2:
+                period = (beebram[animdef + 2] & 0b11110000) >> 4;
+                break;
+
+            case 3:
+                period = (beebram[animdef + 2] & 0b00001111);
+                break;
+            }
+
+            // if the elapsed frame count > period, cycle the frame and reset the elapsed
+            if (se_elapsed_frames > period) {
+                current++;
+                if (current == frames)
+                    current = 0;
+
+                beebram[animdef + 0] &= 0b11100011;
+                beebram[animdef + 0] |= (current << 2);
+
+                se_elapsed_frames = 0;
+            }
+
+            // pass the current frame to the quaddef routine
             uint16_t frame = beebram[(animdef + 3) + (2 * current)] + (beebram[(animdef + 3) + (2 * current) + 1] << 8);
             se_vizdef = frame;
             goto quaddef;
