@@ -131,7 +131,9 @@ void update() {
             // fprintf(stderr, "animdef at %x\n", se_vizdef_addr);
             uint8_t elapsed_frames = (beebram[se_addr + 0] & 0b11111000) >> 3;
             elapsed_frames++;
-            beebram[se_addr + 0] = (beebram[se_addr + 0] & 0b00000111) | (elapsed_frames << 3);
+            // beebram[se_addr + 0] = (beebram[se_addr + 0] & 0b00000111) | (elapsed_frames << 3);
+            beebram[se_addr + 0] &= 0b00000111;
+            beebram[se_addr + 0] |= (elapsed_frames << 3);
         }
 
         se_base_offset += 2;
@@ -233,18 +235,22 @@ void drawStatents() {
             switch (current) {
             case 0:
                 period = (beebram[animdef + 1] & 0b11110000) >> 4;
+                // fprintf(stderr, "period 0: %d\n", period);
                 break;
 
             case 1:
                 period = (beebram[animdef + 1] & 0b00001111);
+                // fprintf(stderr, "period 1: %d\n", period);
                 break;
 
             case 2:
                 period = (beebram[animdef + 2] & 0b11110000) >> 4;
+                // fprintf(stderr, "period 2: %d\n", period);
                 break;
 
             case 3:
                 period = (beebram[animdef + 2] & 0b00001111);
+                // fprintf(stderr, "period 3: %d\n", period);
                 break;
             }
 
@@ -258,6 +264,9 @@ void drawStatents() {
                 beebram[animdef + 0] |= (current << 2);
 
                 se_elapsed_frames = 0;
+                // uint8_t se_elapsed_frames = (beebram[statent_addr + 0] & 0b11111000) >> 3;
+                beebram[statent_addr + 0] &= 0b00000111;
+                beebram[statent_addr + 0] |= (se_elapsed_frames << 3);
             }
 
             // pass the current frame to the quaddef routine
