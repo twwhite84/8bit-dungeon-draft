@@ -207,8 +207,8 @@ void init_entities() {
 
     // DEFS. I,J is in 26x40
     memcpy(&beebram[se_doorLockedM1], (uint8_t[]){
-                                          (SE_DOORLOCKED << 4) | 2,            // TYPE (4) | SIZE (4)
-                                          (0 << 6) | 1,                        // CURRENT_FRAME (2) | ROOMID (6)
+                                          (0 << 3) | SE_DOORLOCKED,            // ELAPSED_FRAMES (5) | TYPE (3)
+                                          (1 << 6) | 1,                        // LENGTH-1 (2) | ROOMID (6)
                                           4, 26,                               // I (8), J (8)
                                           qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF (16)
                                           6, 26,                               // I (8), J (8)
@@ -217,16 +217,16 @@ void init_entities() {
            (size_t)10);
 
     memcpy(&beebram[se_ballM1], (uint8_t[]){
-                                    (SE_PICKUP << 4) | 1,    // TYPE (4) | SIZE (4)
-                                    (0 << 6) | 1,            // CURRENT_FRAME (2) | ROOMID(6)
+                                    (0 << 3) | SE_PICKUP,    // ELAPSED_FRAMES (5) | TYPE (3)
+                                    (0 << 6) | 1,            // LENGTH-1 (2) | ROOMID (6)
                                     9, 8,                    // I (8), J (8)
                                     qBall & 0xFF, qBall >> 8 // PTR_VIZDEF (16)
                                 },
            (size_t)6);
 
     memcpy(&beebram[se_forceField01M1], (uint8_t[]){
-                                            (SE_DOORLOCKED << 4) | 3,             // TYPE (4) | SIZE (4)
-                                            (0 << 6) | 1,                         // CURRENT_FRAME (2) | ROOMID(6)
+                                            (0 << 3) | SE_DOORLOCKED,             // ELAPSED_FRAMES (5) | TYPE (3)
+                                            (2 << 6) | 1,                         // LENGTH-1 (2) | ROOMID (6)
                                             8, 4,                                 // I (8), J (8)
                                             aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
                                             8, 6,                                 // I (8), J (8)
@@ -247,7 +247,7 @@ void init_animdefs() {
 
     // defs:
     memcpy(&beebram[aFField_def], (uint8_t[]){
-                                      (2 << 6) | (0 << 2) | 0,                // FRAMES (2) | ELAPSED (4) | YOYO (2)
+                                      (1 << 5) | (0 << 2) | 0,                // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
                                       (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
                                       (0 << 4) | 0,                           // PERIOD_2 (4) | PERIOD_3 (4)
                                       qForceField0 & 0xFF, qForceField0 >> 8, // PTR_QUAD (16)
