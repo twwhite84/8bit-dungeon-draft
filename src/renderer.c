@@ -117,3 +117,181 @@ static void plot(int x, int y, int color, CanvasContext ctx) {
         break;
     }
 }
+
+/*----------------------------------------------------------------------------*/
+
+// draws static entities held in camera if redraw flag up
+void renderStaticEntities() {
+
+    uint16_t penbase;
+    uint16_t offbase;
+
+    // visit each static entity pointer and render if redraw flag up
+    uint16_t se_ptr = CAMERA + 0x0D;
+    uint8_t se_n = beebram[CAMERA + 0x0C];
+    for (int i = 0; i < se_n; i++) {
+
+        uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
+        se_ptr += 2;
+
+        // static entity fields
+        // 0 ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+        // 1 N_QUADS-1 (2) | ROOMID (6)
+        // 2 DATA (16)
+        // 3
+        // 4 I (8)
+        // 5 J (8)
+        // 6 PTR_VIZDEF (16)
+        // 7
+        // fields [4-7] repeat per quad
+
+        uint8_t se_redraw = beebram[se_addr + 0] & 0b00000001;
+        if (!se_redraw)
+            continue;
+
+        uint8_t se_elapsed_frames = (beebram[se_addr + 0] & 0b11111000) >> 3;
+        uint8_t se_nquads = ((beebram[se_addr + 1] & 0b11000000) >> 6) + 1;
+
+        for (int q = 0; q < se_nquads; q++) {
+            uint8_t se_TLi = beebram[(se_addr + 4) + (4 * q)]; // 4q because 4 fields per quad
+            uint8_t se_TLj = beebram[(se_addr + 5) + (4 * q)];
+            uint16_t se_vizdef = beebram[(se_addr + 6) + (4 * q)] + (beebram[(se_addr + 7) + (4 * q)] << 8);
+
+            // if not animated, jump ahead to directly rendering the quad
+            if (se_vizdef >= 0x3300 && se_vizdef < 0x3500) {
+                goto quaddef;
+            }
+
+        animdef:
+            // animdef fields
+            // 0 FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+            // 1 PERIOD_0 (4) | PERIOD_1 (4)
+            // 2 PERIOD_2 (4) | PERIOD_3 (4)
+            // 3 PTR_QUADDEF (16)
+            // 4
+            // fields [3-4] repeat per frame
+
+            uint16_t animdef = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
+            uint8_t frames = ((beebram[animdef + 0] & 0b11100000) >> 5) + 1;
+            uint8_t current = (beebram[animdef + 0] & 0b00011100) >> 2;
+            uint8_t yoyo = beebram[animdef + 0] & 0b00000011;
+            uint8_t period;
+
+            // fetch the period for the current frame index
+            switch (current) {
+            case 0:
+                period = (beebram[animdef + 1] & 0b11110000) >> 4;
+                break;
+
+            case 1:
+                period = (beebram[animdef + 1] & 0b00001111);
+                break;
+
+            case 2:
+                period = (beebram[animdef + 2] & 0b11110000) >> 4;
+                break;
+
+            case 3:
+                period = (beebram[animdef + 2] & 0b00001111);
+                break;
+            }
+
+            // if the elapsed frame count > period, cycle the frame and reset the elapsed
+            if (se_elapsed_frames > period) {
+                current++;
+                if (current == frames)
+                    current = 0;
+
+                beebram[animdef + 0] &= 0b11100011;
+                beebram[animdef + 0] |= (current << 2);
+
+                se_elapsed_frames = 0;
+                beebram[se_addr + 0] &= 0b00000111;
+                beebram[se_addr + 0] |= (se_elapsed_frames << 3);
+            }
+
+            // pass the current frame to the quaddef routine
+            uint16_t frame = beebram[(animdef + 3) + (2 * current)] + (beebram[(animdef + 3) + (2 * current) + 1] << 8);
+            se_vizdef = frame;
+            goto quaddef;
+
+        quaddef:
+            if (se_vizdef < (0x3300 + 48 * 8))
+                goto plaindef;
+
+        compdef:
+
+            // fetch corresponding background tiles and paint to offbuffer
+            offbase = OFFBUFFER;
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
+                    uint16_t bg_texture_addr = getTileTextureAddr(tileID);
+                    for (int s = 7; s >= 0; s--) {
+                        beebram[offbase + s] = beebram[bg_texture_addr + s];
+                    }
+                    offbase += 8;
+                }
+            }
+
+            // paint static entity textures into the offbuffer, compositing for a compdef
+            offbase = OFFBUFFER;
+            for (int i = 0; i < 4; i++) {
+                uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
+                uint16_t mask = texture + 32;
+                for (int s = 7; s >= 0; s--) {
+                    beebram[offbase + s] &= (beebram[mask + s] ^ 0xFF);
+                    beebram[offbase + s] |= (beebram[texture + s] & beebram[mask + s]);
+                }
+                offbase += 8;
+            }
+
+            // paint the offbuffer back to screen at static entity's coordinates
+            penbase = 0x5800 + se_TLi * 0x140 + se_TLj * 8;
+            for (int s = 7; s >= 0; s--) {
+                beebram[penbase + s] = beebram[OFFBUFFER + s];
+                beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
+                beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
+                beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
+            }
+
+            continue;
+
+        plaindef:
+
+            // fetch corresponding background tiles and paint to offbuffer
+            offbase = OFFBUFFER;
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
+                    uint16_t bg_texture_addr = getTileTextureAddr(tileID);
+                    for (int s = 7; s >= 0; s--) {
+                        beebram[offbase + s] = beebram[bg_texture_addr + s];
+                    }
+                    offbase += 8;
+                }
+            }
+
+            // paint static entity textures into the offbuffer, no compositing for a plaindef
+            offbase = OFFBUFFER;
+            for (int i = 0; i < 4; i++) {
+                uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
+                for (int s = 7; s >= 0; s--) {
+                    beebram[offbase + s] = beebram[texture + s];
+                }
+                offbase += 8;
+            }
+
+            // paint the offbuffer back to screen at static entity's coordinates
+            penbase = 0x5800 + se_TLi * 0x140 + se_TLj * 8;
+            for (int s = 7; s >= 0; s--) {
+                beebram[penbase + s] = beebram[OFFBUFFER + s];
+                beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
+                beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
+                beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
+            }
+
+            continue;
+        }
+    }
+}

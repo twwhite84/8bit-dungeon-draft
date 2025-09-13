@@ -24,6 +24,12 @@ enum {
     TILEMAPS = 0x3E10, // 32 maps
     LITEMAPS = 0x4F30, // 17 maps
 
+    SE_FRAMES5_TYPE3 = 0,
+    SE_LENGTH2_ROOM6 = 1,
+    SE_I8 = 3,
+    SE_J8 = 4,
+    SE_VIZDEF16 = 5,
+
     SE_DOORLOCKED = 0,
     SE_PICKUP = 1
 };

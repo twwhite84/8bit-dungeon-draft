@@ -15,7 +15,6 @@ void update();
 void render();
 
 void loadRoom(int roomID);
-void drawStatents();
 
 GameFlags gf;
 
@@ -55,19 +54,10 @@ int main(int argc, char *args[]) {
 void init() {
     init_ram();
     init_renderer();
+
     loadRoom(1);
-
     drawTilebuffer();
-    drawStatents();
-
-    // walk the objects and find which of them match current screen
-
-    // those which do match should be added to the camera
-
-    // the camera should have a redraw function which:
-    // -- draws the background
-    // -- draws objects
-    // -- draws sprites
+    renderStaticEntities();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -99,48 +89,54 @@ bool input() {
 void update() {
     if (gf.jump_to_L1) {
         fprintf(stderr, "\nJump to L0");
-        inflate_map(1);
+        loadRoom(1);
         drawTilebuffer();
-        drawStatents();
+        renderStaticEntities();
         gf.jump_to_L1 = false;
     }
     if (gf.jump_to_L2) {
         fprintf(stderr, "\nJump to L1");
-        inflate_map(2);
+        loadRoom(2);
         drawTilebuffer();
-        drawStatents();
+        renderStaticEntities();
         gf.jump_to_L2 = false;
     }
 
     // walk the camera buffer and update any static entities which have animated tiles
-    uint16_t camera_se_base = CAMERA + 0x0D;
-    uint8_t se_base_offset = 0;
+    uint8_t se_n = beebram[CAMERA + 0x0C];
+    uint16_t se_ptr = CAMERA + 0x0D;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < se_n; i++) {
+
+        // static entity fields
+        // 0: ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+        // 1: N_QUADS-1 (2) | ROOM_ID (6)
+        // 2: DATA (8 / lo)
+        // 3: DATA (8 / hi)
+        // 4: I (8)
+        // 5: J (8)
+        // 6: PTR_VIZDEF (16)
+        // [2...4] repeat
 
         // fetch the next static entity
-        uint16_t se_ptr_addr = camera_se_base + se_base_offset;
-        uint16_t se_addr = beebram[se_ptr_addr] + (beebram[se_ptr_addr + 1] << 8);
+        uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
+        se_ptr += 2;
 
-        // get its first vizdef (you only need one to determine the entire lot's type)
-        uint16_t se_vizdef_ptr_addr = se_addr + 4;
-        uint16_t se_vizdef_addr = beebram[se_vizdef_ptr_addr] + (beebram[se_vizdef_ptr_addr + 1] << 8);
+        // get its first vizdef (you only need one to determine if the entity is animated)
+        uint16_t se_vizdef_ptr = se_addr + 6;
+        uint16_t se_vizdef_addr = beebram[se_vizdef_ptr] + (beebram[se_vizdef_ptr + 1] << 8);
 
         // if vizdef is an animdef, update the static entity's elapsed frame count
         if (se_vizdef_addr >= ANIMDEFS) {
-            // fprintf(stderr, "animdef at %x\n", se_vizdef_addr);
             uint8_t elapsed_frames = (beebram[se_addr + 0] & 0b11111000) >> 3;
             elapsed_frames++;
-            // beebram[se_addr + 0] = (beebram[se_addr + 0] & 0b00000111) | (elapsed_frames << 3);
             beebram[se_addr + 0] &= 0b00000111;
             beebram[se_addr + 0] |= (elapsed_frames << 3);
         }
-
-        se_base_offset += 2;
     }
 
     // redraw the static entities
-    drawStatents();
+    renderStaticEntities();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -150,207 +146,38 @@ void render() { renderBeebram(); }
 /*----------------------------------------------------------------------------*/
 
 void loadRoom(int roomID) {
+    memset(&beebram[TILEBUFFER], 0, (size_t)(OFFBUFFER - TILEBUFFER));
     inflate_map(roomID);
 
-    // static entities offsets
-    // 0: ELAPSED_FRAMES (5) | TYPE (3)
-    // 1: LENGTH-1 (2) | ROOM_ID (6)
-    // 2: I (8)
-    // 3: J (8)
-    // 4: PTR_VIZDEF (16)
-    uint8_t statent_idx = 0;
-    for (uint16_t i = STATENTS; i < (STATENTS + 64); i += 2) {
-        uint16_t ptr_statent = beebram[i] + (beebram[i + 1] << 8);
+    // static entity fields
+    // 0: ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+    // 1: N_QUADS-1 (2) | ROOM_ID (6)
+    // 2: DATA (8 / lo)
+    // 3: DATA (8 / hi)
+    // 4: I (8)
+    // 5: J (8)
+    // 6: PTR_VIZDEF (16)
+    // [2...4] repeat
 
-        uint8_t statent_roomID = (beebram[ptr_statent + 1] & 0b00111111);
-        if (statent_roomID == roomID) {
+    // find the static entities for this room and copy their pointers into camera
+    uint8_t se_count = 0;
+    uint16_t se_ptr = STATENTS, camera_se_ptr_base = CAMERA + 0x0D;
+    for (int i = 0; i < 32; i++) {
+        uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
+        se_ptr += 2;
+
+        uint8_t se_roomID = (beebram[se_addr + 1] & 0b00111111);
+        if (se_roomID == roomID) {
             // add the static entity to the camera
-            beebram[CAMERA + 0x0D + 2 * statent_idx] = ptr_statent & 0xFF;
-            beebram[CAMERA + 0x0D + 2 * statent_idx + 1] = ptr_statent >> 8;
-            statent_idx++;
-            if (statent_idx > 4)
+            uint16_t camera_se_ptr = camera_se_ptr_base + (2 * se_count);
+            beebram[camera_se_ptr + 0] = se_addr & 0xFF; // lo
+            beebram[camera_se_ptr + 1] = se_addr >> 8;   // hi
+            se_count++;
+            if (se_count > 4)
                 break;
         }
-
-        continue;
     }
+    beebram[CAMERA + 0x0C] = se_count;
 }
 
 /*----------------------------------------------------------------------------*/
-
-void drawStatents() {
-
-    uint16_t penbase;
-    uint16_t offbase;
-
-    // walk each of the camera's static entity slots
-    for (uint16_t i = (CAMERA + 0x0D); i < ((CAMERA + 0x0D) + 10); i += 2) {
-
-        uint16_t statent_addr = beebram[i] + (beebram[i + 1] << 8);
-        if (statent_addr == 0)
-            break;
-
-        // static entity fields
-        // ELAPSED_FRAMES (5) | TYPE (3)
-        // LENGTH-1 (2) | ROOM_ID (6)
-        // I (8)
-        // J (8)
-        // PTR_VIZDEF (16)
-        uint8_t se_elapsed_frames = (beebram[statent_addr + 0] & 0b11111000) >> 3;
-        uint8_t se_type = beebram[statent_addr + 0] & 0b00000111;
-        uint8_t se_length = ((beebram[statent_addr + 1] & 0b11000000) >> 6) + 1;
-        uint8_t se_roomID = beebram[statent_addr + 1] & 0b00111111;
-
-        for (int t = 0; t < se_length; t++) {
-            uint8_t se_TLi = beebram[(statent_addr + 2) + (4 * t)];
-            uint8_t se_TLj = beebram[(statent_addr + 3) + (4 * t)];
-            uint16_t se_vizdef = beebram[(statent_addr + 4) + (4 * t)] + (beebram[(statent_addr + 5) + (4 * t)] << 8);
-
-            if (se_vizdef >= 0x3300 && se_vizdef < 0x3500) {
-                goto quaddef;
-            }
-
-            else if (se_vizdef >= 0x3500 && se_vizdef < 0x3540) {
-                goto animdef;
-            }
-
-            else {
-                continue;
-            }
-
-        animdef:
-            // animdef fields
-            // FRAMES (3) | CURRENT (3) | YOYO (2)
-            // PERIOD_0 (4) | PERIOD_1 (4)
-            // PERIOD_2 (4) | PERIOD_3 (4)
-            // PTR_QUADDEF_x (16)
-
-            uint16_t animdef = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
-            uint8_t frames = ((beebram[animdef + 0] & 0b11100000) >> 5) + 1;
-            uint8_t current = (beebram[animdef + 0] & 0b00011100) >> 2;
-            uint8_t yoyo = beebram[animdef + 0] & 0b00000011;
-            uint8_t period;
-
-            // fetch the period for the current frame index
-            switch (current) {
-            case 0:
-                period = (beebram[animdef + 1] & 0b11110000) >> 4;
-                // fprintf(stderr, "period 0: %d\n", period);
-                break;
-
-            case 1:
-                period = (beebram[animdef + 1] & 0b00001111);
-                // fprintf(stderr, "period 1: %d\n", period);
-                break;
-
-            case 2:
-                period = (beebram[animdef + 2] & 0b11110000) >> 4;
-                // fprintf(stderr, "period 2: %d\n", period);
-                break;
-
-            case 3:
-                period = (beebram[animdef + 2] & 0b00001111);
-                // fprintf(stderr, "period 3: %d\n", period);
-                break;
-            }
-
-            // if the elapsed frame count > period, cycle the frame and reset the elapsed
-            if (se_elapsed_frames > period) {
-                current++;
-                if (current == frames)
-                    current = 0;
-
-                beebram[animdef + 0] &= 0b11100011;
-                beebram[animdef + 0] |= (current << 2);
-
-                se_elapsed_frames = 0;
-                // uint8_t se_elapsed_frames = (beebram[statent_addr + 0] & 0b11111000) >> 3;
-                beebram[statent_addr + 0] &= 0b00000111;
-                beebram[statent_addr + 0] |= (se_elapsed_frames << 3);
-            }
-
-            // pass the current frame to the quaddef routine
-            uint16_t frame = beebram[(animdef + 3) + (2 * current)] + (beebram[(animdef + 3) + (2 * current) + 1] << 8);
-            se_vizdef = frame;
-            goto quaddef;
-
-        quaddef:
-            if (se_vizdef < (0x3300 + 48 * 8))
-                goto plaindef;
-
-        compdef:
-
-            // fetch corresponding background tiles and paint to offbuffer
-            offbase = OFFBUFFER;
-            for (int i = 0; i < 2; i++) {
-                for (int j = 0; j < 2; j++) {
-                    uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
-                    uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-                    for (int s = 7; s >= 0; s--) {
-                        beebram[offbase + s] = beebram[bg_texture_addr + s];
-                    }
-                    offbase += 8;
-                }
-            }
-
-            // paint static entity textures into the offbuffer, compositing for a compdef
-            offbase = OFFBUFFER;
-            for (int i = 0; i < 4; i++) {
-                uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
-                uint16_t mask = texture + 32;
-                for (int s = 7; s >= 0; s--) {
-                    beebram[offbase + s] &= (beebram[mask + s] ^ 0xFF);
-                    beebram[offbase + s] |= (beebram[texture + s] & beebram[mask + s]);
-                }
-                offbase += 8;
-            }
-
-            // paint the offbuffer back to screen at static entity's coordinates
-            penbase = 0x5800 + se_TLi * 0x140 + se_TLj * 8;
-            for (int s = 7; s >= 0; s--) {
-                beebram[penbase + s] = beebram[OFFBUFFER + s];
-                beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
-                beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
-                beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
-            }
-
-            continue;
-
-        plaindef:
-
-            // fetch corresponding background tiles and paint to offbuffer
-            offbase = OFFBUFFER;
-            for (int i = 0; i < 2; i++) {
-                for (int j = 0; j < 2; j++) {
-                    uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
-                    uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-                    for (int s = 7; s >= 0; s--) {
-                        beebram[offbase + s] = beebram[bg_texture_addr + s];
-                    }
-                    offbase += 8;
-                }
-            }
-
-            // paint static entity textures into the offbuffer, no compositing for a plaindef
-            offbase = OFFBUFFER;
-            for (int i = 0; i < 4; i++) {
-                uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
-                for (int s = 7; s >= 0; s--) {
-                    beebram[offbase + s] = beebram[texture + s];
-                }
-                offbase += 8;
-            }
-
-            // paint the offbuffer back to screen at static entity's coordinates
-            penbase = 0x5800 + se_TLi * 0x140 + se_TLj * 8;
-            for (int s = 7; s >= 0; s--) {
-                beebram[penbase + s] = beebram[OFFBUFFER + s];
-                beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
-                beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
-                beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
-            }
-
-            continue;
-        }
-    }
-}

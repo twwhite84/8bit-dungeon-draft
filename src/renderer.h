@@ -15,5 +15,6 @@ void init_renderer();
 void drawTilebuffer();
 void eraseTile(uint8_t i, uint8_t j);
 uint16_t getTileTextureAddr(uint8_t tid);
+void renderStaticEntities();
 
 #endif

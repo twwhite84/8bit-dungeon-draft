@@ -187,54 +187,54 @@ static void init_tilemaps() {
 /*----------------------------------------------------------------------------*/
 
 void init_entities() {
-    // STATIC ENTITIES (0x40 is index length, then + previous entity size)
-    // static const int seDoorLockedM1 = STATENTS + 0x40 + 0;
-    // static const int seBallM1 = STATENTS + 0x40 + 6;
+    // (I,J) is 26x40 here, not 13x20
+    uint16_t se_ptr = STATENTS, se_def = STATENTS + 0x40;
 
-    // STATIC ENTITY TYPES
-    // static const int DOOR_LOCKED = 0;
-    // static const int PICKUP = 1;
+    // map01: locked door
+    memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
+    memcpy(&beebram[se_def], (uint8_t[]){
+                                 (0 << 3) | (SE_DOORLOCKED << 1) | 1, // ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+                                 (1 << 6) | 1,                        // N_QUADS-1 (2) | ROOMID (6)
+                                 0, 0,                                // DATA (16)
+                                 4, 26,                               // I (8), J (8)
+                                 qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF (16)
+                                 6, 26,                               // I (8), J (8)
+                                 qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF (16)
+                             },
+           (size_t)12);
+    se_ptr += 2;
+    se_def += 12;
 
-    // INDEX
-    uint16_t se_doorLockedM1 = STATENTS + 0x40;
-    memcpy(&beebram[STATENTS + 0 * 2], (uint8_t[]){se_doorLockedM1 & 0xFF, se_doorLockedM1 >> 8}, 2);
+    // map01: ball pickup
+    memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
+    memcpy(&beebram[se_def], (uint8_t[]){
+                                 (0 << 3) | (SE_PICKUP << 1) | 1, // ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+                                 (0 << 6) | 1,                    // N_QUADS-1 (2) | ROOMID (6)
+                                 0, 0,                            // DATA (16)
+                                 10, 8,                           // I (8), J (8)
+                                 qBall & 0xFF, qBall >> 8         // PTR_VIZDEF (16)
+                             },
+           (size_t)8);
+    se_ptr += 2;
+    se_def += 8;
 
-    uint16_t se_ballM1 = se_doorLockedM1 + 10;
-    memcpy(&beebram[STATENTS + 1 * 2], (uint8_t[]){se_ballM1 & 0xFF, se_ballM1 >> 8}, 2);
+    // map01: force field
+    memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
+    memcpy(&beebram[se_def], (uint8_t[]){
+                                 (0 << 3) | (SE_DOORLOCKED << 1) | 1,  // ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+                                 (2 << 6) | 1,                         // N_QUADS (2) | ROOMID (6)
+                                 0, 0,                                 // DATA (16)
+                                 8, 4,                                 // I (8), J (8)
+                                 aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
+                                 8, 6,                                 // I (8), J (8)
+                                 aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
+                                 8, 8,                                 // I (8), J (8)
+                                 aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
+                             },
+           (size_t)16);
+    se_ptr += 2;
+    se_def += 16;
 
-    uint16_t se_forceField01M1 = se_ballM1 + 6;
-    memcpy(&beebram[STATENTS + 2 * 2], (uint8_t[]){se_forceField01M1 & 0xFF, se_forceField01M1 >> 8}, 2);
-
-    // DEFS. I,J is in 26x40
-    memcpy(&beebram[se_doorLockedM1], (uint8_t[]){
-                                          (0 << 3) | SE_DOORLOCKED,            // ELAPSED_FRAMES (5) | TYPE (3)
-                                          (1 << 6) | 1,                        // LENGTH-1 (2) | ROOMID (6)
-                                          4, 26,                               // I (8), J (8)
-                                          qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF (16)
-                                          6, 26,                               // I (8), J (8)
-                                          qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF (16)
-                                      },
-           (size_t)10);
-
-    memcpy(&beebram[se_ballM1], (uint8_t[]){
-                                    (0 << 3) | SE_PICKUP,    // ELAPSED_FRAMES (5) | TYPE (3)
-                                    (0 << 6) | 1,            // LENGTH-1 (2) | ROOMID (6)
-                                    10, 8,                   // I (8), J (8)
-                                    qBall & 0xFF, qBall >> 8 // PTR_VIZDEF (16)
-                                },
-           (size_t)6);
-
-    memcpy(&beebram[se_forceField01M1], (uint8_t[]){
-                                            (0 << 3) | SE_DOORLOCKED,             // ELAPSED_FRAMES (5) | TYPE (3)
-                                            (2 << 6) | 1,                         // LENGTH-1 (2) | ROOMID (6)
-                                            8, 4,                                 // I (8), J (8)
-                                            aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
-                                            8, 6,                                 // I (8), J (8)
-                                            aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
-                                            8, 8,                                 // I (8), J (8)
-                                            aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
-                                        },
-           (size_t)14);
     return;
 }
 

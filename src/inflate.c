@@ -12,87 +12,6 @@ static uint16_t mapIDtoAddr(uint8_t id);
 
 /*----------------------------------------------------------------------------*/
 
-/* // [npacked, mode, bp, bp, ...]
-// this function wont just be for tilemaps, so use src and dest addresses
-static void inflate(uint16_t src, uint16_t dest) {
-  uint16_t outidx = 0;
-  uint8_t inidx = 2, a = 0, b = 0, outbyte = 0, seq = 0;
-  bool newpair = true;
-
-  uint8_t npacked = beebram[src];
-  uint8_t mode = beebram[src + 1];
-
-  while (inidx < npacked) {
-    switch (seq) {
-    case 0:
-      outbyte = (beebram[src + inidx] >> 2) & 0x3F;
-      if (newpair) {
-        a = outbyte;
-        newpair = false;
-      } else {
-        b = outbyte;
-        newpair = true;
-      }
-      seq = 1;
-      break;
-
-    case 1:
-      outbyte =
-          (beebram[src + inidx] << 4 | beebram[src + inidx + 1] >> 4) & 0x3F;
-      inidx++;
-      if (newpair) {
-        a = outbyte;
-        newpair = false;
-      } else {
-        b = outbyte;
-        newpair = true;
-      }
-      seq = 2;
-      break;
-
-    case 2:
-      outbyte =
-          (beebram[src + inidx] << 2 | beebram[src + inidx + 1] >> 6) & 0x3F;
-      inidx++;
-      if (newpair) {
-        a = outbyte;
-        newpair = false;
-      } else {
-        b = outbyte;
-        newpair = true;
-      }
-      seq = 3;
-      break;
-
-    case 3:
-      outbyte = beebram[src + inidx++] & 0x3F;
-      if (newpair) {
-        a = outbyte;
-        newpair = false;
-      } else {
-        b = outbyte;
-        newpair = true;
-      }
-      seq = 0;
-      break;
-    }
-
-    // a is value, b is run
-    if (newpair && mode == TILEMAP_RLE) {
-      while (b > 0) {
-        upsize(outidx++, a, dest);
-        b--;
-      }
-    }
-
-    // a is value, b is value
-    if (newpair && mode == TILEMAP) {
-      upsize(outidx++, a, dest);
-      upsize(outidx++, b, dest);
-    }
-  }
-} */
-
 // [npacked, mode, bp, bp, ...]
 // this function wont just be for tilemaps, so use src and dest addresses
 static void inflate(uint16_t src, uint16_t dest) {
@@ -227,7 +146,6 @@ static void inflate(uint16_t src, uint16_t dest) {
 
     // hack fix for when last value doesn't get filled in, seems to work
     while (outidx < (STORED_ROWS * STORED_COLUMNS) && mode == TILEMAP_RLE) {
-        // beebram[dest + outidx++] = a;
         upsize(outidx++, a, dest);
     }
 }
@@ -255,7 +173,6 @@ static void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
 /*----------------------------------------------------------------------------*/
 
 static uint16_t mapIDtoAddr(uint8_t id) {
-    // plug in the id, get the map address back
     uint16_t pointer = TILEMAPS + 2 * (id - 1);
     uint16_t map_addr = beebram[pointer] + (uint16_t)(beebram[pointer + 1] << 8);
     return map_addr;
@@ -263,4 +180,5 @@ static uint16_t mapIDtoAddr(uint8_t id) {
 
 /*----------------------------------------------------------------------------*/
 
+// expand the given room's stored 13x20 map into the 26x40 tilebuffer
 void inflate_map(uint8_t mapID) { inflate(mapIDtoAddr(mapID), TILEBUFFER); }
