@@ -188,7 +188,7 @@ static void init_tilemaps() {
 
 void init_entities() {
     // (I,J) is 26x40 here, not 13x20
-    uint16_t se_ptr = STATENTS, se_def = STATENTS + 0x40;
+    uint16_t se_ptr = STATENTS, se_def = STATENTS + 0x60;
 
     // map01: locked door
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);

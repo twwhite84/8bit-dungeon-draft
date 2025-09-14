@@ -158,7 +158,7 @@ void renderStaticEntities() {
             uint16_t se_vizdef = beebram[(se_addr + 6) + (4 * q)] + (beebram[(se_addr + 7) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
-            if (se_vizdef >= 0x3300 && se_vizdef < 0x3500) {
+            if (se_vizdef >= QUADDEFS && se_vizdef < ANIMDEFS) {
                 goto quaddef;
             }
 
@@ -216,7 +216,7 @@ void renderStaticEntities() {
             goto quaddef;
 
         quaddef:
-            if (se_vizdef < (0x3300 + 48 * 8))
+            if (se_vizdef < (QUADDEFS + 48 * 8))
                 goto plaindef;
 
         compdef:
