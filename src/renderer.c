@@ -141,7 +141,6 @@ void renderStaticEntities() {
         else
             beebram[se_addr + SE_REDRAW1_DATA7] &= 0b01111111;
 
-        uint8_t se_elapsed_frames = (beebram[se_addr + SE_ELAPSED5_TYPE3] & 0b11111000) >> 3;
         uint8_t se_nquads = ((beebram[se_addr + SE_NQUADS2_ROOMID6] & 0b11000000) >> 6) + 1;
         for (int q = 0; q < se_nquads; q++) {
             uint8_t se_TLi = beebram[(se_addr + SE_I) + (4 * q)]; // 4q because 4 fields per quad
@@ -154,48 +153,8 @@ void renderStaticEntities() {
             }
 
         animdef:
-            beebram[se_addr + SE_REDRAW1_DATA7] |= 0b10000000; // animdefs keep redraw flag up
-
             uint16_t animdef = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
-            uint8_t frames = ((beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b11100000) >> 5) + 1;
             uint8_t current = (beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
-            uint8_t yoyo = beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00000011;
-            uint8_t period;
-
-            // fetch the period for the current frame index
-            switch (current) {
-            case 0:
-                period = (beebram[animdef + AD_PERIOD0_PERIOD1] & 0b11110000) >> 4;
-                break;
-
-            case 1:
-                period = (beebram[animdef + AD_PERIOD0_PERIOD1] & 0b00001111);
-                break;
-
-            case 2:
-                period = (beebram[animdef + AD_PERIOD2_PERIOD3] & 0b11110000) >> 4;
-                break;
-
-            case 3:
-                period = (beebram[animdef + AD_PERIOD2_PERIOD3] & 0b00001111);
-                break;
-            }
-
-            // if the elapsed frame count > period, cycle the frame and reset the elapsed
-            if (se_elapsed_frames > period) {
-                current++;
-                if (current == frames)
-                    current = 0;
-
-                // write current
-                beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11100011;
-                beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] |= (current << 2);
-
-                // write elapsed frames
-                se_elapsed_frames = 0;
-                beebram[se_addr + SE_ELAPSED5_TYPE3] &= 0b00000111;
-                beebram[se_addr + SE_ELAPSED5_TYPE3] |= (se_elapsed_frames << 3);
-            }
 
             // pass the current frame to the quaddef routine
             se_vizdef = beebram[(animdef + AD_PQUADDEF_LO) + (2 * current)];
