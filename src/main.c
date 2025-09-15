@@ -107,31 +107,19 @@ void update() {
     uint16_t se_ptr = CAMERA + 0x0D;
 
     for (int i = 0; i < se_n; i++) {
-
-        // static entity fields
-        // 0: ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
-        // 1: N_QUADS-1 (2) | ROOM_ID (6)
-        // 2: DATA (8 / lo)
-        // 3: DATA (8 / hi)
-        // 4: I (8)
-        // 5: J (8)
-        // 6: PTR_VIZDEF (16)
-        // [2...4] repeat
-
         // fetch the next static entity
         uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
         se_ptr += 2;
 
         // get its first vizdef (you only need one to determine if the entity is animated)
-        uint16_t se_vizdef_ptr = se_addr + 6;
-        uint16_t se_vizdef_addr = beebram[se_vizdef_ptr] + (beebram[se_vizdef_ptr + 1] << 8);
+        uint16_t se_vizdef_addr = beebram[se_addr + SE_PVIZDEF_LO] + (beebram[se_addr + SE_PVIZDEF_HI] << 8);
 
         // if vizdef is an animdef, update the static entity's elapsed frame count
         if (se_vizdef_addr >= ANIMDEFS) {
-            uint8_t elapsed_frames = (beebram[se_addr + 0] & 0b11111000) >> 3;
+            uint8_t elapsed_frames = (beebram[se_addr + SE_ELAPSED5_TYPE3] & 0b11111000) >> 3;
             elapsed_frames++;
-            beebram[se_addr + 0] &= 0b00000111;
-            beebram[se_addr + 0] |= (elapsed_frames << 3);
+            beebram[se_addr + SE_ELAPSED5_TYPE3] &= 0b00000111;
+            beebram[se_addr + SE_ELAPSED5_TYPE3] |= (elapsed_frames << 3);
         }
     }
 
@@ -166,12 +154,16 @@ void loadRoom(int roomID) {
         uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
         se_ptr += 2;
 
-        uint8_t se_roomID = (beebram[se_addr + 1] & 0b00111111);
+        uint8_t se_roomID = (beebram[se_addr + SE_NQUADS2_ROOMID6] & 0b00111111);
         if (se_roomID == roomID) {
             // add the static entity to the camera
             uint16_t camera_se_ptr = camera_se_ptr_base + (2 * se_count);
             beebram[camera_se_ptr + 0] = se_addr & 0xFF; // lo
             beebram[camera_se_ptr + 1] = se_addr >> 8;   // hi
+
+            // its redraw flag should be raised on insert
+            beebram[se_addr + SE_REDRAW1_DATA7] |= 0b10000000;
+
             se_count++;
             if (se_count > 4)
                 break;

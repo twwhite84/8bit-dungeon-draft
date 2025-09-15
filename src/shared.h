@@ -23,14 +23,23 @@ enum {
     TILEMAPS = 0x3900,   // 32 maps
     LITEMAPS = 0x4E00,   // 17 maps
 
-    SE_FRAMES5_TYPE3 = 0,
-    SE_LENGTH2_ROOM6 = 1,
-    SE_I8 = 3,
-    SE_J8 = 4,
-    SE_VIZDEF16 = 5,
+    SE_ELAPSED5_TYPE3 = 0,
+    SE_NQUADS2_ROOMID6 = 1,
+    SE_REDRAW1_DATA7 = 2,
+    SE_DATA24 = 3,
+    SE_I = 6,
+    SE_J = 7,
+    SE_PVIZDEF_LO = 8,
+    SE_PVIZDEF_HI = 9,
 
-    SE_DOORLOCKED = 0,
-    SE_PICKUP = 1
+    AD_FRAMES3_CURRENT3_YOYO2 = 0,
+    AD_PERIOD0_PERIOD1 = 1,
+    AD_PERIOD2_PERIOD3 = 2,
+    AD_PQUADDEF_LO = 3,
+    AD_PQUADDEF_HI = 4,
+
+    SETYPE_DOORLOCKED = 0,
+    SETYPE_PICKUP = 1
 };
 
 typedef struct {

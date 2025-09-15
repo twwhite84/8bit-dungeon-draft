@@ -126,36 +126,27 @@ void renderStaticEntities() {
     uint16_t penbase;
     uint16_t offbase;
 
-    // visit each static entity pointer and render if redraw flag up
     uint16_t se_ptr = CAMERA + 0x0D;
     uint8_t se_n = beebram[CAMERA + 0x0C];
     for (int i = 0; i < se_n; i++) {
 
+        // get the entity
         uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
         se_ptr += 2;
 
-        // static entity fields
-        // 0 ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
-        // 1 N_QUADS-1 (2) | ROOMID (6)
-        // 2 DATA (16)
-        // 3
-        // 4 I (8)
-        // 5 J (8)
-        // 6 PTR_VIZDEF (16)
-        // 7
-        // fields [4-7] repeat per quad
-
-        uint8_t se_redraw = beebram[se_addr + 0] & 0b00000001;
+        // skip entity if redraw flag down, otherwise lower flag to skip in future calls
+        uint8_t se_redraw = (beebram[se_addr + SE_REDRAW1_DATA7] & 0b10000000) >> 7;
         if (!se_redraw)
             continue;
+        else
+            beebram[se_addr + SE_REDRAW1_DATA7] &= 0b01111111;
 
-        uint8_t se_elapsed_frames = (beebram[se_addr + 0] & 0b11111000) >> 3;
-        uint8_t se_nquads = ((beebram[se_addr + 1] & 0b11000000) >> 6) + 1;
-
+        uint8_t se_elapsed_frames = (beebram[se_addr + SE_ELAPSED5_TYPE3] & 0b11111000) >> 3;
+        uint8_t se_nquads = ((beebram[se_addr + SE_NQUADS2_ROOMID6] & 0b11000000) >> 6) + 1;
         for (int q = 0; q < se_nquads; q++) {
-            uint8_t se_TLi = beebram[(se_addr + 4) + (4 * q)]; // 4q because 4 fields per quad
-            uint8_t se_TLj = beebram[(se_addr + 5) + (4 * q)];
-            uint16_t se_vizdef = beebram[(se_addr + 6) + (4 * q)] + (beebram[(se_addr + 7) + (4 * q)] << 8);
+            uint8_t se_TLi = beebram[(se_addr + SE_I) + (4 * q)]; // 4q because 4 fields per quad
+            uint8_t se_TLj = beebram[(se_addr + SE_J) + (4 * q)];
+            uint16_t se_vizdef = beebram[(se_addr + SE_PVIZDEF_LO) + (4 * q)] + (beebram[(se_addr + SE_PVIZDEF_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
             if (se_vizdef >= QUADDEFS && se_vizdef < ANIMDEFS) {
@@ -163,36 +154,30 @@ void renderStaticEntities() {
             }
 
         animdef:
-            // animdef fields
-            // 0 FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-            // 1 PERIOD_0 (4) | PERIOD_1 (4)
-            // 2 PERIOD_2 (4) | PERIOD_3 (4)
-            // 3 PTR_QUADDEF (16)
-            // 4
-            // fields [3-4] repeat per frame
+            beebram[se_addr + SE_REDRAW1_DATA7] |= 0b10000000; // animdefs keep redraw flag up
 
             uint16_t animdef = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
-            uint8_t frames = ((beebram[animdef + 0] & 0b11100000) >> 5) + 1;
-            uint8_t current = (beebram[animdef + 0] & 0b00011100) >> 2;
-            uint8_t yoyo = beebram[animdef + 0] & 0b00000011;
+            uint8_t frames = ((beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b11100000) >> 5) + 1;
+            uint8_t current = (beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
+            uint8_t yoyo = beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00000011;
             uint8_t period;
 
             // fetch the period for the current frame index
             switch (current) {
             case 0:
-                period = (beebram[animdef + 1] & 0b11110000) >> 4;
+                period = (beebram[animdef + AD_PERIOD0_PERIOD1] & 0b11110000) >> 4;
                 break;
 
             case 1:
-                period = (beebram[animdef + 1] & 0b00001111);
+                period = (beebram[animdef + AD_PERIOD0_PERIOD1] & 0b00001111);
                 break;
 
             case 2:
-                period = (beebram[animdef + 2] & 0b11110000) >> 4;
+                period = (beebram[animdef + AD_PERIOD2_PERIOD3] & 0b11110000) >> 4;
                 break;
 
             case 3:
-                period = (beebram[animdef + 2] & 0b00001111);
+                period = (beebram[animdef + AD_PERIOD2_PERIOD3] & 0b00001111);
                 break;
             }
 
@@ -202,17 +187,19 @@ void renderStaticEntities() {
                 if (current == frames)
                     current = 0;
 
-                beebram[animdef + 0] &= 0b11100011;
-                beebram[animdef + 0] |= (current << 2);
+                // write current
+                beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11100011;
+                beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] |= (current << 2);
 
+                // write elapsed frames
                 se_elapsed_frames = 0;
-                beebram[se_addr + 0] &= 0b00000111;
-                beebram[se_addr + 0] |= (se_elapsed_frames << 3);
+                beebram[se_addr + SE_ELAPSED5_TYPE3] &= 0b00000111;
+                beebram[se_addr + SE_ELAPSED5_TYPE3] |= (se_elapsed_frames << 3);
             }
 
             // pass the current frame to the quaddef routine
-            uint16_t frame = beebram[(animdef + 3) + (2 * current)] + (beebram[(animdef + 3) + (2 * current) + 1] << 8);
-            se_vizdef = frame;
+            se_vizdef = beebram[(animdef + AD_PQUADDEF_LO) + (2 * current)];
+            se_vizdef |= (beebram[(animdef + AD_PQUADDEF_HI) + (2 * current)] << 8);
             goto quaddef;
 
         quaddef:

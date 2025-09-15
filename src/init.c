@@ -193,37 +193,40 @@ void init_entities() {
     // map01: locked door
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
-                                 (0 << 3) | (SE_DOORLOCKED << 1) | 1, // ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
+                                 (0 << 3) | SETYPE_DOORLOCKED,        // ELAPSED_FRAMES (5) | TYPE (3)
                                  (1 << 6) | 1,                        // N_QUADS-1 (2) | ROOMID (6)
-                                 0, 0,                                // DATA (16)
+                                 (0 << 7) | 0,                        // REDRAW (1) | DATA (7)
+                                 0, 0, 0,                             // DATA (24)
                                  4, 26,                               // I (8), J (8)
                                  qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF (16)
                                  6, 26,                               // I (8), J (8)
                                  qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF (16)
                              },
-           (size_t)12);
+           (size_t)14);
     se_ptr += 2;
-    se_def += 12;
+    se_def += 14;
 
     // map01: ball pickup
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
-                                 (0 << 3) | (SE_PICKUP << 1) | 1, // ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
-                                 (0 << 6) | 1,                    // N_QUADS-1 (2) | ROOMID (6)
-                                 0, 0,                            // DATA (16)
-                                 10, 8,                           // I (8), J (8)
-                                 qBall & 0xFF, qBall >> 8         // PTR_VIZDEF (16)
+                                 (0 << 3) | SETYPE_PICKUP, // ELAPSED_FRAMES (5) | TYPE (3)
+                                 (0 << 6) | 1,             // N_QUADS-1 (2) | ROOMID (6)
+                                 (0 << 7) | 0,             // REDRAW (1) | DATA (7)
+                                 0, 0, 0,                  // DATA (24)
+                                 10, 8,                    // I (8), J (8)
+                                 qBall & 0xFF, qBall >> 8  // PTR_VIZDEF (16)
                              },
-           (size_t)8);
+           (size_t)10);
     se_ptr += 2;
-    se_def += 8;
+    se_def += 10;
 
     // map01: force field
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
-                                 (0 << 3) | (SE_DOORLOCKED << 1) | 1,  // ELAPSED_FRAMES (5) | TYPE (2) | REDRAW (1)
-                                 (2 << 6) | 1,                         // N_QUADS (2) | ROOMID (6)
-                                 0, 0,                                 // DATA (16)
+                                 (0 << 3) | SETYPE_DOORLOCKED,         // ELAPSED_FRAMES (5) | TYPE (3)
+                                 (2 << 6) | 1,                         // N_QUADS-1 (2) | ROOMID (6)
+                                 (0 << 7) | 0,                         // REDRAW (1) | DATA (7)
+                                 0, 0, 0,                              // DATA (24)
                                  8, 4,                                 // I (8), J (8)
                                  aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
                                  8, 6,                                 // I (8), J (8)
@@ -231,9 +234,9 @@ void init_entities() {
                                  8, 8,                                 // I (8), J (8)
                                  aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
                              },
-           (size_t)16);
+           (size_t)18);
     se_ptr += 2;
-    se_def += 16;
+    se_def += 18;
 
     return;
 }
