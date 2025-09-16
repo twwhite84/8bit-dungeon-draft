@@ -42,6 +42,7 @@ static const int tForceField01 = TEXTURES + 8 * 27;
 static const int tForceField10 = TEXTURES + 8 * 28; // Q35
 static const int tForceField11 = TEXTURES + 8 * 29;
 
+// def-mask pairs
 static const int tBall0 = TEXTURES + 8 * 30; // Q48
 static const int tBall1 = TEXTURES + 8 * 31;
 static const int tBall2 = TEXTURES + 8 * 32;
@@ -50,6 +51,11 @@ static const int tBallMask0 = TEXTURES + 8 * 34; // Q49
 static const int tBallMask1 = TEXTURES + 8 * 35;
 static const int tBallMask2 = TEXTURES + 8 * 36;
 static const int tBallMask3 = TEXTURES + 8 * 37;
+
+static const int tDogIdleD0 = TEXTURES + 8 * 38; // Q50
+static const int tDogIdleD2 = TEXTURES + 8 * 39;
+static const int tDogIdleMaskD0 = TEXTURES + 8 * 40; // Q51
+static const int tDogIdleMaskD2 = TEXTURES + 8 * 41;
 
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
@@ -70,6 +76,8 @@ static const int qForceField1 = QUADDEFS + 8 * 35;
 // these quads correspond to 48-63 composite pairs (8 of these)
 static const int qBall = QUADDEFS + 8 * 48;
 static const int qBallMask = QUADDEFS + 8 * 49;
+static const int qDogIdleD = QUADDEFS + 8 * 50;
+static const int qDogIdleDMask = QUADDEFS + 8 * 51;
 
 // ANIMDEFS
 static const int aFField_idx = ANIMDEFS + 2 * 0;
@@ -132,6 +140,14 @@ static void init_textures() {
     memcpy(&beebram[tBallMask1], (uint8_t[]){0x00, 0x00, 0xC0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
     memcpy(&beebram[tBallMask2], (uint8_t[]){0x3F, 0x3F, 0x1F, 0x1F, 0x0F, 0x03, 0x00, 0x00}, 8);
     memcpy(&beebram[tBallMask3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xF8, 0xF0, 0xC0, 0x00, 0x00}, 8);
+    memcpy(&beebram[tDogIdleD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
+    memcpy(&beebram[tDogIdleD2], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
+    memcpy(&beebram[tDogIdleD0 + 16], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
+    memcpy(&beebram[tDogIdleD2 + 16], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
+    memcpy(&beebram[tDogIdleMaskD0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
+    memcpy(&beebram[tDogIdleMaskD2], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogIdleMaskD0 + 16], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
+    memcpy(&beebram[tDogIdleMaskD2 + 16], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -150,6 +166,8 @@ static void init_quads() {
     memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, tBallMask1, tBallMask2, tBallMask3}, 8);
     memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField00, tForceField01, tForceField01}, 8);
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
+    memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, tDogIdleD0, tDogIdleD2, tDogIdleD2}, 8);
+    memcpy(&beebram[qDogIdleDMask], (uint16_t[]){tDogIdleMaskD0, tDogIdleMaskD0, tDogIdleMaskD2, tDogIdleMaskD2}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -237,6 +255,20 @@ void init_entities() {
            (size_t)18);
     se_ptr += 2;
     se_def += 18;
+
+    // map01: dog
+    memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
+    memcpy(&beebram[se_def], (uint8_t[]){
+                                 (0 << 3) | SETYPE_PICKUP,         // ELAPSED_FRAMES (5) | TYPE (3)
+                                 (0 << 6) | 1,                     // N_QUADS-1 (2) | ROOMID (6)
+                                 (0 << 7) | 0,                     // REDRAW (1) | DATA (7)
+                                 0, 0, 0,                          // DATA (24)
+                                 6, 6,                             // I (8), J (8)
+                                 qDogIdleD & 0xFF, qDogIdleD >> 8, // PTR_VIZDEF (16)
+                             },
+           (size_t)10);
+    se_ptr += 2;
+    se_def += 10;
 
     return;
 }
