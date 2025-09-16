@@ -184,13 +184,25 @@ void renderStaticEntities() {
             offbase = OFFBUFFER;
             for (int i = 0; i < 4; i++) {
                 uint16_t texture = beebram[se_vizdef + 2 * i] + (beebram[se_vizdef + 2 * i + 1] << 8);
+                uint16_t mask = beebram[se_vizdef + 8 + 2 * i] + (beebram[se_vizdef + 8 + 2 * i + 1] << 8);
+                uint8_t hflipped = texture >> 15;
 
-                // PROBLEM HERE: ASSUMES MASK IS ALWAYS 4 TILES (1 QUAD) AHEAD OF THE TEXTURE
-                uint16_t mask = texture + 32;
-                for (int s = 7; s >= 0; s--) {
-                    beebram[offbase + s] &= (beebram[mask + s] ^ 0xFF);
-                    beebram[offbase + s] |= (beebram[texture + s] & beebram[mask + s]);
+                if (!hflipped) {
+                    for (int s = 7; s >= 0; s--) {
+                        beebram[offbase + s] &= (beebram[mask + s] ^ 0xFF);
+                        beebram[offbase + s] |= (beebram[texture + s] & beebram[mask + s]);
+                    }
                 }
+
+                else if (hflipped) {
+                    texture &= 0x7FFF;
+                    mask &= 0x7FFF;
+                    for (int s = 7; s >= 0; s--) {
+                        beebram[offbase + s] &= (reversed_bytes[beebram[mask + s]] ^ 0xFF);
+                        beebram[offbase + s] |= (reversed_bytes[beebram[texture + s]] & reversed_bytes[beebram[mask + s]]);
+                    }
+                }
+
                 offbase += 8;
             }
 

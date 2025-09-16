@@ -142,12 +142,8 @@ static void init_textures() {
     memcpy(&beebram[tBallMask3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xF8, 0xF0, 0xC0, 0x00, 0x00}, 8);
     memcpy(&beebram[tDogIdleD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
     memcpy(&beebram[tDogIdleD2], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
-    // memcpy(&beebram[tDogIdleD0 + 16], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
-    // memcpy(&beebram[tDogIdleD2 + 16], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
     memcpy(&beebram[tDogIdleMaskD0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
     memcpy(&beebram[tDogIdleMaskD2], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
-    // memcpy(&beebram[tDogIdleMaskD0 + 16], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
-    // memcpy(&beebram[tDogIdleMaskD2 + 16], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -166,7 +162,7 @@ static void init_quads() {
     memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, tBallMask1, tBallMask2, tBallMask3}, 8);
     memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField00, tForceField01, tForceField01}, 8);
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
-    memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, tDogIdleD0, tDogIdleD2, tDogIdleD2}, 8);
+    memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, (tDogIdleD0 | 0x8000), tDogIdleD2, (tDogIdleD2 | 0x8000)}, 8);
     memcpy(&beebram[qDogIdleDMask], (uint16_t[]){tDogIdleMaskD0, tDogIdleMaskD0, tDogIdleMaskD2, tDogIdleMaskD2}, 8);
 }
 
