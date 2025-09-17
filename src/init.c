@@ -10,7 +10,8 @@ static void init_animdefs();
 
 /*------------------------------ MEMORY OFFSETS ------------------------------*/
 
-// TEXTURES 0x2500 to 0x3300 (0xE00, or 3584 bytes)
+// TEXTURES 0x2300 to 0x2C00
+// these can be stored at any position provided masks immediately follow defs
 static const int tTiled0 = TEXTURES + 8 * 0; // Q0
 static const int tMesh0 = TEXTURES + 8 * 1;  // Q1
 static const int tMesh1 = TEXTURES + 8 * 2;
@@ -53,6 +54,14 @@ static const int tDogIdleD2 = TEXTURES + 8 * 35;
 static const int tDogIdleMaskD0 = TEXTURES + 8 * 36; // Q51
 static const int tDogIdleMaskD2 = TEXTURES + 8 * 37;
 
+static const int tDogWalkD0 = TEXTURES + 8 * 38; // Q52
+static const int tDogWalkD2 = TEXTURES + 8 * 39;
+static const int tDogWalkD3 = TEXTURES + 8 * 40;
+
+static const int tDogWalkMaskD0 = TEXTURES + 8 * 41; // Q53
+static const int tDogWalkMaskD2 = TEXTURES + 8 * 42;
+static const int tDogWalkMaskD3 = TEXTURES + 8 * 43;
+
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
 static const int qTiled = QUADDEFS + 8 * 0;
@@ -69,14 +78,17 @@ static const int qDoorLocked = QUADDEFS + 8 * 33;
 static const int qForceField0 = QUADDEFS + 8 * 34;
 static const int qForceField1 = QUADDEFS + 8 * 35;
 
-// these quads correspond to 48-63 composite pairs (8 of these)
+// these quads correspond to 48-95 composite pairs (24 of these)
 static const int qBall = QUADDEFS + 8 * 48;
 static const int qBallMask = QUADDEFS + 8 * 49;
 static const int qDogIdleD = QUADDEFS + 8 * 50;
 static const int qDogIdleDMask = QUADDEFS + 8 * 51;
+static const int qDogWalkD = QUADDEFS + 8 * 52;
+static const int qDogWalkDMask = QUADDEFS + 8 * 53;
 
-// ANIMDEFS
+// ANIMDEFS 32 of these
 static const int aFField_idx = ANIMDEFS + 2 * 0;
+static const int aDogWalkD = ANIMDEFS + 2 * 1;
 
 // TILEMAPS
 static const int map1 = TILEMAPS + 0x20 + 0;
@@ -127,15 +139,23 @@ static void init_textures() {
     memcpy(&beebram[tForceField10], (uint8_t[]){0x00, 0x00, 0x03, 0x84, 0x48, 0x33, 0x84, 0x48}, 8);
     memcpy(&beebram[tForceField11], (uint8_t[]){0x33, 0x84, 0x48, 0x33, 0x84, 0x48, 0x30, 0x00}, 8);
 
-    // def-mask pairs must always go 4xdef, 4xmask
+    // masked textures
     memcpy(&beebram[tBall0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x0F, 0x0F, 0x1F, 0x1F}, 8);
     memcpy(&beebram[tBall2], (uint8_t[]){0x0F, 0x17, 0x0A, 0x05, 0x02, 0x00, 0x00, 0x00}, 8);
     memcpy(&beebram[tBallMask0], (uint8_t[]){0x00, 0x00, 0x03, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F}, 8);
     memcpy(&beebram[tBallMask2], (uint8_t[]){0x3F, 0x3F, 0x1F, 0x1F, 0x0F, 0x03, 0x00, 0x00}, 8);
+
     memcpy(&beebram[tDogIdleD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
     memcpy(&beebram[tDogIdleD2], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
     memcpy(&beebram[tDogIdleMaskD0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
     memcpy(&beebram[tDogIdleMaskD2], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
+
+    memcpy(&beebram[tDogWalkD0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x07, 0x09, 0x3F, 0x7D}, 8);
+    memcpy(&beebram[tDogWalkD2], (uint8_t[]){0x64, 0x06, 0x0B, 0x0C, 0x00, 0x06, 0x00, 0x00}, 8);
+    memcpy(&beebram[tDogWalkD3], (uint8_t[]){0x26, 0x60, 0xC0, 0x08, 0x00, 0x60, 0x60, 0x00}, 8);
+    memcpy(&beebram[tDogWalkMaskD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x3F, 0x7F, 0xFF}, 8);
+    memcpy(&beebram[tDogWalkMaskD2], (uint8_t[]){0xFF, 0x6F, 0x1F, 0x1F, 0x1F, 0x0F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogWalkMaskD3], (uint8_t[]){0xFF, 0xF6, 0xF8, 0xFC, 0xFC, 0xF0, 0xF0, 0xF0}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -156,6 +176,9 @@ static void init_quads() {
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
     memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, (tDogIdleD0 | 0x8000), tDogIdleD2, (tDogIdleD2 | 0x8000)}, 8);
     memcpy(&beebram[qDogIdleDMask], (uint16_t[]){tDogIdleMaskD0, tDogIdleMaskD0, tDogIdleMaskD2, tDogIdleMaskD2}, 8);
+
+    memcpy(&beebram[qDogWalkD], (uint16_t[]){tDogWalkD0, tDogWalkD0 | 0x8000, tDogWalkD2, tDogWalkD3}, 8);
+    memcpy(&beebram[qDogWalkDMask], (uint16_t[]){tDogWalkMaskD0, tDogWalkMaskD0 | 0x8000, tDogWalkMaskD2, tDogWalkMaskD3}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -251,7 +274,7 @@ void init_entities() {
                                  (0 << 6) | 1,                     // N_QUADS-1 (2) | ROOMID (6)
                                  (0 << 7) | 0,                     // REDRAW (1) | DATA (7)
                                  0, 0, 0,                          // DATA (24)
-                                 6, 6,                             // I (8), J (8)
+                                 18, 6,                            // I (8), J (8)
                                  qDogIdleD & 0xFF, qDogIdleD >> 8, // PTR_VIZDEF (16)
                              },
            (size_t)10);
