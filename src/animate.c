@@ -24,7 +24,7 @@ void animateStaticEntities() {
         uint8_t se_elapsed_frames = (beebram[se_addr + SE_ELAPSED5_TYPE3] & 0b11111000) >> 3;
         uint8_t frames = ((beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b11100000) >> 5) + 1;
         uint8_t current = (beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
-        uint8_t yoyo = beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00000011;
+        uint8_t yoyo = beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b000000011;
         uint8_t period;
 
         // update the static entity's elapsed frame count
@@ -53,13 +53,35 @@ void animateStaticEntities() {
 
         // if the elapsed frame count > period, cycle the frame and reset the elapsed
         if (se_elapsed_frames > period) {
-            current++;
-            if (current == frames)
-                current = 0;
+
+            // 00: yoyo off
+            // 01: yoyo on, direction forward
+            // 11: yoyo on, direction negative
+            (yoyo == 0b00 || yoyo == 0b01) ? current++ : current--;
+
+            // if past upper end
+            if (current >= frames) {
+                if (!yoyo)
+                    current = 0;
+                if (yoyo == 0b01) {
+                    current -= 2;
+                    yoyo = 0b11;
+                }
+            }
+
+            // if past lower end ($80 to &FF are - in uint8)
+            if (current >= 0x80) {
+                current += 2;
+                yoyo = 0b01;
+            }
 
             // write current
             beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11100011;
             beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] |= (current << 2);
+
+            // write yoyo
+            beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11111100;
+            beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] |= yoyo;
 
             // write elapsed frames
             se_elapsed_frames = 0;

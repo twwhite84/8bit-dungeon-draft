@@ -312,15 +312,14 @@ void init_animdefs() {
     // animdef 01: dog walk down
     memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
     memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (3 << 5) | (0 << 2) | 0,            // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (3 << 4) | 8,                       // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (3 << 4) | 8,                       // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qDogIdleD & 0xFF, qDogIdleD >> 8,   // PTR_QUAD (16)
+                                   (2 << 5) | (0 << 2) | 1,            // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (8 << 4) | 3,                       // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (8 << 4) | 0,                       // PERIOD_2 (4) | PERIOD_3 (4)
                                    qDogWalkD0 & 0xFF, qDogWalkD0 >> 8, // PTR_QUAD (16)
                                    qDogIdleD & 0xFF, qDogIdleD >> 8,   // PTR_QUAD (16)
                                    qDogWalkD1 & 0xFF, qDogWalkD1 >> 8, // PTR_QUAD (16)
                                },
-           (size_t)11);
+           (size_t)9);
     anim_ptr += 2;
-    anim_def += 11;
+    anim_def += 9;
 }
