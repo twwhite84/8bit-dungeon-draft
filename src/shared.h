@@ -11,8 +11,8 @@ enum {
     CAMERA_WIDTH = (8 * CAMERA_COLUMNS),
     CAMERA_HEIGHT = (8 * CAMERA_ROWS),
 
-    TEXTURES = 0x2500,   // 48 textures + 16 texture-mask pairs
-    QUADDEFS = 0x2D00,   // 64 quaddefs
+    TEXTURES = 0x2300,   // 48 textures + 24 texture-mask pairs (worst case)
+    QUADDEFS = 0x2C00,   // 96 quaddefs
     ANIMDEFS = 0x2F00,   // 32 indices + ~32 animdefs varsize
     PLAYER = 0x3050,     //
     STATENTS = 0x3070,   // 48 indices + ~48 statents varsize

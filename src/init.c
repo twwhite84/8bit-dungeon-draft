@@ -44,18 +44,14 @@ static const int tForceField11 = TEXTURES + 8 * 29;
 
 // def-mask pairs
 static const int tBall0 = TEXTURES + 8 * 30; // Q48
-static const int tBall1 = TEXTURES + 8 * 31;
-static const int tBall2 = TEXTURES + 8 * 32;
-static const int tBall3 = TEXTURES + 8 * 33;
-static const int tBallMask0 = TEXTURES + 8 * 34; // Q49
-static const int tBallMask1 = TEXTURES + 8 * 35;
-static const int tBallMask2 = TEXTURES + 8 * 36;
-static const int tBallMask3 = TEXTURES + 8 * 37;
+static const int tBall2 = TEXTURES + 8 * 31;
+static const int tBallMask0 = TEXTURES + 8 * 32; // Q49
+static const int tBallMask2 = TEXTURES + 8 * 33;
 
-static const int tDogIdleD0 = TEXTURES + 8 * 38; // Q50
-static const int tDogIdleD2 = TEXTURES + 8 * 39;
-static const int tDogIdleMaskD0 = TEXTURES + 8 * 40; // Q51
-static const int tDogIdleMaskD2 = TEXTURES + 8 * 41;
+static const int tDogIdleD0 = TEXTURES + 8 * 34; // Q50
+static const int tDogIdleD2 = TEXTURES + 8 * 35;
+static const int tDogIdleMaskD0 = TEXTURES + 8 * 36; // Q51
+static const int tDogIdleMaskD2 = TEXTURES + 8 * 37;
 
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
@@ -133,13 +129,9 @@ static void init_textures() {
 
     // def-mask pairs must always go 4xdef, 4xmask
     memcpy(&beebram[tBall0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x0F, 0x0F, 0x1F, 0x1F}, 8);
-    memcpy(&beebram[tBall1], (uint8_t[]){0x00, 0x00, 0x00, 0xC0, 0xF0, 0xF0, 0xF8, 0xF8}, 8);
     memcpy(&beebram[tBall2], (uint8_t[]){0x0F, 0x17, 0x0A, 0x05, 0x02, 0x00, 0x00, 0x00}, 8);
-    memcpy(&beebram[tBall3], (uint8_t[]){0xF8, 0xD0, 0xA0, 0x50, 0x80, 0x00, 0x00, 0x00}, 8);
     memcpy(&beebram[tBallMask0], (uint8_t[]){0x00, 0x00, 0x03, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F}, 8);
-    memcpy(&beebram[tBallMask1], (uint8_t[]){0x00, 0x00, 0xC0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
     memcpy(&beebram[tBallMask2], (uint8_t[]){0x3F, 0x3F, 0x1F, 0x1F, 0x0F, 0x03, 0x00, 0x00}, 8);
-    memcpy(&beebram[tBallMask3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xF8, 0xF0, 0xC0, 0x00, 0x00}, 8);
     memcpy(&beebram[tDogIdleD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
     memcpy(&beebram[tDogIdleD2], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
     memcpy(&beebram[tDogIdleMaskD0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
@@ -158,8 +150,8 @@ static void init_quads() {
     memcpy(&beebram[qCrate], (uint16_t[]){tCrate0, tCrate1, tCrate2, tCrate3}, 8);
     memcpy(&beebram[qDoor], (uint16_t[]){tDoor0, tDoor1, tDoor2, tDoor3}, 8);
     memcpy(&beebram[qDoorLocked], (uint16_t[]){tDoorLocked0, tDoorLocked1, tDoorLocked2, tDoorLocked3}, 8);
-    memcpy(&beebram[qBall], (uint16_t[]){tBall0, tBall1, tBall2, tBall3}, 8);
-    memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, tBallMask1, tBallMask2, tBallMask3}, 8);
+    memcpy(&beebram[qBall], (uint16_t[]){tBall0, (tBall0 | 0x8000), tBall2, (tBall2 | 0x8000)}, 8);
+    memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, (tBallMask0 | 0x8000), tBallMask2, tBallMask2 | 0x8000}, 8);
     memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField00, tForceField01, tForceField01}, 8);
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
     memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, (tDogIdleD0 | 0x8000), tDogIdleD2, (tDogIdleD2 | 0x8000)}, 8);
