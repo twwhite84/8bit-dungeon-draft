@@ -83,11 +83,13 @@ static const int qBall = QUADDEFS + 8 * 48;
 static const int qBallMask = QUADDEFS + 8 * 49;
 static const int qDogIdleD = QUADDEFS + 8 * 50;
 static const int qDogIdleDMask = QUADDEFS + 8 * 51;
-static const int qDogWalkD = QUADDEFS + 8 * 52;
-static const int qDogWalkDMask = QUADDEFS + 8 * 53;
+static const int qDogWalkD0 = QUADDEFS + 8 * 52;
+static const int qDogWalkDMask0 = QUADDEFS + 8 * 53;
+static const int qDogWalkD1 = QUADDEFS + 8 * 54;
+static const int qDogWalkDMask1 = QUADDEFS + 8 * 55;
 
 // ANIMDEFS 32 of these
-static const int aFField_idx = ANIMDEFS + 2 * 0;
+static const int aForceField = ANIMDEFS + 2 * 0;
 static const int aDogWalkD = ANIMDEFS + 2 * 1;
 
 // TILEMAPS
@@ -170,15 +172,20 @@ static void init_quads() {
     memcpy(&beebram[qCrate], (uint16_t[]){tCrate0, tCrate1, tCrate2, tCrate3}, 8);
     memcpy(&beebram[qDoor], (uint16_t[]){tDoor0, tDoor1, tDoor2, tDoor3}, 8);
     memcpy(&beebram[qDoorLocked], (uint16_t[]){tDoorLocked0, tDoorLocked1, tDoorLocked2, tDoorLocked3}, 8);
+
     memcpy(&beebram[qBall], (uint16_t[]){tBall0, (tBall0 | 0x8000), tBall2, (tBall2 | 0x8000)}, 8);
     memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, (tBallMask0 | 0x8000), tBallMask2, tBallMask2 | 0x8000}, 8);
+
     memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField00, tForceField01, tForceField01}, 8);
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
+
     memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, (tDogIdleD0 | 0x8000), tDogIdleD2, (tDogIdleD2 | 0x8000)}, 8);
     memcpy(&beebram[qDogIdleDMask], (uint16_t[]){tDogIdleMaskD0, tDogIdleMaskD0, tDogIdleMaskD2, tDogIdleMaskD2}, 8);
 
-    memcpy(&beebram[qDogWalkD], (uint16_t[]){tDogWalkD0, tDogWalkD0 | 0x8000, tDogWalkD2, tDogWalkD3}, 8);
-    memcpy(&beebram[qDogWalkDMask], (uint16_t[]){tDogWalkMaskD0, tDogWalkMaskD0 | 0x8000, tDogWalkMaskD2, tDogWalkMaskD3}, 8);
+    memcpy(&beebram[qDogWalkD0], (uint16_t[]){tDogWalkD0, tDogWalkD0 | 0x8000, tDogWalkD2, tDogWalkD3}, 8);
+    memcpy(&beebram[qDogWalkDMask0], (uint16_t[]){tDogWalkMaskD0, tDogWalkMaskD0 | 0x8000, tDogWalkMaskD2, tDogWalkMaskD3}, 8);
+    memcpy(&beebram[qDogWalkD1], (uint16_t[]){tDogWalkD0, tDogWalkD0 | 0x8000, tDogWalkD3 | 0x8000, tDogWalkD2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkDMask1], (uint16_t[]){tDogWalkMaskD0, tDogWalkMaskD0 | 0x8000, tDogWalkMaskD3 | 0x8000, tDogWalkMaskD2 | 0x8000}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -249,7 +256,7 @@ void init_entities() {
     se_ptr += 2;
     se_def += 10;
 
-    // map01: force field
+    // map01: force field (animated)
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
                                  (0 << 3) | SETYPE_DOORLOCKED,         // ELAPSED_FRAMES (5) | TYPE (3)
@@ -257,17 +264,17 @@ void init_entities() {
                                  (0 << 7) | 0,                         // REDRAW (1) | DATA (7)
                                  0, 0, 0,                              // DATA (24)
                                  8, 4,                                 // I (8), J (8)
-                                 aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
+                                 aForceField & 0xFF, aForceField >> 8, // PTR_VIZDEF (16)
                                  8, 6,                                 // I (8), J (8)
-                                 aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
+                                 aForceField & 0xFF, aForceField >> 8, // PTR_VIZDEF (16)
                                  8, 8,                                 // I (8), J (8)
-                                 aFField_idx & 0xFF, aFField_idx >> 8, // PTR_VIZDEF (16)
+                                 aForceField & 0xFF, aForceField >> 8, // PTR_VIZDEF (16)
                              },
            (size_t)18);
     se_ptr += 2;
     se_def += 18;
 
-    // map01: dog
+    // map01: dog (animated)
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
                                  (0 << 3) | SETYPE_PICKUP,         // ELAPSED_FRAMES (5) | TYPE (3)
@@ -275,7 +282,7 @@ void init_entities() {
                                  (0 << 7) | 0,                     // REDRAW (1) | DATA (7)
                                  0, 0, 0,                          // DATA (24)
                                  18, 6,                            // I (8), J (8)
-                                 qDogIdleD & 0xFF, qDogIdleD >> 8, // PTR_VIZDEF (16)
+                                 aDogWalkD & 0xFF, aDogWalkD >> 8, // PTR_VIZDEF (16)
                              },
            (size_t)10);
     se_ptr += 2;
@@ -287,17 +294,33 @@ void init_entities() {
 /*----------------------------------------------------------------------------*/
 
 void init_animdefs() {
-    // index: 2 byte pointers
-    uint16_t aFField_def = ANIMDEFS + 0x40;
-    memcpy(&beebram[aFField_idx], (uint8_t[]){aFField_def & 0xFF, aFField_def >> 8}, 2);
+    uint16_t anim_ptr = ANIMDEFS, anim_def = ANIMDEFS + 0x40;
 
-    // defs:
-    memcpy(&beebram[aFField_def], (uint8_t[]){
-                                      (1 << 5) | (0 << 2) | 0,                // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                      (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
-                                      (0 << 4) | 0,                           // PERIOD_2 (4) | PERIOD_3 (4)
-                                      qForceField0 & 0xFF, qForceField0 >> 8, // PTR_QUAD (16)
-                                      qForceField1 & 0xFF, qForceField1 >> 8, // PTR_QUAD (16)
-                                  },
+    // animdef 00: force field
+    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
+    memcpy(&beebram[anim_def], (uint8_t[]){
+                                   (1 << 5) | (0 << 2) | 0,                // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (0 << 4) | 0,                           // PERIOD_2 (4) | PERIOD_3 (4)
+                                   qForceField0 & 0xFF, qForceField0 >> 8, // PTR_QUAD (16)
+                                   qForceField1 & 0xFF, qForceField1 >> 8, // PTR_QUAD (16)
+                               },
            (size_t)7);
+    anim_ptr += 2;
+    anim_def += 7;
+
+    // animdef 01: dog walk down
+    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
+    memcpy(&beebram[anim_def], (uint8_t[]){
+                                   (3 << 5) | (0 << 2) | 0,            // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (3 << 4) | 8,                       // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (3 << 4) | 8,                       // PERIOD_2 (4) | PERIOD_3 (4)
+                                   qDogIdleD & 0xFF, qDogIdleD >> 8,   // PTR_QUAD (16)
+                                   qDogWalkD0 & 0xFF, qDogWalkD0 >> 8, // PTR_QUAD (16)
+                                   qDogIdleD & 0xFF, qDogIdleD >> 8,   // PTR_QUAD (16)
+                                   qDogWalkD1 & 0xFF, qDogWalkD1 >> 8, // PTR_QUAD (16)
+                               },
+           (size_t)11);
+    anim_ptr += 2;
+    anim_def += 11;
 }
