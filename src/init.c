@@ -50,18 +50,57 @@ static const int tBall2 = TEXTURES + 8 * 31;
 static const int tBallMask0 = TEXTURES + 8 * 32; // Q49
 static const int tBallMask2 = TEXTURES + 8 * 33;
 
-static const int tDogIdleD0 = TEXTURES + 8 * 34; // Q50
-static const int tDogIdleD2 = TEXTURES + 8 * 35;
-static const int tDogIdleMaskD0 = TEXTURES + 8 * 36; // Q51
-static const int tDogIdleMaskD2 = TEXTURES + 8 * 37;
+static const int tDogIdleD_0 = TEXTURES + 8 * 34; // Q50
+static const int tDogIdleD_2 = TEXTURES + 8 * 35;
+static const int tDogIdleMaskD_0 = TEXTURES + 8 * 36; // Q51
+static const int tDogIdleMaskD_2 = TEXTURES + 8 * 37;
 
-static const int tDogWalkD0 = TEXTURES + 8 * 38; // Q52
-static const int tDogWalkD2 = TEXTURES + 8 * 39;
-static const int tDogWalkD3 = TEXTURES + 8 * 40;
+static const int tDogWalkD_0 = TEXTURES + 8 * 38; // Q52
+static const int tDogWalkD_2 = TEXTURES + 8 * 39;
+static const int tDogWalkD_3 = TEXTURES + 8 * 40;
 
-static const int tDogWalkMaskD0 = TEXTURES + 8 * 41; // Q53
-static const int tDogWalkMaskD2 = TEXTURES + 8 * 42;
-static const int tDogWalkMaskD3 = TEXTURES + 8 * 43;
+static const int tDogWalkMaskD_0 = TEXTURES + 8 * 41; // Q53
+static const int tDogWalkMaskD_2 = TEXTURES + 8 * 42;
+static const int tDogWalkMaskD_3 = TEXTURES + 8 * 43;
+
+static const int tDogIdleU_0 = TEXTURES + 8 * 44;
+static const int tDogIdleU_2 = TEXTURES + 8 * 45;
+static const int tDogIdleMaskU_0 = TEXTURES + 8 * 46;
+static const int tDogIdleMaskU_2 = TEXTURES + 8 * 47;
+
+static const int tDogWalkU_0 = TEXTURES + 8 * 48;
+static const int tDogWalkU_2 = TEXTURES + 8 * 49;
+static const int tDogWalkU_3 = TEXTURES + 8 * 50;
+static const int tDogWalkMaskU_0 = TEXTURES + 8 * 51;
+static const int tDogWalkMaskU_2 = TEXTURES + 8 * 52;
+static const int tDogWalkMaskU_3 = TEXTURES + 8 * 53;
+
+static const int tDogIdleR_0 = TEXTURES + 8 * 54;
+static const int tDogIdleR_1 = TEXTURES + 8 * 55;
+static const int tDogIdleR_2 = TEXTURES + 8 * 56;
+static const int tDogIdleR_3 = TEXTURES + 8 * 57;
+static const int tDogIdleMaskR_0 = TEXTURES + 8 * 58;
+static const int tDogIdleMaskR_1 = TEXTURES + 8 * 59;
+static const int tDogIdleMaskR_2 = TEXTURES + 8 * 60;
+static const int tDogIdleMaskR_3 = TEXTURES + 8 * 61;
+
+static const int tDogWalkRF0_0 = TEXTURES + 8 * 62;
+static const int tDogWalkRF0_1 = TEXTURES + 8 * 63;
+static const int tDogWalkRF0_2 = TEXTURES + 8 * 64;
+static const int tDogWalkRF0_3 = TEXTURES + 8 * 65;
+static const int tDogWalkMaskRF0_0 = TEXTURES + 8 * 66;
+static const int tDogWalkMaskRF0_1 = TEXTURES + 8 * 67;
+static const int tDogWalkMaskRF0_2 = TEXTURES + 8 * 68;
+static const int tDogWalkMaskRF0_3 = TEXTURES + 8 * 69;
+
+static const int tDogWalkRF2_0 = TEXTURES + 8 * 70;
+static const int tDogWalkRF2_1 = TEXTURES + 8 * 71;
+static const int tDogWalkRF2_2 = TEXTURES + 8 * 72;
+static const int tDogWalkRF2_3 = TEXTURES + 8 * 73;
+static const int tDogWalkMaskRF2_0 = TEXTURES + 8 * 74;
+static const int tDogWalkMaskRF2_1 = TEXTURES + 8 * 75;
+static const int tDogWalkMaskRF2_2 = TEXTURES + 8 * 76;
+static const int tDogWalkMaskRF2_3 = TEXTURES + 8 * 77;
 
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
@@ -82,16 +121,53 @@ static const int qForceField1 = QUADDEFS + 8 * 35;
 // these quads correspond to 48-95 composite pairs (24 of these)
 static const int qBall = QUADDEFS + 8 * 48;
 static const int qBallMask = QUADDEFS + 8 * 49;
+
+// dog d
 static const int qDogIdleD = QUADDEFS + 8 * 50;
-static const int qDogIdleDMask = QUADDEFS + 8 * 51;
-static const int qDogWalkD0 = QUADDEFS + 8 * 52;
-static const int qDogWalkDMask0 = QUADDEFS + 8 * 53;
-static const int qDogWalkD1 = QUADDEFS + 8 * 54;
-static const int qDogWalkDMask1 = QUADDEFS + 8 * 55;
+static const int qDogIdleMaskD = QUADDEFS + 8 * 51;
+
+static const int qDogWalkDF0 = QUADDEFS + 8 * 52;
+static const int qDogWalkMaskDF0 = QUADDEFS + 8 * 53;
+static const int qDogWalkDF2 = QUADDEFS + 8 * 54;
+static const int qDogWalkMaskDF2 = QUADDEFS + 8 * 55;
+
+// dog u
+static const int qDogIdleU = QUADDEFS + 8 * 56;
+static const int qDogIdleMaskU = QUADDEFS + 8 * 57;
+
+static const int qDogWalkUF0 = QUADDEFS + 8 * 58;
+static const int qDogWalkMaskUF0 = QUADDEFS + 8 * 59;
+static const int qDogWalkUF2 = QUADDEFS + 8 * 60;
+static const int qDogWalkMaskUF2 = QUADDEFS + 8 * 61;
+
+// dog r
+static const int qDogIdleR = QUADDEFS + 8 * 62;
+static const int qDogIdleMaskR = QUADDEFS + 8 * 63;
+
+static const int qDogWalkRF0 = QUADDEFS + 8 * 64;
+static const int qDogWalkMaskRF0 = QUADDEFS + 8 * 65;
+static const int qDogWalkRF1 = QUADDEFS + 8 * 66;
+static const int qDogWalkMaskRF1 = QUADDEFS + 8 * 67;
+static const int qDogWalkRF2 = QUADDEFS + 8 * 68;
+static const int qDogWalkMaskRF2 = QUADDEFS + 8 * 69;
+
+// dog l
+static const int qDogIdleL = QUADDEFS + 8 * 70;
+static const int qDogIdleMaskL = QUADDEFS + 8 * 71;
+
+static const int qDogWalkLF0 = QUADDEFS + 8 * 72;
+static const int qDogWalkMaskLF0 = QUADDEFS + 8 * 73;
+static const int qDogWalkLF1 = QUADDEFS + 8 * 74;
+static const int qDogWalkMaskLF1 = QUADDEFS + 8 * 75;
+static const int qDogWalkLF2 = QUADDEFS + 8 * 76;
+static const int qDogWalkMaskLF2 = QUADDEFS + 8 * 77;
 
 // ANIMDEFS 32 of these
 static const int aForceField = ANIMDEFS + 2 * 0;
 static const int aDogWalkD = ANIMDEFS + 2 * 1;
+static const int aDogWalkU = ANIMDEFS + 2 * 2;
+static const int aDogWalkR = ANIMDEFS + 2 * 3;
+static const int aDogWalkL = ANIMDEFS + 2 * 4;
 
 // TILEMAPS
 static const int map1 = TILEMAPS + 0x20 + 0;
@@ -148,17 +224,56 @@ static void initTextures() {
     memcpy(&beebram[tBallMask0], (uint8_t[]){0x00, 0x00, 0x03, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F}, 8);
     memcpy(&beebram[tBallMask2], (uint8_t[]){0x3F, 0x3F, 0x1F, 0x1F, 0x0F, 0x03, 0x00, 0x00}, 8);
 
-    memcpy(&beebram[tDogIdleD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
-    memcpy(&beebram[tDogIdleD2], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
-    memcpy(&beebram[tDogIdleMaskD0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
-    memcpy(&beebram[tDogIdleMaskD2], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogIdleD_0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x09, 0x0F, 0x1D, 0x34}, 8);
+    memcpy(&beebram[tDogIdleD_2], (uint8_t[]){0x36, 0x03, 0x08, 0x18, 0x17, 0x04, 0x06, 0x00}, 8);
+    memcpy(&beebram[tDogIdleMaskD_0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
+    memcpy(&beebram[tDogIdleMaskD_2], (uint8_t[]){0x7F, 0x3F, 0x1F, 0x3F, 0x3F, 0x3F, 0x0F, 0x07}, 8);
 
-    memcpy(&beebram[tDogWalkD0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x07, 0x09, 0x3F, 0x7D}, 8);
-    memcpy(&beebram[tDogWalkD2], (uint8_t[]){0x64, 0x06, 0x0B, 0x0C, 0x00, 0x06, 0x00, 0x00}, 8);
-    memcpy(&beebram[tDogWalkD3], (uint8_t[]){0x26, 0x60, 0xC0, 0x08, 0x00, 0x60, 0x60, 0x00}, 8);
-    memcpy(&beebram[tDogWalkMaskD0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x3F, 0x7F, 0xFF}, 8);
-    memcpy(&beebram[tDogWalkMaskD2], (uint8_t[]){0xFF, 0x6F, 0x1F, 0x1F, 0x1F, 0x0F, 0x0F, 0x07}, 8);
-    memcpy(&beebram[tDogWalkMaskD3], (uint8_t[]){0xFF, 0xF6, 0xF8, 0xFC, 0xFC, 0xF0, 0xF0, 0xF0}, 8);
+    memcpy(&beebram[tDogWalkD_0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x07, 0x09, 0x3F, 0x7D}, 8);
+    memcpy(&beebram[tDogWalkD_2], (uint8_t[]){0x64, 0x06, 0x0B, 0x0C, 0x00, 0x06, 0x00, 0x00}, 8);
+    memcpy(&beebram[tDogWalkD_3], (uint8_t[]){0x26, 0x60, 0xC0, 0x08, 0x00, 0x60, 0x60, 0x00}, 8);
+    memcpy(&beebram[tDogWalkMaskD_0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x3F, 0x7F, 0xFF}, 8);
+    memcpy(&beebram[tDogWalkMaskD_2], (uint8_t[]){0xFF, 0x6F, 0x1F, 0x1F, 0x1F, 0x0F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogWalkMaskD_3], (uint8_t[]){0xFF, 0xF6, 0xF8, 0xFC, 0xFC, 0xF0, 0xF0, 0xF0}, 8);
+
+    memcpy(&beebram[tDogIdleU_0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x0F, 0x1F, 0x2F}, 8);
+    memcpy(&beebram[tDogIdleU_2], (uint8_t[]){0x27, 0x03, 0x08, 0x18, 0x11, 0x07, 0x06, 0x00}, 8);
+    memcpy(&beebram[tDogIdleMaskU_0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x7F}, 8);
+    memcpy(&beebram[tDogIdleMaskU_2], (uint8_t[]){0x7F, 0x2F, 0x1F, 0x3F, 0x3F, 0x1F, 0x0F, 0x07}, 8);
+
+    memcpy(&beebram[tDogWalkU_0], (uint8_t[]){0x00, 0x00, 0x00, 0x03, 0x07, 0x0F, 0x3F, 0x7F}, 8);
+    memcpy(&beebram[tDogWalkU_2], (uint8_t[]){0x6F, 0x07, 0x03, 0x08, 0x0C, 0x0B, 0x00, 0x00}, 8);
+    memcpy(&beebram[tDogWalkU_3], (uint8_t[]){0xF6, 0xE0, 0xC0, 0x08, 0xC0, 0xC0, 0x60, 0x00}, 8);
+    memcpy(&beebram[tDogWalkMaskU_0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x3F, 0x7F, 0xFF}, 8);
+    memcpy(&beebram[tDogWalkMaskU_2], (uint8_t[]){0xFF, 0x7F, 0x0F, 0x1F, 0x1F, 0x1F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogWalkMaskU_3], (uint8_t[]){0xFF, 0xFE, 0xFC, 0xFC, 0xFC, 0xF0, 0xF0, 0xF0}, 8);
+
+    memcpy(&beebram[tDogIdleR_0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x0D, 0x1D, 0x1D}, 8);
+    memcpy(&beebram[tDogIdleR_1], (uint8_t[]){0x00, 0x00, 0xC0, 0xE0, 0x90, 0xF0, 0xD0, 0xD0}, 8);
+    memcpy(&beebram[tDogIdleR_2], (uint8_t[]){0x1D, 0x0B, 0x00, 0x00, 0x01, 0x0A, 0x03, 0x00}, 8);
+    memcpy(&beebram[tDogIdleR_3], (uint8_t[]){0xE8, 0xD8, 0x00, 0x80, 0x80, 0x00, 0xC0, 0x00}, 8);
+    memcpy(&beebram[tDogIdleMaskR_0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F}, 8);
+    memcpy(&beebram[tDogIdleMaskR_1], (uint8_t[]){0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
+    memcpy(&beebram[tDogIdleMaskR_2], (uint8_t[]){0x3F, 0x1F, 0x0F, 0x07, 0x1F, 0x1F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogIdleMaskR_3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xC0, 0xE0, 0xE0, 0xE0, 0xE0}, 8);
+
+    memcpy(&beebram[tDogWalkRF0_0], (uint8_t[]){0x00, 0x00, 0x03, 0x0F, 0x1F, 0x1D, 0x1D, 0x1D}, 8);
+    memcpy(&beebram[tDogWalkRF0_1], (uint8_t[]){0x00, 0x00, 0xC0, 0xE0, 0x90, 0xF0, 0xD0, 0xD0}, 8);
+    memcpy(&beebram[tDogWalkRF0_2], (uint8_t[]){0x01, 0x03, 0x00, 0x00, 0x08, 0x04, 0x06, 0x00}, 8);
+    memcpy(&beebram[tDogWalkRF0_3], (uint8_t[]){0xE8, 0xD8, 0x00, 0xE0, 0x60, 0x10, 0x60, 0x00}, 8);
+    memcpy(&beebram[tDogWalkMaskRF0_0], (uint8_t[]){0x00, 0x03, 0x0F, 0x1F, 0x3F, 0x3F, 0x3F, 0x3F}, 8);
+    memcpy(&beebram[tDogWalkMaskRF0_1], (uint8_t[]){0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
+    memcpy(&beebram[tDogWalkMaskRF0_2], (uint8_t[]){0x1F, 0x0F, 0x07, 0x1F, 0x1F, 0x0F, 0x0F, 0x07}, 8);
+    memcpy(&beebram[tDogWalkMaskRF0_3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xF0, 0xF8, 0xF8, 0xF0, 0xE0}, 8);
+
+    memcpy(&beebram[tDogWalkRF2_0], (uint8_t[]){0x00, 0x00, 0x03, 0x07, 0x0F, 0x0F, 0x1D, 0x1D}, 8);
+    memcpy(&beebram[tDogWalkRF2_1], (uint8_t[]){0x00, 0x00, 0xC0, 0xE0, 0x90, 0xF0, 0xD0, 0xD0}, 8);
+    memcpy(&beebram[tDogWalkRF2_2], (uint8_t[]){0x1D, 0x0D, 0x00, 0x07, 0x06, 0x00, 0x06, 0x00}, 8);
+    memcpy(&beebram[tDogWalkRF2_3], (uint8_t[]){0xE8, 0xD8, 0x00, 0x00, 0x00, 0xD0, 0x60, 0x00}, 8);
+    memcpy(&beebram[tDogWalkMaskRF2_0], (uint8_t[]){0x00, 0x03, 0x07, 0x0F, 0x1F, 0x1F, 0x3F, 0x3F}, 8);
+    memcpy(&beebram[tDogWalkMaskRF2_1], (uint8_t[]){0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xF8, 0xFC, 0xFC}, 8);
+    memcpy(&beebram[tDogWalkMaskRF2_2], (uint8_t[]){0x3F, 0x1F, 0x0F, 0x1F, 0x1F, 0x0F, 0x0F, 0x0F}, 8);
+    memcpy(&beebram[tDogWalkMaskRF2_3], (uint8_t[]){0xFC, 0xFC, 0xF8, 0xE0, 0xF8, 0xF8, 0xF0, 0xE0}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -180,13 +295,41 @@ static void initQuads() {
     memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField00, tForceField01, tForceField01}, 8);
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
 
-    memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD0, (tDogIdleD0 | 0x8000), tDogIdleD2, (tDogIdleD2 | 0x8000)}, 8);
-    memcpy(&beebram[qDogIdleDMask], (uint16_t[]){tDogIdleMaskD0, tDogIdleMaskD0, tDogIdleMaskD2, tDogIdleMaskD2}, 8);
+    // dog d
+    memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD_0, (tDogIdleD_0 | 0x8000), tDogIdleD_2, (tDogIdleD_2 | 0x8000)}, 8);
+    memcpy(&beebram[qDogIdleMaskD], (uint16_t[]){tDogIdleMaskD_0, tDogIdleMaskD_0, tDogIdleMaskD_2, tDogIdleMaskD_2}, 8);
 
-    memcpy(&beebram[qDogWalkD0], (uint16_t[]){tDogWalkD0, tDogWalkD0 | 0x8000, tDogWalkD2, tDogWalkD3}, 8);
-    memcpy(&beebram[qDogWalkDMask0], (uint16_t[]){tDogWalkMaskD0, tDogWalkMaskD0 | 0x8000, tDogWalkMaskD2, tDogWalkMaskD3}, 8);
-    memcpy(&beebram[qDogWalkD1], (uint16_t[]){tDogWalkD0, tDogWalkD0 | 0x8000, tDogWalkD3 | 0x8000, tDogWalkD2 | 0x8000}, 8);
-    memcpy(&beebram[qDogWalkDMask1], (uint16_t[]){tDogWalkMaskD0, tDogWalkMaskD0 | 0x8000, tDogWalkMaskD3 | 0x8000, tDogWalkMaskD2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkDF0], (uint16_t[]){tDogWalkD_0, tDogWalkD_0 | 0x8000, tDogWalkD_2, tDogWalkD_3}, 8);
+    memcpy(&beebram[qDogWalkMaskDF0], (uint16_t[]){tDogWalkMaskD_0, tDogWalkMaskD_0 | 0x8000, tDogWalkMaskD_2, tDogWalkMaskD_3}, 8);
+    memcpy(&beebram[qDogWalkDF2], (uint16_t[]){tDogWalkD_0, tDogWalkD_0 | 0x8000, tDogWalkD_3 | 0x8000, tDogWalkD_2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkMaskDF2], (uint16_t[]){tDogWalkMaskD_0, tDogWalkMaskD_0 | 0x8000, tDogWalkMaskD_3 | 0x8000, tDogWalkMaskD_2 | 0x8000}, 8);
+
+    // dog u
+    memcpy(&beebram[qDogIdleU], (uint16_t[]){tDogIdleU_0, (tDogIdleU_0 | 0x8000), tDogIdleU_2, (tDogIdleU_2 | 0x8000)}, 8);
+    memcpy(&beebram[qDogIdleMaskU], (uint16_t[]){tDogIdleMaskU_0, tDogIdleMaskU_0, tDogIdleMaskU_2, tDogIdleMaskU_2}, 8);
+
+    memcpy(&beebram[qDogWalkUF0], (uint16_t[]){tDogWalkU_0, tDogWalkU_0 | 0x8000, tDogWalkU_2, tDogWalkU_3}, 8);
+    memcpy(&beebram[qDogWalkMaskUF0], (uint16_t[]){tDogWalkMaskU_0, tDogWalkMaskU_0 | 0x8000, tDogWalkMaskU_2, tDogWalkMaskU_3}, 8);
+    memcpy(&beebram[qDogWalkUF2], (uint16_t[]){tDogWalkU_0, tDogWalkU_0 | 0x8000, tDogWalkU_3 | 0x8000, tDogWalkU_2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkMaskUF2], (uint16_t[]){tDogWalkMaskU_0, tDogWalkMaskU_0 | 0x8000, tDogWalkMaskU_3 | 0x8000, tDogWalkMaskU_2 | 0x8000}, 8);
+
+    // dog r
+    memcpy(&beebram[qDogIdleR], (uint16_t[]){tDogIdleR_0, tDogIdleR_1, tDogIdleR_2, tDogIdleR_3}, 8);
+    memcpy(&beebram[qDogIdleMaskR], (uint16_t[]){tDogIdleMaskR_0, tDogIdleMaskR_1, tDogIdleMaskR_2, tDogIdleMaskR_3}, 8);
+
+    memcpy(&beebram[qDogWalkRF0], (uint16_t[]){tDogWalkRF0_0, tDogWalkRF0_1, tDogWalkRF0_2, tDogWalkRF0_3}, 8);
+    memcpy(&beebram[qDogWalkMaskRF0], (uint16_t[]){tDogWalkMaskRF0_0, tDogWalkMaskRF0_1, tDogWalkMaskRF0_2, tDogWalkMaskRF0_3}, 8);
+    memcpy(&beebram[qDogWalkRF2], (uint16_t[]){tDogWalkRF2_0, tDogWalkRF2_1, tDogWalkRF2_2, tDogWalkRF2_3}, 8);
+    memcpy(&beebram[qDogWalkMaskRF2], (uint16_t[]){tDogWalkMaskRF2_0, tDogWalkMaskRF2_1, tDogWalkMaskRF2_2, tDogWalkMaskRF2_3}, 8);
+
+    // dog l
+    memcpy(&beebram[qDogIdleL], (uint16_t[]){tDogIdleR_1 | 0x8000, tDogIdleR_0 | 0x8000, tDogIdleR_3 | 0x8000, tDogIdleR_2 | 0x8000}, 8);
+    memcpy(&beebram[qDogIdleMaskL], (uint16_t[]){tDogIdleMaskR_1 | 0x8000, tDogIdleMaskR_0 | 0x8000, tDogIdleMaskR_3 | 0x8000, tDogIdleMaskR_2 | 0x8000}, 8);
+
+    memcpy(&beebram[qDogWalkLF0], (uint16_t[]){tDogWalkRF0_1 | 0x8000, tDogWalkRF0_0 | 0x8000, tDogWalkRF0_3 | 0x8000, tDogWalkRF0_2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkMaskLF0], (uint16_t[]){tDogWalkMaskRF0_1 | 0x8000, tDogWalkMaskRF0_0 | 0x8000, tDogWalkMaskRF0_3 | 0x8000, tDogWalkMaskRF0_2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkLF2], (uint16_t[]){tDogWalkRF2_1 | 0x8000, tDogWalkRF2_0 | 0x8000, tDogWalkRF2_3 | 0x8000, tDogWalkRF2_2 | 0x8000}, 8);
+    memcpy(&beebram[qDogWalkMaskLF2], (uint16_t[]){tDogWalkMaskRF2_1 | 0x8000, tDogWalkMaskRF2_0 | 0x8000, tDogWalkMaskRF2_3 | 0x8000, tDogWalkMaskRF2_2 | 0x8000}, 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -283,7 +426,7 @@ void initStaticEnts() {
                                  (0 << 7) | 0,                     // REDRAW (1) | DATA (7)
                                  0, 0, 0,                          // DATA (24)
                                  18, 6,                            // I (8), J (8)
-                                 aDogWalkD & 0xFF, aDogWalkD >> 8, // PTR_VIZDEF (16)
+                                 aDogWalkL & 0xFF, aDogWalkL >> 8, // PTR_VIZDEF (16)
                              },
            (size_t)10);
     se_ptr += 2;
@@ -293,6 +436,11 @@ void initStaticEnts() {
 }
 
 /*----------------------------------------------------------------------------*/
+
+// aForceField
+// aDogWalkD
+// aDogWalkU
+// aDogWalkR
 
 void initAnimdefs() {
     uint16_t anim_ptr = ANIMDEFS, anim_def = ANIMDEFS + 0x40;
@@ -310,15 +458,57 @@ void initAnimdefs() {
     anim_ptr += 2;
     anim_def += 7;
 
-    // animdef 01: dog walk down
+    // animdef 01: dog_walk_down
     memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
     memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (2 << 5) | (0 << 2) | 1,            // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (8 << 4) | 3,                       // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (8 << 4) | 0,                       // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qDogWalkD0 & 0xFF, qDogWalkD0 >> 8, // PTR_QUAD (16)
-                                   qDogIdleD & 0xFF, qDogIdleD >> 8,   // PTR_QUAD (16)
-                                   qDogWalkD1 & 0xFF, qDogWalkD1 >> 8, // PTR_QUAD (16)
+                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                   qDogWalkDF0 & 0xFF, qDogWalkDF0 >> 8, // PTR_QUAD (16)
+                                   qDogIdleD & 0xFF, qDogIdleD >> 8,     // PTR_QUAD (16)
+                                   qDogWalkDF2 & 0xFF, qDogWalkDF2 >> 8, // PTR_QUAD (16)
+                               },
+           (size_t)9);
+    anim_ptr += 2;
+    anim_def += 9;
+
+    // animdef 02: dog_walk_up
+    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
+    memcpy(&beebram[anim_def], (uint8_t[]){
+                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                   qDogWalkUF0 & 0xFF, qDogWalkUF0 >> 8, // PTR_QUAD (16)
+                                   qDogIdleU & 0xFF, qDogIdleU >> 8,     // PTR_QUAD (16)
+                                   qDogWalkUF2 & 0xFF, qDogWalkUF2 >> 8, // PTR_QUAD (16)
+                               },
+           (size_t)9);
+    anim_ptr += 2;
+    anim_def += 9;
+
+    // animdef 03: dog_walk_right
+    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
+    memcpy(&beebram[anim_def], (uint8_t[]){
+                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                   qDogWalkRF0 & 0xFF, qDogWalkRF0 >> 8, // PTR_QUAD (16)
+                                   qDogIdleR & 0xFF, qDogIdleR >> 8,     // PTR_QUAD (16)
+                                   qDogWalkRF2 & 0xFF, qDogWalkRF2 >> 8, // PTR_QUAD (16)
+                               },
+           (size_t)9);
+    anim_ptr += 2;
+    anim_def += 9;
+
+    // animdef 04: dog_walk_left
+    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
+    memcpy(&beebram[anim_def], (uint8_t[]){
+                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                   qDogWalkLF0 & 0xFF, qDogWalkLF0 >> 8, // PTR_QUAD (16)
+                                   qDogIdleL & 0xFF, qDogIdleL >> 8,     // PTR_QUAD (16)
+                                   qDogWalkLF2 & 0xFF, qDogWalkLF2 >> 8, // PTR_QUAD (16)
                                },
            (size_t)9);
     anim_ptr += 2;
