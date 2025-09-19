@@ -2,11 +2,12 @@
 #include <stddef.h>
 #include <string.h>
 
-static void init_textures();
-static void init_quads();
-static void init_tilemaps();
-static void init_entities();
-static void init_animdefs();
+static void initTextures();
+static void initQuads();
+static void initTilemaps();
+static void initStaticEnts();
+static void initAnimdefs();
+static void initPlayer();
 
 /*------------------------------ MEMORY OFFSETS ------------------------------*/
 
@@ -100,16 +101,16 @@ static const int map2 = TILEMAPS + 0x20 + 90;
 
 void init_ram() {
     memset(beebram, 0, sizeof(beebram));
-    init_textures();
-    init_quads();
-    init_tilemaps();
-    init_entities();
-    init_animdefs();
+    initTextures();
+    initQuads();
+    initTilemaps();
+    initStaticEnts();
+    initAnimdefs();
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void init_textures() {
+static void initTextures() {
     memcpy(&beebram[tTiled0], (uint8_t[]){0XD4, 0XAA, 0XD4, 0XAA, 0XD4, 0XAA, 0XFE, 0X00}, 8);
     memcpy(&beebram[tMesh0], (uint8_t[]){0x80, 0x41, 0x22, 0x14, 0x08, 0x10, 0x22, 0x41}, 8);
     memcpy(&beebram[tMesh1], (uint8_t[]){0x80, 0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41}, 8);
@@ -162,7 +163,7 @@ static void init_textures() {
 
 /*----------------------------------------------------------------------------*/
 
-static void init_quads() {
+static void initQuads() {
     memcpy(&beebram[qTiled], (uint16_t[]){tTiled0, tTiled0, tTiled0, tTiled0}, 8);
     memcpy(&beebram[qMesh], (uint16_t[]){tMesh0, tMesh1, tMesh2, tMesh0}, 8);
     memcpy(&beebram[qTread], (uint16_t[]){tTread0, tTread0, tTread0, tTread0}, 8);
@@ -190,7 +191,7 @@ static void init_quads() {
 
 /*----------------------------------------------------------------------------*/
 
-static void init_tilemaps() {
+static void initTilemaps() {
     // index supports up to 16 maps
     memcpy(&beebram[TILEMAPS + 0 * 2], (uint8_t[]){map1 & 0xFF, map1 >> 8}, 2);
     memcpy(&beebram[TILEMAPS + 1 * 2], (uint8_t[]){map2 & 0xFF, map2 >> 8}, 2);
@@ -222,7 +223,7 @@ static void init_tilemaps() {
 
 /*----------------------------------------------------------------------------*/
 
-void init_entities() {
+void initStaticEnts() {
     // (I,J) is 26x40 here, not 13x20
     uint16_t se_ptr = STATENTS, se_def = STATENTS + 0x60;
 
@@ -293,7 +294,7 @@ void init_entities() {
 
 /*----------------------------------------------------------------------------*/
 
-void init_animdefs() {
+void initAnimdefs() {
     uint16_t anim_ptr = ANIMDEFS, anim_def = ANIMDEFS + 0x40;
 
     // animdef 00: force field
@@ -322,4 +323,9 @@ void init_animdefs() {
            (size_t)9);
     anim_ptr += 2;
     anim_def += 9;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void initPlayer() {
 }
