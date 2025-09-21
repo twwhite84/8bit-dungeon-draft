@@ -258,4 +258,22 @@ void renderStaticEntities() {
 
 /*----------------------------------------------------------------------------*/
 
+void renderPlayer() {
+    // get player x and y
+
+    // compute sprite container i,j
+
+    // compute sprite hshift and vshift offsets
+
+    // paint relevant bg cells to tilebuffer
+
+    // paint sprite foreground to tilebuffer at offsets
+
+    // paint tilebuffer back ro screen at i,j
+}
+
+/*----------------------------------------------------------------------------*/
+
 void render() { renderBeebram(); }
+
+/*----------------------------------------------------------------------------*/

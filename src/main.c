@@ -6,16 +6,22 @@
 #include <stdbool.h>
 
 typedef struct {
-    bool jump_to_L1;
-    bool jump_to_L2;
+    bool level_1;
+    bool level_2;
+    bool player_moveLeft;
+    bool player_moveRight;
+    bool player_moveUp;
+    bool player_moveDown;
 } GameFlags;
 
 void init();
 bool input();
 void update();
 void loadRoom(int roomID);
+void movePlayer(uint8_t dir);
+void updateSpriteContainer(uint16_t ptr_actor);
 
-GameFlags gf;
+GameFlags gameFlags;
 
 /*----------------------------------------------------------------------------*/
 
@@ -62,47 +68,75 @@ void init() {
 /*----------------------------------------------------------------------------*/
 
 bool input() {
+
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT)
             return false;
-
-        // KEYUP means KEYRELEASED, it's not !KEYDOWN
-        if (e.type == SDL_KEYUP) {
-            switch (e.key.keysym.sym) {
-            case SDLK_1:
-                gf.jump_to_L1 = true;
-                break;
-
-            case SDLK_2:
-                gf.jump_to_L2 = true;
-                break;
-            }
-        }
     }
+
+    const uint8_t *keystates = SDL_GetKeyboardState(NULL);
+    if (keystates[SDL_SCANCODE_UP])
+        gameFlags.player_moveUp = true;
+    if (keystates[SDL_SCANCODE_DOWN])
+        gameFlags.player_moveDown = true;
+    if (keystates[SDL_SCANCODE_LEFT])
+        gameFlags.player_moveLeft = true;
+    if (keystates[SDL_SCANCODE_RIGHT])
+        gameFlags.player_moveRight = true;
+    if (keystates[SDL_SCANCODE_1])
+        gameFlags.level_1 = true;
+    if (keystates[SDL_SCANCODE_2])
+        gameFlags.level_2 = true;
+
     return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void update() {
-    if (gf.jump_to_L1) {
-        fprintf(stderr, "\nJump to L0");
+    if (gameFlags.level_1) {
+        fprintf(stderr, "\nLoad room: 1");
         loadRoom(1);
         drawTilebuffer();
         renderStaticEntities();
-        gf.jump_to_L1 = false;
+        gameFlags.level_1 = false;
     }
-    if (gf.jump_to_L2) {
-        fprintf(stderr, "\nJump to L1");
+
+    if (gameFlags.level_2) {
+        fprintf(stderr, "\nLoad room: 2");
         loadRoom(2);
         drawTilebuffer();
         renderStaticEntities();
-        gf.jump_to_L2 = false;
+        gameFlags.level_2 = false;
+    }
+
+    if (gameFlags.player_moveLeft) {
+        movePlayer(PLRDIR_W);
+        gameFlags.player_moveLeft = false;
+    }
+
+    if (gameFlags.player_moveRight) {
+        movePlayer(PLRDIR_E);
+        gameFlags.player_moveRight = false;
+    }
+
+    if (gameFlags.player_moveUp) {
+        movePlayer(PLRDIR_N);
+        gameFlags.player_moveUp = false;
+    }
+
+    if (gameFlags.player_moveDown) {
+        movePlayer(PLRDIR_S);
+        gameFlags.player_moveDown = false;
     }
 
     animateStaticEntities();
     renderStaticEntities();
+
+    updateSpriteContainer(PLAYER);
+
+    renderPlayer();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -134,4 +168,48 @@ void loadRoom(int roomID) {
         }
     }
     beebram[CAMERA + 0x0C] = se_count;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void movePlayer(uint8_t dir) {
+    fprintf(stderr, "Player direction: %d\n", dir);
+
+    // set the player direction vector
+
+    // check the next tile a pixel of movement in that direction will land
+
+    // take appropriate action
+}
+
+void updateSpriteContainer(uint16_t ptr_actor) {
+    // designed for player for the moment
+
+    // get current player position
+    uint16_t x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
+    uint16_t y = beebram[PLAYER + PLR_Y_LO] | (beebram[PLAYER + PLR_Y_HI] << 8);
+
+    // compute and set the shifts for the sprite container
+    beebram[PLAYER + PLR_HSHIFT] = x & 0b111;
+    beebram[PLAYER + PLR_VSHIFT] = y & 0b111;
+
+    // compute relative screen address for origin of sprite container (top-left corner)
+    uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
+    uint16_t corner_old = corner_new;
+
+    // on first sprite container rendering, set cleanup to false
+    if (beebram[PLAYER + PLR_CLEANUP] == 0xFF) {
+        beebram[PLAYER + PLR_CLEANUP] = false;
+    }
+
+    // on subsequent renderings, cleanup is raised if sprite container has moved
+    else {
+        corner_old = beebram[PLAYER + PLR_PCORNER_LO] | (beebram[PLAYER + PLR_PCORNER_HI] << 8);
+        if ((corner_new - corner_old) != 0)
+            beebram[PLAYER + PLR_CLEANUP] = true;
+    }
+
+    // write the new sprite container corner to the player
+    beebram[PLAYER + PLR_PCORNER_LO] = corner_new & 0xFF;
+    beebram[PLAYER + PLR_PCORNER_HI] = corner_new >> 8;
 }

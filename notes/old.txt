@@ -1,0 +1,154 @@
+BBC version code
+
+REM -- MAINLOOP --
+FOR frame%=0 TO 100
+  REM -- INPUTS --
+
+  REM -- UPDATE --
+  REM Save player x,y of previous frame
+  ?&3519=?&3515:?&351A=?&3516
+  ?&351B=?&3517:?&351C=?&3518
+
+  REM New player x,y for current frame
+  temp%=?&3515+(?&3516)*256:REM player x
+  temp%=temp%+1
+  ?&3515=temp% MOD 256:?&3516=temp% DIV 256
+  temp%=?&3517+(?&3518)*256:REM player y
+  temp%=temp%+1
+  ?&3517=temp% MOD 256:?&3518=temp% DIV 256
+
+  REM -- RENDER --
+  PROC_BufferCorner(&3515,&3500):REM player,bfr1
+  ...
+  PROC_BufferBG(&3500):REM bfr1
+  PROC_BufferSprite(&4028, &3500):REM sprSmiley,bfr1
+
+  REM do any cleanup necessary before rendering. check buffer flag.
+  IF ?&3506=1 PROC_Cleanup(&3515,&3500):REM player1,bfr1
+  ?&3506=0:REM lower bfr1 cleanup flag
+  ...
+
+  PROC_Render(&3500):REM bfr1
+NEXT frame%
+
+--------------------------------------------------------------------------------
+
+establishes whether sprite container has moved (and so cleanup needed)
+
+DEF PROC_Cleanup(actor%, buffer%)
+  REM cleanup is only necessary if actor moving right/down due to TL origin
+  crntX%=?(actor%+0)+?(actor%+1)*256
+  crntY%=?(actor%+2)+?(actor%+3)*256
+  prevX%=?(actor%+4)+?(actor%+5)*256
+  prevY%=?(actor%+6)+?(actor%+7)*256
+  dx%=crntX%-prevX%:dy%=crntY%-prevY%
+
+  REM corner is a global
+  corner%=(prevY% DIV 8)*&140 + (prevX% DIV 8)*8
+
+  IF dx% > 0 PROC_ClearStreak(&140)
+  IF dy% > 0 PROC_ClearStreak(8)
+ENDPROC
+
+--------------------------------------------------------------------------------
+
+draws over the streak with background tiles. offrate specifies row/column mode
+
+DEF PROC_ClearStreak(offrate%)
+  REM erase streak cells
+  off%=0
+  FOR t%=2 TO 0 STEP -1
+    tid%=?(&4238+(corner%+off%) DIV 8)
+    tileptr%=FN_GetTilePtr(tid%)
+    penstart%=&5800+corner%+off%
+    FOR s%=7 TO 0 STEP -1
+      ?(penstart%+s%)=?(tileptr%+s%)
+    NEXT s%
+    off%=off%+offrate%
+  NEXT t%
+ENDPROC
+
+--------------------------------------------------------------------------------
+
+DEF PROC_BufferCorner(actor%, buffer%)
+  x%=?(actor%+0)+?(actor%+1)*256
+  y%=?(actor%+2)+?(actor%+3)*256
+  ?(buffer%+0)=x% MOD 8:REM hshift
+  ?(buffer%+1)=y% MOD 8:REM vshift
+
+  corner%=(y% DIV 8)*&140 + (x% DIV 8)*8
+
+  REM on first write, set cleanup to false
+  IF ?(buffer%+6)=NULL THEN ?(buffer%+6)=0:GOTO 1150
+
+  crnrprv%=?(buffer%+2)+?(buffer%+3)*256
+  IF (corner%-cnrprv%) <> 0 THEN ?(buffer%+6)=1:REM raise cleanup flag
+
+  REM 1150
+  ?(buffer%+2)=corner% MOD 256:REM CORNERL
+  ?(buffer%+3)=corner% DIV 256:REM CORNERH
+ENDPROC
+
+--------------------------------------------------------------------------------
+
+DEF PROC_BufferBG(buffer%)
+  REM fill buffer with bg tiles
+  boff%=0:roff%=0:t%=3
+  corner%=?(buffer%+2)+?(buffer%+3)*256
+  bfrspace%=?(buffer%+4)+?(buffer%+5)*256
+
+  FOR i%=8 TO 0 STEP -1
+    tid%=?(&4238+(corner%+roff%+boff%) DIV 8)
+    bfrstart%=bfrspace%+boff%
+    tileptr%=(FN_GetTilePtr(tid%))
+    FOR j%=7 TO 0 STEP -1
+      ?(bfrstart%+j%)=?(tileptr%+j%)
+    NEXT j%
+    t%=t%-1
+    IF t%=0 roff%=roff%+&128:t%=3
+    boff%=boff%+8
+  NEXT i%
+ENDPROC
+
+--------------------------------------------------------------------------------
+
+DEF FN_GetTilePtr(tid%)
+  ptr%=&4000+(8*tid%)
+=ptr%
+
+--------------------------------------------------------------------------------
+
+DEF PROC_BufferSprite(sprite%, buffer%)
+  REM BHOPS=8*[0,1,3,4]
+
+  REM Composite sprite at offset
+  rshift%=2^?buffer%:REM hshift
+  lshift%=2^(8-?buffer%)
+  vshift%=?(buffer%+1):REM vshift
+  bfrspace%=?(buffer%+4)+?(buffer%+5)*256
+  q%=48
+  minv8%=8-vshift%
+
+  FOR i%=3 TO 0 STEP -1
+    penstart%=bfrspace%+?(&4752+i%)+vshift%
+    sq%=sprite%+q%
+    s8%=sq%+8
+    FOR j%=0 TO 7
+      overL%=?(sq%+j%) DIV rshift%
+      overR%=?(sq%+j%) * lshift%
+      maskL%=?(s8%+j%) DIV rshift%
+      maskR%=?(s8+j%) * lsfhit%
+
+      IF j%=minv8% penstart%=penstart%+16
+
+      REM mask and comp - left
+      ?(penstart%+j%)=?(penstart%+j%) AND (maskL% EOR &FF)
+      ?(penstart%+j%)=?(penstart%+j%) OR overL%
+
+      REM mask and comp - right
+      ?(penstart%+8+j%)=?(penstart%+8+j%) AND (maskR% EOR &FF)
+      ?(penstart%+8+j%)=?(penstart%+8+j%) OR overR%
+    NEXT j%
+    q%=q%-16
+  NEXT i%
+ENDPROC
