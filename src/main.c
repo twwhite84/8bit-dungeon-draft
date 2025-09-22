@@ -252,7 +252,7 @@ void bufferSpriteForeground(uint16_t actor) {
     int rshift = beebram[actor + PLR_HSHIFT];
     int lshift = 8 - rshift;
     int dshift = beebram[actor + PLR_VSHIFT];
-    int ushift = 8 - dshift;
+    int ushift = 8 - dshift; // minv8
 
     // just assume a compdef for now, expand to animdef frame later
     uint16_t pcompdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
@@ -260,8 +260,26 @@ void bufferSpriteForeground(uint16_t actor) {
 
     // position each portion of the quad into place
     for (int t = 0; t < 4; t++) {
+        penstart = OFFBUFFER + bhops[t] + dshift;
+
         uint16_t ptexture = beebram[pcompdef + (2 * t)] | (beebram[pcompdef + (2 * t) + 1] << 8);
         uint16_t pmask = beebram[pcompdef + 8 + (2 * t)] | (beebram[pcompdef + 8 + (2 * t) + 1] << 8);
+
+        for (int j = 0; j < 8; j++) {
+            uint8_t overL = beebram[ptexture + j] >> rshift;
+            uint8_t overR = beebram[ptexture + j] << lshift;
+            uint8_t maskL = beebram[pmask + j] >> rshift;
+            uint8_t maskR = beebram[pmask + j] << lshift;
+
+            if (j == ushift)
+                penstart += 16;
+
+            beebram[penstart + j] = beebram[penstart + j] & (maskL ^ 0xFF);
+            beebram[penstart + j] = beebram[penstart + j] | overL;
+
+            beebram[penstart + 8 + j] = beebram[penstart + 8 + j] & (maskR ^ 0xFF);
+            beebram[penstart + 8 + j] = beebram[penstart + 8 + j] | overR;
+        }
 
         // dummy code
         /* penstart = OFFBUFFER + (8 * t);
@@ -291,7 +309,7 @@ void bufferSpriteForeground(uint16_t actor) {
             beebram[OFFBUFFER + penstart + 8 + s] = (beebram[TEXTURES + s] << lshift);
         } */
 
-        penstart = bhops[t] + dshift;
+        /* penstart = bhops[t] + dshift;
         for (int s = 0; s <= (7 - dshift); s++) {
             // TL
             beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
@@ -311,7 +329,7 @@ void bufferSpriteForeground(uint16_t actor) {
             // BR
             beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
             beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) << lshift);
-        }
+        } */
     }
 }
 
