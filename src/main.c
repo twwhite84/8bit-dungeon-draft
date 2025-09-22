@@ -138,7 +138,7 @@ void update() {
 
     updateSpriteContainer(PLAYER);
     bufferSpriteBackground(PLAYER);
-    // bufferSpriteForeground(PLAYER);
+    bufferSpriteForeground(PLAYER);
 
     renderPlayer();
 }
@@ -263,26 +263,54 @@ void bufferSpriteForeground(uint16_t actor) {
         uint16_t ptexture = beebram[pcompdef + (2 * t)] | (beebram[pcompdef + (2 * t) + 1] << 8);
         uint16_t pmask = beebram[pcompdef + 8 + (2 * t)] | (beebram[pcompdef + 8 + (2 * t) + 1] << 8);
 
+        // dummy code
+        /* penstart = OFFBUFFER + (8 * t);
+        for (int s = 0; s <= 7; s++) {
+            beebram[penstart + s] = 0;
+        } */
+
+        /* penstart = bhops[t] + dshift;
+        for (int s = 0; s <= (7 - dshift); s++) {
+            // TL
+            // beebram[OFFBUFFER + penstart + s] &= (0x00);
+            beebram[OFFBUFFER + penstart + s] = (beebram[TEXTURES + s] >> rshift);
+
+            // TR
+            // beebram[OFFBUFFER + penstart + 8 + s] &= (0x00);
+            beebram[OFFBUFFER + penstart + 8 + s] = (beebram[TEXTURES + s] << lshift);
+        }
+
+        penstart = bhops[t] + (24 - ushift);
+        for (int s = (8 - dshift); s <= 7; s++) {
+            // BL
+            // beebram[OFFBUFFER + penstart + s] &= (0x00);
+            beebram[OFFBUFFER + penstart + s] = (beebram[TEXTURES + s] >> rshift);
+
+            // BR
+            // beebram[OFFBUFFER + penstart + 8 + s] &= (0x00);
+            beebram[OFFBUFFER + penstart + 8 + s] = (beebram[TEXTURES + s] << lshift);
+        } */
+
         penstart = bhops[t] + dshift;
         for (int s = 0; s <= (7 - dshift); s++) {
             // TL
             beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
-            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask]) >> rshift);
+            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) >> rshift);
 
             // TR
             beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
-            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask]) << lshift);
+            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) << lshift);
         }
 
         penstart = bhops[t] + (24 - ushift);
         for (int s = (8 - dshift); s <= 7; s++) {
             // BL
             beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
-            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask]) >> rshift);
+            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) >> rshift);
 
             // BR
             beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
-            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask]) << lshift);
+            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) << lshift);
         }
     }
 }
