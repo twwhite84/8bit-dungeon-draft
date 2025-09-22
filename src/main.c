@@ -19,7 +19,9 @@ bool input();
 void update();
 void loadRoom(int roomID);
 void movePlayer(uint8_t dir);
-void updateSpriteContainer(uint16_t ptr_actor);
+void updateSpriteContainer(uint16_t actor);
+void bufferSpriteBackground(uint16_t actor);
+void bufferSpriteForeground(uint16_t actor);
 
 GameFlags gameFlags;
 
@@ -135,6 +137,8 @@ void update() {
     renderStaticEntities();
 
     updateSpriteContainer(PLAYER);
+    bufferSpriteBackground(PLAYER);
+    // bufferSpriteForeground(PLAYER);
 
     renderPlayer();
 }
@@ -182,34 +186,138 @@ void movePlayer(uint8_t dir) {
     // take appropriate action
 }
 
-void updateSpriteContainer(uint16_t ptr_actor) {
-    // designed for player for the moment
+void updateSpriteContainer(uint16_t actor) {
+    // ONLY IMPLEMENTED FOR PLAYER FOR NOW
 
     // get current player position
-    uint16_t x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
-    uint16_t y = beebram[PLAYER + PLR_Y_LO] | (beebram[PLAYER + PLR_Y_HI] << 8);
+    uint16_t x = beebram[actor + PLR_X_LO] | (beebram[actor + PLR_X_HI] << 8);
+    uint16_t y = beebram[actor + PLR_Y_LO] | (beebram[actor + PLR_Y_HI] << 8);
 
     // compute and set the shifts for the sprite container
-    beebram[PLAYER + PLR_HSHIFT] = x & 0b111;
-    beebram[PLAYER + PLR_VSHIFT] = y & 0b111;
+    beebram[actor + PLR_HSHIFT] = x & 0b111;
+    beebram[actor + PLR_VSHIFT] = y & 0b111;
 
     // compute relative screen address for origin of sprite container (top-left corner)
     uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
     uint16_t corner_old = corner_new;
 
-    // on first sprite container rendering, set cleanup to false
-    if (beebram[PLAYER + PLR_CLEANUP] == 0xFF) {
-        beebram[PLAYER + PLR_CLEANUP] = false;
+    // on first sprite container setup, set cleanup to false
+    if (beebram[actor + PLR_CLEANUP] == 0xFF) {
+        beebram[actor + PLR_CLEANUP] = false;
     }
 
-    // on subsequent renderings, cleanup is raised if sprite container has moved
+    // on subsequent computations, cleanup is raised if sprite container has moved
     else {
-        corner_old = beebram[PLAYER + PLR_PCORNER_LO] | (beebram[PLAYER + PLR_PCORNER_HI] << 8);
+        corner_old = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
         if ((corner_new - corner_old) != 0)
-            beebram[PLAYER + PLR_CLEANUP] = true;
+            beebram[actor + PLR_CLEANUP] = true;
     }
 
     // write the new sprite container corner to the player
-    beebram[PLAYER + PLR_PCORNER_LO] = corner_new & 0xFF;
-    beebram[PLAYER + PLR_PCORNER_HI] = corner_new >> 8;
+    beebram[actor + PLR_PCORNER_LO] = corner_new & 0xFF;
+    beebram[actor + PLR_PCORNER_HI] = corner_new >> 8;
 }
+
+/*----------------------------------------------------------------------------*/
+
+// paint the background tiles for the sprite container into the offbuffer
+void bufferSpriteBackground(uint16_t actor) {
+    int boff = 0, roff = 0, t = 3;
+    uint16_t corner = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
+
+    // for each of the 9 tiles of the sprite container
+    for (int i = 8; i >= 0; i--) {
+        // fetch the corresponding background tile id from the tilebuffer
+        uint8_t tileID = beebram[TILEBUFFER + ((corner + roff + boff) / 8)];
+
+        // paint the background to the offbuffer
+        uint16_t offstart = OFFBUFFER + boff;
+        uint16_t bg_texture_addr = getTileTextureAddr(tileID);
+        for (int s = 7; s >= 0; s--) {
+            beebram[offstart + s] = beebram[bg_texture_addr + s];
+        }
+        t--;
+        if (t == 0) {
+            roff += 0x0128;
+            t = 3;
+        }
+        boff += 8;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+void bufferSpriteForeground(uint16_t actor) {
+    // only implemented for player for now
+    int rshift = beebram[actor + PLR_HSHIFT];
+    int lshift = 8 - rshift;
+    int dshift = beebram[actor + PLR_VSHIFT];
+    int ushift = 8 - dshift;
+
+    // just assume a compdef for now, expand to animdef frame later
+    uint16_t pcompdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
+    uint16_t penstart;
+
+    // position each portion of the quad into place
+    for (int t = 0; t < 4; t++) {
+        uint16_t ptexture = beebram[pcompdef + (2 * t)] | (beebram[pcompdef + (2 * t) + 1] << 8);
+        uint16_t pmask = beebram[pcompdef + 8 + (2 * t)] | (beebram[pcompdef + 8 + (2 * t) + 1] << 8);
+
+        penstart = bhops[t] + dshift;
+        for (int s = 0; s <= (7 - dshift); s++) {
+            // TL
+            beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
+            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask]) >> rshift);
+
+            // TR
+            beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
+            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask]) << lshift);
+        }
+
+        penstart = bhops[t] + (24 - ushift);
+        for (int s = (8 - dshift); s <= 7; s++) {
+            // BL
+            beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
+            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask]) >> rshift);
+
+            // BR
+            beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
+            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask]) << lshift);
+        }
+    }
+}
+
+/* DEF PROC_BufferSprite(sprite%, buffer%)
+  REM BHOPS=8*[0,1,3,4]
+
+  REM Composite sprite at offset
+  rshift%=2^?buffer%:REM hshift
+  lshift%=2^(8-?buffer%)
+  vshift%=?(buffer%+1):REM vshift
+  bfrspace%=?(buffer%+4)+?(buffer%+5)*256
+  q%=48
+  minv8%=8-vshift%
+
+  FOR i%=3 TO 0 STEP -1
+    penstart%=bfrspace%+?(&4752+i%)+vshift%
+    sq%=sprite%+q%
+    s8%=sq%+8
+    FOR j%=0 TO 7
+      overL%=?(sq%+j%) DIV rshift%
+      overR%=?(sq%+j%) * lshift%
+      maskL%=?(s8%+j%) DIV rshift%
+      maskR%=?(s8+j%) * lsfhit%
+
+      IF j%=minv8% penstart%=penstart%+16
+
+      REM mask and comp - left
+      ?(penstart%+j%)=?(penstart%+j%) AND (maskL% EOR &FF)
+      ?(penstart%+j%)=?(penstart%+j%) OR overL%
+
+      REM mask and comp - right
+      ?(penstart%+8+j%)=?(penstart%+8+j%) AND (maskR% EOR &FF)
+      ?(penstart%+8+j%)=?(penstart%+8+j%) OR overR%
+    NEXT j%
+    q%=q%-16
+  NEXT i%
+ENDPROC */

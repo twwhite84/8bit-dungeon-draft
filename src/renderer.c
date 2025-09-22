@@ -270,6 +270,22 @@ void renderPlayer() {
     // paint sprite foreground to tilebuffer at offsets
 
     // paint tilebuffer back ro screen at i,j
+
+    // paint the offbuffer back to screen at entity coordinates
+    uint16_t corner = beebram[PLAYER + PLR_PCORNER_LO] | (beebram[PLAYER + PLR_PCORNER_HI] << 8);
+    uint16_t penbase = 0x5800 + corner;
+    // memset(&beebram[OFFBUFFER], 0, (size_t)72);
+    for (int s = 7; s >= 0; s--) {
+        beebram[penbase + s] = beebram[OFFBUFFER + s];
+        beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
+        beebram[penbase + s + 16] = beebram[OFFBUFFER + 16 + s];
+        beebram[penbase + s + 320] = beebram[OFFBUFFER + 24 + s];
+        beebram[penbase + s + 328] = beebram[OFFBUFFER + 32 + s];
+        beebram[penbase + s + 336] = beebram[OFFBUFFER + 40 + s];
+        beebram[penbase + s + 640] = beebram[OFFBUFFER + 48 + s];
+        beebram[penbase + s + 648] = beebram[OFFBUFFER + 56 + s];
+        beebram[penbase + s + 656] = beebram[OFFBUFFER + 64 + s];
+    }
 }
 
 /*----------------------------------------------------------------------------*/

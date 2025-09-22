@@ -523,9 +523,9 @@ void initPlayer() {
     memset(&beebram[PLAYER], 0, (size_t)32);
 
     beebram[PLAYER + PLR_ROOMID] = 1; // loadRoom should generally use this
-    beebram[PLAYER + PLR_X_LO] = 8;
+    beebram[PLAYER + PLR_X_LO] = 11;
     beebram[PLAYER + PLR_X_HI] = 0;
-    beebram[PLAYER + PLR_Y_LO] = 8;
+    beebram[PLAYER + PLR_Y_LO] = 11;
     beebram[PLAYER + PLR_Y_HI] = 0;
     beebram[PLAYER + PLR_PVIZDEF_LO] = qDogIdleR & 0xFF;
     beebram[PLAYER + PLR_PVIZDEF_HI] = qDogIdleR >> 8;

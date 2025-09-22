@@ -83,6 +83,8 @@ typedef struct {
 
 extern uint8_t beebram[0x8000];
 
+extern int bhops[4];
+
 extern uint8_t reversed_bytes[256];
 
 FloorResults floordiv(int a, int b);
