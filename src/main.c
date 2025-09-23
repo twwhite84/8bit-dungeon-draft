@@ -194,23 +194,25 @@ void updateSpriteContainer(uint16_t actor) {
     uint16_t y = beebram[actor + PLR_Y_LO] | (beebram[actor + PLR_Y_HI] << 8);
 
     // compute and set the shifts for the sprite container
-    beebram[actor + PLR_HSHIFT] = x & 0b111;
-    beebram[actor + PLR_VSHIFT] = y & 0b111;
+    uint8_t hshift = x & 0b111;
+    uint8_t vshift = y & 0b111;
+    beebram[actor + PLR_HSHIFT4_VSHIFT4] = (beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
+    beebram[actor + PLR_HSHIFT4_VSHIFT4] = (beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
     // compute relative screen address for origin of sprite container (top-left corner)
     uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
     uint16_t corner_old = corner_new;
 
     // on first sprite container setup, set cleanup to false
-    if (beebram[actor + PLR_CLEANUP] == 0xFF) {
-        beebram[actor + PLR_CLEANUP] = false;
+    if (beebram[actor + PLR_ELAPSED6_CLEANUP2] & 0b11 == 2) {
+        beebram[actor + PLR_ELAPSED6_CLEANUP2] &= 11111100;
     }
 
     // on subsequent computations, cleanup is raised if sprite container has moved
     else {
         corner_old = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
         if ((corner_new - corner_old) != 0)
-            beebram[actor + PLR_CLEANUP] = true;
+            beebram[actor + PLR_ELAPSED6_CLEANUP2] |= true;
     }
 
     // write the new sprite container corner to the player
@@ -249,9 +251,9 @@ void bufferSpriteBackground(uint16_t actor) {
 
 void bufferSpriteForeground(uint16_t actor) {
     // only implemented for player for now
-    int rshift = beebram[actor + PLR_HSHIFT];
+    int rshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] >> 4;
     int lshift = 8 - rshift;
-    int dshift = beebram[actor + PLR_VSHIFT];
+    int dshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F;
     int ushift = 8 - dshift;
 
     // just assume a compdef for now, expand to animdef frame later
