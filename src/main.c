@@ -293,8 +293,19 @@ void bufferSpriteForeground(uint16_t actor) {
     int dshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F;
     int ushift = 8 - dshift;
 
-    // just assume a compdef for now, expand to animdef frame later
-    uint16_t pcompdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
+    uint16_t pvizdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
+    uint16_t pcompdef;
+
+    // the vizdef can either be a compdef directly, or else a frame in an animdef
+    if (pvizdef >= ANIMDEFS) {
+        uint16_t panimdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
+        uint8_t current = (beebram[panimdef + AD_FRAMES3_CURRENT3_YOYO2] >> 2) & 0b00000111;
+        current *= 2;
+        pcompdef = beebram[panimdef + AD_PQUADDEF_LO + current] | (beebram[panimdef + AD_PQUADDEF_HI + current] << 8);
+    } else {
+        pcompdef = pvizdef;
+    }
+
     uint16_t penbase = OFFBUFFER + dshift;
 
     // position each portion of the quad into place
@@ -306,6 +317,7 @@ void bufferSpriteForeground(uint16_t actor) {
         uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
         tidx_lo -= 2;
 
+        // to get this to decrement, penstart -= 16 with initial penbase + 15 (or something)
         for (int s = 0; s < 8; s++) {
             uint8_t overL = beebram[ptexture + s] >> rshift;
             uint8_t overR = beebram[ptexture + s] << lshift;

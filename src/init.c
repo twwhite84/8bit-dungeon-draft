@@ -529,7 +529,9 @@ void initPlayer() {
     beebram[PLAYER + PLR_X_HI] = 0;
     beebram[PLAYER + PLR_Y_LO] = 8;
     beebram[PLAYER + PLR_Y_HI] = 0;
-    beebram[PLAYER + PLR_PVIZDEF_LO] = qDogIdleR & 0xFF;
-    beebram[PLAYER + PLR_PVIZDEF_HI] = qDogIdleR >> 8;
+    // beebram[PLAYER + PLR_PVIZDEF_LO] = qDogIdleR & 0xFF;
+    // beebram[PLAYER + PLR_PVIZDEF_HI] = qDogIdleR >> 8;
+    beebram[PLAYER + PLR_PVIZDEF_LO] = aDogWalkR & 0xFF;
+    beebram[PLAYER + PLR_PVIZDEF_HI] = aDogWalkR >> 8;
     beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] |= 2; // cleanup 2 means unset
 }
