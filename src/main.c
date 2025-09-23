@@ -266,7 +266,7 @@ void bufferSpriteBackground(uint16_t actor) {
     // for each of the 9 tiles of the sprite container
     for (int i = 8; i >= 0; i--) {
         // fetch the corresponding background tile id from the tilebuffer
-        uint8_t tileID = beebram[TILEBUFFER + ((corner + roff + boff) / 8)];
+        uint8_t tileID = beebram[TILEBUFFER + ((corner + roff + boff) >> 3)];
 
         // paint the background to the offbuffer
         uint16_t offstart = OFFBUFFER + boff;
@@ -287,61 +287,11 @@ void bufferSpriteBackground(uint16_t actor) {
 
 void bufferSpriteForeground(uint16_t actor) {
     // only implemented for player for now
-    bool vspan = false; // vspan true means actor spans 3 vertical tiles
     int rshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] >> 4;
     int lshift = 8 - rshift;
 
     int dshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F;
     int ushift = 8 - dshift;
-    if (dshift != 0)
-        vspan = true;
-
-    // just assume a compdef for now, expand to animdef frame later
-    uint16_t pcompdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
-    uint16_t penbase = OFFBUFFER + dshift;
-
-    // position each portion of the quad into place
-    int tidx_lo = 0; // [(0,1),(2,3),(4,5),(6,7)]
-    for (int t = 0; t < 4; t++) {
-        uint16_t penstart = penbase + bhops[t]; // +15 and penstart -=16 to decrement inner loop
-        // if (dshift != 0)
-        // penstart += 15;
-
-        uint16_t ptexture = beebram[pcompdef + tidx_lo] | (beebram[pcompdef + tidx_lo + 1] << 8);
-        uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
-        tidx_lo += 2;
-
-        for (int s = 0; s < 8; s++) {
-            uint8_t overL = beebram[ptexture + s] >> rshift;
-            uint8_t overR = beebram[ptexture + s] << lshift;
-            uint8_t maskL = beebram[pmask + s] >> rshift;
-            uint8_t maskR = beebram[pmask + s] << lshift;
-
-            if (s == ushift) {
-                penstart += 16;
-            }
-
-            // lhs
-            beebram[penstart + s] = beebram[penstart + s] & (maskL ^ 0xFF);
-            beebram[penstart + s] = beebram[penstart + s] | overL;
-
-            // rhs
-            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] & (maskR ^ 0xFF);
-            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] | overR;
-        }
-    }
-}
-
-void _bufferSpriteForeground(uint16_t actor) {
-    // only implemented for player for now
-    bool vspan = false; // vspan true means actor spans 3 vertical tiles
-    int rshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] >> 4;
-    int lshift = 8 - rshift;
-
-    int dshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F;
-    int ushift = 8 - dshift;
-    if (dshift != 0)
-        vspan = true;
 
     // just assume a compdef for now, expand to animdef frame later
     uint16_t pcompdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
@@ -351,21 +301,19 @@ void _bufferSpriteForeground(uint16_t actor) {
     int tidx_lo = 6; // [(0,1),(2,3),(4,5),(6,7)]
     for (int t = 3; t >= 0; t--) {
         uint16_t penstart = penbase + bhops[t]; // +15 and penstart -=16 to decrement inner loop
-        if (dshift != 0)
-            penstart += 15;
 
         uint16_t ptexture = beebram[pcompdef + tidx_lo] | (beebram[pcompdef + tidx_lo + 1] << 8);
         uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
         tidx_lo -= 2;
 
-        for (int s = 7; s >= 0; s--) {
+        for (int s = 0; s < 8; s++) {
             uint8_t overL = beebram[ptexture + s] >> rshift;
             uint8_t overR = beebram[ptexture + s] << lshift;
             uint8_t maskL = beebram[pmask + s] >> rshift;
             uint8_t maskR = beebram[pmask + s] << lshift;
 
             if (s == ushift) {
-                penstart -= 16;
+                penstart += 16;
             }
 
             // lhs
