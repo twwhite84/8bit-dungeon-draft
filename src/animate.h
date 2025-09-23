@@ -2,5 +2,6 @@
 #define ANIMATE_H
 
 void animateStaticEntities();
+void animatePlayer();
 
 #endif

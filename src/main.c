@@ -120,6 +120,7 @@ void update() {
 
     if (gameFlags.player_moveRight) {
         movePlayer(PLRDIR_E);
+        animatePlayer();
         gameFlags.player_moveRight = false;
     }
 
@@ -296,7 +297,7 @@ void bufferSpriteForeground(uint16_t actor) {
     uint16_t pvizdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
     uint16_t pcompdef;
 
-    // the vizdef can either be a compdef directly, or else a frame in an animdef
+    // the compdef can either be a quad pair directly, or else from an animdef frame
     if (pvizdef >= ANIMDEFS) {
         uint16_t panimdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
         uint8_t current = (beebram[panimdef + AD_FRAMES3_CURRENT3_YOYO2] >> 2) & 0b00000111;
