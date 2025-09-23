@@ -137,10 +137,13 @@ void update() {
     renderStaticEntities();
 
     // if player's redraw flag is raised, redraw
-    updateSpriteContainer(PLAYER);
-    bufferSpriteBackground(PLAYER);
-    bufferSpriteForeground(PLAYER);
-    renderPlayer();
+    uint8_t redraw = beebram[PLAYER + PLR_ROOM6_REDRAW2] & 0b11;
+    if (redraw) {
+        updateSpriteContainer(PLAYER);
+        bufferSpriteBackground(PLAYER);
+        bufferSpriteForeground(PLAYER);
+        renderPlayer();
+    }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -178,6 +181,16 @@ void loadRoom(int roomID) {
 
 void movePlayer(uint8_t dir) {
     fprintf(stderr, "Player direction: %d\n", dir);
+
+    // raise the redraw flag
+    beebram[PLAYER + PLR_ROOM6_REDRAW2] &= 0b11111100;
+    beebram[PLAYER + PLR_ROOM6_REDRAW2] |= true;
+
+    // for now simply increment the player x by 1
+    uint16_t x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
+    x++;
+    beebram[PLAYER + PLR_X_LO] = x & 0xFF;
+    beebram[PLAYER + PLR_X_HI] = x >> 8;
 
     // set the player direction vector
 

@@ -22,6 +22,7 @@ enum {
     OFFBUFFER = 0x3890,  // 12 8x8px tiles
     TILEMAPS = 0x3900,   // 32 maps
     LITEMAPS = 0x4E00,   // 17 maps
+    SCREEN = 0x5800,
 
     SE_ELAPSED5_TYPE3 = 0,
     SE_NQUADS2_ROOMID6 = 1,
@@ -58,30 +59,6 @@ enum {
     PLR_PINV1_HI = 17,
     PLR_PINV2_LO = 18,
     PLR_PINV2_HI = 19,
-
-    // PLR_ROOMID = 0,
-    // PLR_X_LO = 1,
-    // PLR_X_HI = 2,
-    // PLR_Y_LO = 3,
-    // PLR_Y_HI = 4,
-    // PLR_DX = 5,
-    // PLR_DY = 6,
-    // PLR_HSHIFT = 7,
-    // PLR_VSHIFT = 8,
-    // PLR_PCORNER_LO = 9,
-    // PLR_PCORNER_HI = 10,
-    // PLR_CLEANUP = 11,
-    // PLR_PVIZDEF_LO = 12,
-    // PLR_PVIZDEF_HI = 13,
-    // PLR_ELAPSED = 14,
-    // PLR_HP = 15,
-    // PLR_MP = 16,
-    // PLR_PINV0_LO = 17,
-    // PLR_PINV0_HI = 18,
-    // PLR_PINV1_LO = 19,
-    // PLR_PINV1_HI = 20,
-    // PLR_PINV2_LO = 21,
-    // PLR_PINV2_HI = 22,
 
     CAM_ROOMID = 0,
     CAM_PLITEMAP_LO = 1,

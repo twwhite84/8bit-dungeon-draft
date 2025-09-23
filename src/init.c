@@ -1,4 +1,5 @@
 #include "shared.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -523,6 +524,7 @@ void initPlayer() {
     memset(&beebram[PLAYER], 0, (size_t)32);
 
     beebram[PLAYER + PLR_ROOM6_REDRAW2] |= (1 << 2); // room 1
+    beebram[PLAYER + PLR_ROOM6_REDRAW2] |= true;
     beebram[PLAYER + PLR_X_LO] = 11;
     beebram[PLAYER + PLR_X_HI] = 0;
     beebram[PLAYER + PLR_Y_LO] = 11;
