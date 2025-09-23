@@ -186,11 +186,34 @@ void movePlayer(uint8_t dir) {
     beebram[PLAYER + PLR_ROOM6_REDRAW2] &= 0b11111100;
     beebram[PLAYER + PLR_ROOM6_REDRAW2] |= true;
 
-    // for now simply increment the player x by 1
-    uint16_t x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
-    x++;
-    beebram[PLAYER + PLR_X_LO] = x & 0xFF;
-    beebram[PLAYER + PLR_X_HI] = x >> 8;
+    // for now simply increment/decrement the player x or y
+    uint16_t x, y;
+    switch (dir) {
+    case PLRDIR_E:
+        x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
+        x++;
+        beebram[PLAYER + PLR_X_LO] = x & 0xFF;
+        beebram[PLAYER + PLR_X_HI] = x >> 8;
+        break;
+    case PLRDIR_W:
+        x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
+        x--;
+        beebram[PLAYER + PLR_X_LO] = x & 0xFF;
+        beebram[PLAYER + PLR_X_HI] = x >> 8;
+        break;
+    case PLRDIR_N:
+        y = beebram[PLAYER + PLR_Y_LO] | (beebram[PLAYER + PLR_Y_HI] << 8);
+        y--;
+        beebram[PLAYER + PLR_Y_LO] = y & 0xFF;
+        beebram[PLAYER + PLR_Y_HI] = y >> 8;
+        break;
+    case PLRDIR_S:
+        y = beebram[PLAYER + PLR_Y_LO] | (beebram[PLAYER + PLR_Y_HI] << 8);
+        y++;
+        beebram[PLAYER + PLR_Y_LO] = y & 0xFF;
+        beebram[PLAYER + PLR_Y_HI] = y >> 8;
+        break;
+    }
 
     // set the player direction vector
 

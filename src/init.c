@@ -525,9 +525,9 @@ void initPlayer() {
 
     beebram[PLAYER + PLR_ROOM6_REDRAW2] |= (1 << 2); // room 1
     beebram[PLAYER + PLR_ROOM6_REDRAW2] |= true;
-    beebram[PLAYER + PLR_X_LO] = 11;
+    beebram[PLAYER + PLR_X_LO] = 8;
     beebram[PLAYER + PLR_X_HI] = 0;
-    beebram[PLAYER + PLR_Y_LO] = 11;
+    beebram[PLAYER + PLR_Y_LO] = 8;
     beebram[PLAYER + PLR_Y_HI] = 0;
     beebram[PLAYER + PLR_PVIZDEF_LO] = qDogIdleR & 0xFF;
     beebram[PLAYER + PLR_PVIZDEF_HI] = qDogIdleR >> 8;
