@@ -136,10 +136,10 @@ void update() {
     animateStaticEntities();
     renderStaticEntities();
 
+    // if player's redraw flag is raised, redraw
     updateSpriteContainer(PLAYER);
     bufferSpriteBackground(PLAYER);
     bufferSpriteForeground(PLAYER);
-
     renderPlayer();
 }
 
@@ -261,20 +261,20 @@ void bufferSpriteForeground(uint16_t actor) {
     // position each portion of the quad into place
     int tidx_lo = 6; // [(0,1),(2,3),(4,5),(6,7)]
     for (int t = 3; t >= 0; t--) {
-        uint16_t penstart = penbase + bhops[t];
+        uint16_t penstart = penbase + bhops[t] + 15; // +15 and penstart -=16 to decrement inner loop
 
         uint16_t ptexture = beebram[pcompdef + tidx_lo] | (beebram[pcompdef + tidx_lo + 1] << 8);
         uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
         tidx_lo -= 2;
 
-        for (int s = 0; s < 8; s++) {
+        for (int s = 7; s >= 0; s--) {
             uint8_t overL = beebram[ptexture + s] >> rshift;
             uint8_t overR = beebram[ptexture + s] << lshift;
             uint8_t maskL = beebram[pmask + s] >> rshift;
             uint8_t maskR = beebram[pmask + s] << lshift;
 
             if (s == ushift)
-                penstart += 16;
+                penstart -= 16;
 
             // lhs
             beebram[penstart + s] = beebram[penstart + s] & (maskL ^ 0xFF);
