@@ -252,118 +252,37 @@ void bufferSpriteForeground(uint16_t actor) {
     int rshift = beebram[actor + PLR_HSHIFT];
     int lshift = 8 - rshift;
     int dshift = beebram[actor + PLR_VSHIFT];
-    int ushift = 8 - dshift; // minv8
+    int ushift = 8 - dshift;
 
     // just assume a compdef for now, expand to animdef frame later
     uint16_t pcompdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
-    uint16_t penstart;
+    uint16_t penbase = OFFBUFFER + dshift;
 
     // position each portion of the quad into place
-    for (int t = 0; t < 4; t++) {
-        penstart = OFFBUFFER + bhops[t] + dshift;
+    int tidx_lo = 6; // [(0,1),(2,3),(4,5),(6,7)]
+    for (int t = 3; t >= 0; t--) {
+        uint16_t penstart = penbase + bhops[t];
 
-        uint16_t ptexture = beebram[pcompdef + (2 * t)] | (beebram[pcompdef + (2 * t) + 1] << 8);
-        uint16_t pmask = beebram[pcompdef + 8 + (2 * t)] | (beebram[pcompdef + 8 + (2 * t) + 1] << 8);
+        uint16_t ptexture = beebram[pcompdef + tidx_lo] | (beebram[pcompdef + tidx_lo + 1] << 8);
+        uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
+        tidx_lo -= 2;
 
-        for (int j = 0; j < 8; j++) {
-            uint8_t overL = beebram[ptexture + j] >> rshift;
-            uint8_t overR = beebram[ptexture + j] << lshift;
-            uint8_t maskL = beebram[pmask + j] >> rshift;
-            uint8_t maskR = beebram[pmask + j] << lshift;
+        for (int s = 0; s < 8; s++) {
+            uint8_t overL = beebram[ptexture + s] >> rshift;
+            uint8_t overR = beebram[ptexture + s] << lshift;
+            uint8_t maskL = beebram[pmask + s] >> rshift;
+            uint8_t maskR = beebram[pmask + s] << lshift;
 
-            if (j == ushift)
+            if (s == ushift)
                 penstart += 16;
 
-            beebram[penstart + j] = beebram[penstart + j] & (maskL ^ 0xFF);
-            beebram[penstart + j] = beebram[penstart + j] | overL;
+            // lhs
+            beebram[penstart + s] = beebram[penstart + s] & (maskL ^ 0xFF);
+            beebram[penstart + s] = beebram[penstart + s] | overL;
 
-            beebram[penstart + 8 + j] = beebram[penstart + 8 + j] & (maskR ^ 0xFF);
-            beebram[penstart + 8 + j] = beebram[penstart + 8 + j] | overR;
+            // rhs
+            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] & (maskR ^ 0xFF);
+            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] | overR;
         }
-
-        // dummy code
-        /* penstart = OFFBUFFER + (8 * t);
-        for (int s = 0; s <= 7; s++) {
-            beebram[penstart + s] = 0;
-        } */
-
-        /* penstart = bhops[t] + dshift;
-        for (int s = 0; s <= (7 - dshift); s++) {
-            // TL
-            // beebram[OFFBUFFER + penstart + s] &= (0x00);
-            beebram[OFFBUFFER + penstart + s] = (beebram[TEXTURES + s] >> rshift);
-
-            // TR
-            // beebram[OFFBUFFER + penstart + 8 + s] &= (0x00);
-            beebram[OFFBUFFER + penstart + 8 + s] = (beebram[TEXTURES + s] << lshift);
-        }
-
-        penstart = bhops[t] + (24 - ushift);
-        for (int s = (8 - dshift); s <= 7; s++) {
-            // BL
-            // beebram[OFFBUFFER + penstart + s] &= (0x00);
-            beebram[OFFBUFFER + penstart + s] = (beebram[TEXTURES + s] >> rshift);
-
-            // BR
-            // beebram[OFFBUFFER + penstart + 8 + s] &= (0x00);
-            beebram[OFFBUFFER + penstart + 8 + s] = (beebram[TEXTURES + s] << lshift);
-        } */
-
-        /* penstart = bhops[t] + dshift;
-        for (int s = 0; s <= (7 - dshift); s++) {
-            // TL
-            beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
-            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) >> rshift);
-
-            // TR
-            beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
-            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) << lshift);
-        }
-
-        penstart = bhops[t] + (24 - ushift);
-        for (int s = (8 - dshift); s <= 7; s++) {
-            // BL
-            beebram[OFFBUFFER + penstart + s] &= ((beebram[pmask + s] ^ 0xFF) >> rshift);
-            beebram[OFFBUFFER + penstart + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) >> rshift);
-
-            // BR
-            beebram[OFFBUFFER + penstart + 8 + s] &= ((beebram[pmask + s] ^ 0xFF) << lshift);
-            beebram[OFFBUFFER + penstart + 8 + s] |= ((beebram[ptexture + s] & beebram[pmask + s]) << lshift);
-        } */
     }
 }
-
-/* DEF PROC_BufferSprite(sprite%, buffer%)
-  REM BHOPS=8*[0,1,3,4]
-
-  REM Composite sprite at offset
-  rshift%=2^?buffer%:REM hshift
-  lshift%=2^(8-?buffer%)
-  vshift%=?(buffer%+1):REM vshift
-  bfrspace%=?(buffer%+4)+?(buffer%+5)*256
-  q%=48
-  minv8%=8-vshift%
-
-  FOR i%=3 TO 0 STEP -1
-    penstart%=bfrspace%+?(&4752+i%)+vshift%
-    sq%=sprite%+q%
-    s8%=sq%+8
-    FOR j%=0 TO 7
-      overL%=?(sq%+j%) DIV rshift%
-      overR%=?(sq%+j%) * lshift%
-      maskL%=?(s8%+j%) DIV rshift%
-      maskR%=?(s8+j%) * lsfhit%
-
-      IF j%=minv8% penstart%=penstart%+16
-
-      REM mask and comp - left
-      ?(penstart%+j%)=?(penstart%+j%) AND (maskL% EOR &FF)
-      ?(penstart%+j%)=?(penstart%+j%) OR overL%
-
-      REM mask and comp - right
-      ?(penstart%+8+j%)=?(penstart%+8+j%) AND (maskR% EOR &FF)
-      ?(penstart%+8+j%)=?(penstart%+8+j%) OR overR%
-    NEXT j%
-    q%=q%-16
-  NEXT i%
-ENDPROC */
