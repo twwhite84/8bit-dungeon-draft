@@ -11,17 +11,18 @@ enum {
     CAMERA_WIDTH = (8 * CAMERA_COLUMNS),
     CAMERA_HEIGHT = (8 * CAMERA_ROWS),
 
-    TEXTURES = 0x2300,   // 48 textures + 24 texture-mask pairs (worst case)
-    QUADDEFS = 0x2C00,   // 96 quaddefs
-    ANIMDEFS = 0x2F00,   // ~40 animdefs varsize
-    PLAYER = 0x3050,     //
-    STATENTS = 0x3070,   // 48 indices + ~48 statents varsize
-    MOVEENTS = 0x3360,   // 12 entities
-    TILEBUFFER = 0x3460, // 26x40 8x8px tiles
-    CAMERA = 0x3870,     //
-    OFFBUFFER = 0x3890,  // 12 8x8px tiles
-    TILEMAPS = 0x3900,   // 32 maps
-    LITEMAPS = 0x4E00,   // 17 maps
+    LUT_REVBYTES = 0x2200, // [0-255] in reverse
+    TEXTURES = 0x2300,     // 4x48 textures + 4x24 texture-mask pairs (worst case)
+    QUADDEFS = 0x2C00,     // 122 quaddefs
+    ANIMDEFS = 0x2FD0,     // ~15 animdefs varsize
+    PLAYER = 0x3050,       //
+    STATENTS = 0x3070,     // 48 indices + ~48 statents varsize
+    MOVEENTS = 0x3360,     // 12 entities
+    TILEBUFFER = 0x3460,   // 26x40 8x8px tiles
+    CAMERA = 0x3870,       //
+    OFFBUFFER = 0x3890,    // 12 8x8px tiles
+    TILEMAPS = 0x3900,     // 32 maps
+    LITEMAPS = 0x4E00,     // 17 maps
     SCREEN = 0x5800,
 
     SE_ELAPSED5_TYPE3 = 0,
@@ -88,8 +89,6 @@ typedef struct {
 extern uint8_t beebram[0x8000];
 
 extern int bhops[4];
-
-extern uint8_t reversed_bytes[256];
 
 FloorResults floordiv(int a, int b);
 

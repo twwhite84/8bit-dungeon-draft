@@ -108,10 +108,12 @@ void bufferSpriteForeground(uint16_t actor) {
                 maskL = beebram[pmask + s] >> rshift;
                 maskR = beebram[pmask + s] << lshift;
             } else if (hflipped) {
-                overL = reversed_bytes[beebram[ptexture + s]] >> rshift;
-                overR = reversed_bytes[beebram[ptexture + s]] << lshift;
-                maskL = reversed_bytes[beebram[pmask + s]] >> rshift;
-                maskR = reversed_bytes[beebram[pmask + s]] << lshift;
+                uint8_t texture_data = beebram[ptexture + s];
+                uint8_t mask_data = beebram[pmask + s];
+                overL = beebram[LUT_REVBYTES + texture_data] >> rshift;
+                overR = beebram[LUT_REVBYTES + texture_data] << lshift;
+                maskL = beebram[LUT_REVBYTES + mask_data] >> rshift;
+                maskR = beebram[LUT_REVBYTES + mask_data] << lshift;
             }
 
             if (s == ushift) {

@@ -18,8 +18,7 @@ void init_renderer() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
         printf("ERROR: %s\n", SDL_GetError());
 
-    window = SDL_CreateWindow("BEEB MODE 4", SDL_WINDOWPOS_CENTERED,
-                              SDL_WINDOWPOS_CENTERED, EXTERNAL_WIDTH,
+    window = SDL_CreateWindow("8-BIT ENGINE WIP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, EXTERNAL_WIDTH,
                               EXTERNAL_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
         printf("ERROR: %s\n", SDL_GetError());
@@ -29,8 +28,7 @@ void init_renderer() {
     if (!renderer)
         printf("ERROR: %s\n", SDL_GetError());
 
-    canvas = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                               SDL_TEXTUREACCESS_STREAMING, INTERNAL_WIDTH,
+    canvas = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, INTERNAL_WIDTH,
                                INTERNAL_HEIGHT);
     if (!canvas) {
         printf("ERROR: %s\n", SDL_GetError());
@@ -137,7 +135,8 @@ void renderStaticEntities() {
         for (int q = 0; q < se_nquads; q++) {
             uint8_t se_TLi = beebram[(se_addr + SE_I) + (4 * q)]; // 4q because 4 fields per quad
             uint8_t se_TLj = beebram[(se_addr + SE_J) + (4 * q)];
-            uint16_t se_vizdef = beebram[(se_addr + SE_PVIZDEF_LO) + (4 * q)] + (beebram[(se_addr + SE_PVIZDEF_HI) + (4 * q)] << 8);
+            uint16_t se_vizdef =
+                beebram[(se_addr + SE_PVIZDEF_LO) + (4 * q)] + (beebram[(se_addr + SE_PVIZDEF_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
             if (se_vizdef >= QUADDEFS && se_vizdef < ANIMDEFS) {
@@ -191,8 +190,12 @@ void renderStaticEntities() {
                     texture &= 0x7FFF;
                     mask &= 0x7FFF;
                     for (int s = 7; s >= 0; s--) {
-                        beebram[offbase + s] &= (reversed_bytes[beebram[mask + s]] ^ 0xFF);
-                        beebram[offbase + s] |= (reversed_bytes[beebram[texture + s]] & reversed_bytes[beebram[mask + s]]);
+                        uint8_t mask_data = beebram[mask + s];
+                        uint8_t texture_data = beebram[texture + s];
+
+                        beebram[offbase + s] &= (beebram[LUT_REVBYTES + mask_data] ^ 0xFF);
+                        beebram[offbase + s] |=
+                            (beebram[LUT_REVBYTES + texture_data] & beebram[LUT_REVBYTES + mask_data]);
                     }
                 }
 
