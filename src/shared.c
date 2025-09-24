@@ -51,3 +51,9 @@ uint8_t reversed_bytes[256] = {
     0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff};
 
 int bhops[4] = {0, 8, 24, 32};
+
+uint16_t getTileTextureAddr(uint8_t tid) {
+    uint16_t ptr_location = QUADDEFS + 2 * tid;
+    uint16_t ptr = beebram[ptr_location] | (beebram[ptr_location + 1] << 8);
+    return ptr;
+}

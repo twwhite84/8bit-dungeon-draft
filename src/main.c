@@ -3,6 +3,7 @@
 #include "init.h"
 #include "renderer.h"
 #include "shared.h"
+#include "sprite.h"
 #include <stdbool.h>
 
 typedef struct {
@@ -19,9 +20,6 @@ bool input();
 void update();
 void loadRoom(int roomID);
 void movePlayer(uint8_t dir);
-void updateSpriteContainer(uint16_t actor);
-void bufferSpriteBackground(uint16_t actor);
-void bufferSpriteForeground(uint16_t actor);
 
 GameFlags gameFlags;
 
@@ -113,8 +111,21 @@ void update() {
         gameFlags.level_2 = false;
     }
 
+    if (gameFlags.player_moveUp) {
+        movePlayer(PLRDIR_N);
+        animatePlayer();
+        gameFlags.player_moveUp = false;
+    }
+
+    if (gameFlags.player_moveDown) {
+        movePlayer(PLRDIR_S);
+        animatePlayer();
+        gameFlags.player_moveDown = false;
+    }
+
     if (gameFlags.player_moveLeft) {
         movePlayer(PLRDIR_W);
+        animatePlayer();
         gameFlags.player_moveLeft = false;
     }
 
@@ -122,16 +133,6 @@ void update() {
         movePlayer(PLRDIR_E);
         animatePlayer();
         gameFlags.player_moveRight = false;
-    }
-
-    if (gameFlags.player_moveUp) {
-        movePlayer(PLRDIR_N);
-        gameFlags.player_moveUp = false;
-    }
-
-    if (gameFlags.player_moveDown) {
-        movePlayer(PLRDIR_S);
-        gameFlags.player_moveDown = false;
     }
 
     animateStaticEntities();
@@ -191,24 +192,35 @@ void movePlayer(uint8_t dir) {
     uint16_t x, y;
     switch (dir) {
     case PLRDIR_E:
+        beebram[PLAYER + PLR_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
+        beebram[PLAYER + PLR_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
         x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
         x++;
         beebram[PLAYER + PLR_X_LO] = x & 0xFF;
         beebram[PLAYER + PLR_X_HI] = x >> 8;
         break;
+
     case PLRDIR_W:
+        beebram[PLAYER + PLR_PVIZDEF_LO] = ADPTR_DOGWALKL & 0xFF;
+        beebram[PLAYER + PLR_PVIZDEF_HI] = ADPTR_DOGWALKL >> 8;
         x = beebram[PLAYER + PLR_X_LO] | (beebram[PLAYER + PLR_X_HI] << 8);
         x--;
         beebram[PLAYER + PLR_X_LO] = x & 0xFF;
         beebram[PLAYER + PLR_X_HI] = x >> 8;
+
         break;
     case PLRDIR_N:
+        beebram[PLAYER + PLR_PVIZDEF_LO] = ADPTR_DOGWALKU & 0xFF;
+        beebram[PLAYER + PLR_PVIZDEF_HI] = ADPTR_DOGWALKU >> 8;
         y = beebram[PLAYER + PLR_Y_LO] | (beebram[PLAYER + PLR_Y_HI] << 8);
         y--;
         beebram[PLAYER + PLR_Y_LO] = y & 0xFF;
         beebram[PLAYER + PLR_Y_HI] = y >> 8;
         break;
+
     case PLRDIR_S:
+        beebram[PLAYER + PLR_PVIZDEF_LO] = ADPTR_DOGWALKD & 0xFF;
+        beebram[PLAYER + PLR_PVIZDEF_HI] = ADPTR_DOGWALKD >> 8;
         y = beebram[PLAYER + PLR_Y_LO] | (beebram[PLAYER + PLR_Y_HI] << 8);
         y++;
         beebram[PLAYER + PLR_Y_LO] = y & 0xFF;
@@ -221,121 +233,4 @@ void movePlayer(uint8_t dir) {
     // check the next tile a pixel of movement in that direction will land
 
     // take appropriate action
-}
-
-void updateSpriteContainer(uint16_t actor) {
-    // ONLY IMPLEMENTED FOR PLAYER FOR NOW
-
-    // get current player position
-    uint16_t x = beebram[actor + PLR_X_LO] | (beebram[actor + PLR_X_HI] << 8);
-    uint16_t y = beebram[actor + PLR_Y_LO] | (beebram[actor + PLR_Y_HI] << 8);
-
-    // compute and set the shifts for the sprite container
-    uint8_t hshift = x & 0b111;
-    uint8_t vshift = y & 0b111;
-    beebram[actor + PLR_HSHIFT4_VSHIFT4] = (beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
-    beebram[actor + PLR_HSHIFT4_VSHIFT4] = (beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
-
-    // compute relative screen address for origin of sprite container (top-left corner)
-    uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
-    uint16_t corner_old = corner_new;
-
-    // on first sprite container setup, set cleanup to false
-    if (beebram[actor + PLR_ELAPSED6_CLEANUP2] & 0b11 == 2) {
-        beebram[actor + PLR_ELAPSED6_CLEANUP2] &= 11111100;
-    }
-
-    // on subsequent computations, cleanup is raised if sprite container has moved
-    else {
-        corner_old = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
-        if ((corner_new - corner_old) != 0)
-            beebram[actor + PLR_ELAPSED6_CLEANUP2] |= true;
-    }
-
-    // write the new sprite container corner to the player
-    beebram[actor + PLR_PCORNER_LO] = corner_new & 0xFF;
-    beebram[actor + PLR_PCORNER_HI] = corner_new >> 8;
-}
-
-/*----------------------------------------------------------------------------*/
-
-// paint the background tiles for the sprite container into the offbuffer
-void bufferSpriteBackground(uint16_t actor) {
-    int boff = 0, roff = 0, t = 3;
-    uint16_t corner = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
-
-    // for each of the 9 tiles of the sprite container
-    for (int i = 8; i >= 0; i--) {
-        // fetch the corresponding background tile id from the tilebuffer
-        uint8_t tileID = beebram[TILEBUFFER + ((corner + roff + boff) >> 3)];
-
-        // paint the background to the offbuffer
-        uint16_t offstart = OFFBUFFER + boff;
-        uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-        for (int s = 7; s >= 0; s--) {
-            beebram[offstart + s] = beebram[bg_texture_addr + s];
-        }
-        t--;
-        if (t == 0) {
-            roff += 0x0128;
-            t = 3;
-        }
-        boff += 8;
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
-void bufferSpriteForeground(uint16_t actor) {
-    // only implemented for player for now
-    int rshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] >> 4;
-    int lshift = 8 - rshift;
-
-    int dshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F;
-    int ushift = 8 - dshift;
-
-    uint16_t pvizdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
-    uint16_t pcompdef;
-
-    // the compdef can either be a quad pair directly, or else from an animdef frame
-    if (pvizdef >= ANIMDEFS) {
-        // uint16_t panimdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
-        uint8_t current = (beebram[pvizdef + AD_FRAMES3_CURRENT3_YOYO2] >> 2) & 0b00000111;
-        current *= 2;
-        pcompdef = beebram[pvizdef + AD_PQUADDEF_LO + current] | (beebram[pvizdef + AD_PQUADDEF_HI + current] << 8);
-    } else {
-        pcompdef = pvizdef;
-    }
-
-    uint16_t penbase = OFFBUFFER + dshift;
-
-    // position each portion of the quad into place
-    int tidx_lo = 6; // [(0,1),(2,3),(4,5),(6,7)]
-    for (int t = 3; t >= 0; t--) {
-        uint16_t penstart = penbase + bhops[t]; // +15 and penstart -=16 to decrement inner loop
-
-        uint16_t ptexture = beebram[pcompdef + tidx_lo] | (beebram[pcompdef + tidx_lo + 1] << 8);
-        uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
-        tidx_lo -= 2;
-
-        // to get this to decrement, penstart -= 16 with initial penbase + 15 (or something)
-        for (int s = 0; s < 8; s++) {
-            uint8_t overL = beebram[ptexture + s] >> rshift;
-            uint8_t overR = beebram[ptexture + s] << lshift;
-            uint8_t maskL = beebram[pmask + s] >> rshift;
-            uint8_t maskR = beebram[pmask + s] << lshift;
-
-            if (s == ushift) {
-                penstart += 16;
-            }
-
-            // lhs
-            beebram[penstart + s] = beebram[penstart + s] & (maskL ^ 0xFF);
-            beebram[penstart + s] = beebram[penstart + s] | overL;
-
-            // rhs
-            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] & (maskR ^ 0xFF);
-            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] | overR;
-        }
-    }
 }

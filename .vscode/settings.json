@@ -1,7 +1,10 @@
 {
-  "editor.formatOnSave": true,
-  "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
-  "editor.detectIndentation": false,
-  "editor.tabSize": 4,
-  "makefile.configureOnOpen": false
+    "editor.formatOnSave": true,
+    "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4,
+    "makefile.configureOnOpen": false,
+    "files.associations": {
+        "renderer.h": "c"
+    }
 }

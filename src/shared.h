@@ -93,4 +93,6 @@ extern uint8_t reversed_bytes[256];
 
 FloorResults floordiv(int a, int b);
 
+uint16_t getTileTextureAddr(uint8_t tid);
+
 #endif

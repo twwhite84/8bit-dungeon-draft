@@ -63,14 +63,6 @@ void eraseTile(uint8_t i, uint8_t j) {
 
 /*----------------------------------------------------------------------------*/
 
-uint16_t getTileTextureAddr(uint8_t tid) {
-    uint16_t ptr_location = QUADDEFS + 2 * tid;
-    uint16_t ptr = beebram[ptr_location] + (beebram[ptr_location + 1] << 8);
-    return ptr;
-}
-
-/*----------------------------------------------------------------------------*/
-
 void renderBeebram() {
     CanvasContext ctx;
     if (SDL_LockTexture(canvas, NULL, &ctx.pixels, &ctx.pitch) < 0) {
