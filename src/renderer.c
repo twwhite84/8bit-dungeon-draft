@@ -153,12 +153,13 @@ void renderStaticEntities() {
             }
 
         animdef:
-            uint16_t animdef = beebram[se_vizdef] + (beebram[se_vizdef + 1] << 8);
+            uint16_t animdef = se_vizdef;
             uint8_t current = (beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
 
             // pass the current frame to the quaddef routine
             se_vizdef = beebram[(animdef + AD_PQUADDEF_LO) + (2 * current)];
             se_vizdef |= (beebram[(animdef + AD_PQUADDEF_HI) + (2 * current)] << 8);
+            // 0x2d10
             goto quaddef;
 
         quaddef:

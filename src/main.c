@@ -299,10 +299,10 @@ void bufferSpriteForeground(uint16_t actor) {
 
     // the compdef can either be a quad pair directly, or else from an animdef frame
     if (pvizdef >= ANIMDEFS) {
-        uint16_t panimdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
-        uint8_t current = (beebram[panimdef + AD_FRAMES3_CURRENT3_YOYO2] >> 2) & 0b00000111;
+        // uint16_t panimdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
+        uint8_t current = (beebram[pvizdef + AD_FRAMES3_CURRENT3_YOYO2] >> 2) & 0b00000111;
         current *= 2;
-        pcompdef = beebram[panimdef + AD_PQUADDEF_LO + current] | (beebram[panimdef + AD_PQUADDEF_HI + current] << 8);
+        pcompdef = beebram[pvizdef + AD_PQUADDEF_LO + current] | (beebram[pvizdef + AD_PQUADDEF_HI + current] << 8);
     } else {
         pcompdef = pvizdef;
     }

@@ -13,7 +13,7 @@ enum {
 
     TEXTURES = 0x2300,   // 48 textures + 24 texture-mask pairs (worst case)
     QUADDEFS = 0x2C00,   // 96 quaddefs
-    ANIMDEFS = 0x2F00,   // 32 indices + ~32 animdefs varsize
+    ANIMDEFS = 0x2F00,   // ~40 animdefs varsize
     PLAYER = 0x3050,     //
     STATENTS = 0x3070,   // 48 indices + ~48 statents varsize
     MOVEENTS = 0x3360,   // 12 entities
@@ -38,6 +38,12 @@ enum {
     AD_PERIOD2_PERIOD3 = 2,
     AD_PQUADDEF_LO = 3,
     AD_PQUADDEF_HI = 4,
+
+    ADPTR_FFIELD = ANIMDEFS,
+    ADPTR_DOGWALKU = ADPTR_FFIELD + 7,
+    ADPTR_DOGWALKD = ADPTR_DOGWALKU + 9,
+    ADPTR_DOGWALKL = ADPTR_DOGWALKD + 9,
+    ADPTR_DOGWALKR = ADPTR_DOGWALKL + 9,
 
     PLR_X_LO = 0,
     PLR_X_HI = 1,

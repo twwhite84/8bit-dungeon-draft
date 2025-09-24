@@ -405,16 +405,16 @@ void initStaticEnts() {
     // map01: force field (animated)
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
-                                 (0 << 3) | SETYPE_DOORLOCKED,         // ELAPSED_FRAMES (5) | TYPE (3)
-                                 (2 << 6) | 1,                         // N_QUADS-1 (2) | ROOMID (6)
-                                 (0 << 7) | 0,                         // REDRAW (1) | DATA (7)
-                                 0, 0, 0,                              // DATA (24)
-                                 8, 4,                                 // I (8), J (8)
-                                 aForceField & 0xFF, aForceField >> 8, // PTR_VIZDEF (16)
-                                 8, 6,                                 // I (8), J (8)
-                                 aForceField & 0xFF, aForceField >> 8, // PTR_VIZDEF (16)
-                                 8, 8,                                 // I (8), J (8)
-                                 aForceField & 0xFF, aForceField >> 8, // PTR_VIZDEF (16)
+                                 (0 << 3) | SETYPE_DOORLOCKED,           // ELAPSED_FRAMES (5) | TYPE (3)
+                                 (2 << 6) | 1,                           // N_QUADS-1 (2) | ROOMID (6)
+                                 (0 << 7) | 0,                           // REDRAW (1) | DATA (7)
+                                 0, 0, 0,                                // DATA (24)
+                                 8, 4,                                   // I (8), J (8)
+                                 ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
+                                 8, 6,                                   // I (8), J (8)
+                                 ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
+                                 8, 8,                                   // I (8), J (8)
+                                 ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
                              },
            (size_t)18);
     se_ptr += 2;
@@ -423,12 +423,12 @@ void initStaticEnts() {
     // map01: dog (animated)
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def], (uint8_t[]){
-                                 (0 << 3) | SETYPE_PICKUP,         // ELAPSED_FRAMES (5) | TYPE (3)
-                                 (0 << 6) | 1,                     // N_QUADS-1 (2) | ROOMID (6)
-                                 (0 << 7) | 0,                     // REDRAW (1) | DATA (7)
-                                 0, 0, 0,                          // DATA (24)
-                                 18, 6,                            // I (8), J (8)
-                                 aDogWalkL & 0xFF, aDogWalkL >> 8, // PTR_VIZDEF (16)
+                                 (0 << 3) | SETYPE_PICKUP,                   // ELAPSED_FRAMES (5) | TYPE (3)
+                                 (0 << 6) | 1,                               // N_QUADS-1 (2) | ROOMID (6)
+                                 (0 << 7) | 0,                               // REDRAW (1) | DATA (7)
+                                 0, 0, 0,                                    // DATA (24)
+                                 18, 6,                                      // I (8), J (8)
+                                 ADPTR_DOGWALKL & 0xFF, ADPTR_DOGWALKL >> 8, // PTR_VIZDEF (16)
                              },
            (size_t)10);
     se_ptr += 2;
@@ -445,76 +445,60 @@ void initStaticEnts() {
 // aDogWalkR
 
 void initAnimdefs() {
-    uint16_t anim_ptr = ANIMDEFS, anim_def = ANIMDEFS + 0x40;
 
-    // animdef 00: force field
-    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
-    memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (1 << 5) | (0 << 2) | 0,                // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (0 << 4) | 0,                           // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qForceField0 & 0xFF, qForceField0 >> 8, // PTR_QUAD (16)
-                                   qForceField1 & 0xFF, qForceField1 >> 8, // PTR_QUAD (16)
-                               },
+    // force field
+    memcpy(&beebram[ADPTR_FFIELD], (uint8_t[]){
+                                       (1 << 5) | (0 << 2) | 0,                // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                       (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                       (0 << 4) | 0,                           // PERIOD_2 (4) | PERIOD_3 (4)
+                                       qForceField0 & 0xFF, qForceField0 >> 8, // PTR_QUAD (16)
+                                       qForceField1 & 0xFF, qForceField1 >> 8, // PTR_QUAD (16)
+                                   },
            (size_t)7);
-    anim_ptr += 2;
-    anim_def += 7;
 
-    // animdef 01: dog_walk_down
-    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
-    memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qDogWalkDF0 & 0xFF, qDogWalkDF0 >> 8, // PTR_QUAD (16)
-                                   qDogIdleD & 0xFF, qDogIdleD >> 8,     // PTR_QUAD (16)
-                                   qDogWalkDF2 & 0xFF, qDogWalkDF2 >> 8, // PTR_QUAD (16)
-                               },
+    // dog_walk_up
+    memcpy(&beebram[ADPTR_DOGWALKU], (uint8_t[]){
+                                         (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                         (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                         (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                         qDogWalkUF0 & 0xFF, qDogWalkUF0 >> 8, // PTR_QUAD (16)
+                                         qDogIdleU & 0xFF, qDogIdleU >> 8,     // PTR_QUAD (16)
+                                         qDogWalkUF2 & 0xFF, qDogWalkUF2 >> 8, // PTR_QUAD (16)
+                                     },
            (size_t)9);
-    anim_ptr += 2;
-    anim_def += 9;
 
-    // animdef 02: dog_walk_up
-    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
-    memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qDogWalkUF0 & 0xFF, qDogWalkUF0 >> 8, // PTR_QUAD (16)
-                                   qDogIdleU & 0xFF, qDogIdleU >> 8,     // PTR_QUAD (16)
-                                   qDogWalkUF2 & 0xFF, qDogWalkUF2 >> 8, // PTR_QUAD (16)
-                               },
+    // dog_walk_down
+    memcpy(&beebram[ADPTR_DOGWALKD], (uint8_t[]){
+                                         (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                         (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                         (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                         qDogWalkDF0 & 0xFF, qDogWalkDF0 >> 8, // PTR_QUAD (16)
+                                         qDogIdleD & 0xFF, qDogIdleD >> 8,     // PTR_QUAD (16)
+                                         qDogWalkDF2 & 0xFF, qDogWalkDF2 >> 8, // PTR_QUAD (16)
+                                     },
            (size_t)9);
-    anim_ptr += 2;
-    anim_def += 9;
 
-    // animdef 03: dog_walk_right
-    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
-    memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qDogWalkRF0 & 0xFF, qDogWalkRF0 >> 8, // PTR_QUAD (16)
-                                   qDogIdleR & 0xFF, qDogIdleR >> 8,     // PTR_QUAD (16)
-                                   qDogWalkRF2 & 0xFF, qDogWalkRF2 >> 8, // PTR_QUAD (16)
-                               },
+    // dog_walk_left
+    memcpy(&beebram[ADPTR_DOGWALKL], (uint8_t[]){
+                                         (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                         (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                         (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                         qDogWalkLF0 & 0xFF, qDogWalkLF0 >> 8, // PTR_QUAD (16)
+                                         qDogIdleL & 0xFF, qDogIdleL >> 8,     // PTR_QUAD (16)
+                                         qDogWalkLF2 & 0xFF, qDogWalkLF2 >> 8, // PTR_QUAD (16)
+                                     },
            (size_t)9);
-    anim_ptr += 2;
-    anim_def += 9;
 
-    // animdef 04: dog_walk_left
-    memcpy(&beebram[anim_ptr], (uint8_t[]){anim_def & 0xFF, anim_def >> 8}, 2);
-    memcpy(&beebram[anim_def], (uint8_t[]){
-                                   (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
-                                   (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
-                                   (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
-                                   qDogWalkLF0 & 0xFF, qDogWalkLF0 >> 8, // PTR_QUAD (16)
-                                   qDogIdleL & 0xFF, qDogIdleL >> 8,     // PTR_QUAD (16)
-                                   qDogWalkLF2 & 0xFF, qDogWalkLF2 >> 8, // PTR_QUAD (16)
-                               },
+    // dog_walk_right
+    memcpy(&beebram[ADPTR_DOGWALKR], (uint8_t[]){
+                                         (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+                                         (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
+                                         (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
+                                         qDogWalkRF0 & 0xFF, qDogWalkRF0 >> 8, // PTR_QUAD (16)
+                                         qDogIdleR & 0xFF, qDogIdleR >> 8,     // PTR_QUAD (16)
+                                         qDogWalkRF2 & 0xFF, qDogWalkRF2 >> 8, // PTR_QUAD (16)
+                                     },
            (size_t)9);
-    anim_ptr += 2;
-    anim_def += 9;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -529,9 +513,7 @@ void initPlayer() {
     beebram[PLAYER + PLR_X_HI] = 0;
     beebram[PLAYER + PLR_Y_LO] = 8;
     beebram[PLAYER + PLR_Y_HI] = 0;
-    // beebram[PLAYER + PLR_PVIZDEF_LO] = qDogIdleR & 0xFF;
-    // beebram[PLAYER + PLR_PVIZDEF_HI] = qDogIdleR >> 8;
-    beebram[PLAYER + PLR_PVIZDEF_LO] = aDogWalkR & 0xFF;
-    beebram[PLAYER + PLR_PVIZDEF_HI] = aDogWalkR >> 8;
+    beebram[PLAYER + PLR_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
+    beebram[PLAYER + PLR_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
     beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] |= 2; // cleanup 2 means unset
 }
