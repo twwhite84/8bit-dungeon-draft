@@ -508,7 +508,7 @@ void initAnimdefs() {
     // force field
     memcpy(&beebram[ADPTR_FFIELD],
            (uint8_t[]){
-               (1 << 5) | (0 << 2) | 0,                // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+               (2 << 4) | 0,                           // FRAMES (4) | YOYO (4)
                (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
                (0 << 4) | 0,                           // PERIOD_2 (4) | PERIOD_3 (4)
                qForceField0 & 0xFF, qForceField0 >> 8, // PTR_QUAD (16)
@@ -519,7 +519,7 @@ void initAnimdefs() {
     // dog_walk_up
     memcpy(&beebram[ADPTR_DOGWALKU],
            (uint8_t[]){
-               (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+               (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
                (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
                qDogWalkUF0 & 0xFF, qDogWalkUF0 >> 8, // PTR_QUAD (16)
@@ -531,7 +531,7 @@ void initAnimdefs() {
     // dog_walk_down
     memcpy(&beebram[ADPTR_DOGWALKD],
            (uint8_t[]){
-               (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+               (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
                (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
                qDogWalkDF0 & 0xFF, qDogWalkDF0 >> 8, // PTR_QUAD (16)
@@ -543,7 +543,7 @@ void initAnimdefs() {
     // dog_walk_left
     memcpy(&beebram[ADPTR_DOGWALKL],
            (uint8_t[]){
-               (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+               (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
                (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
                qDogWalkLF0 & 0xFF, qDogWalkLF0 >> 8, // PTR_QUAD (16)
@@ -555,7 +555,7 @@ void initAnimdefs() {
     // dog_walk_right
     memcpy(&beebram[ADPTR_DOGWALKR],
            (uint8_t[]){
-               (2 << 5) | (0 << 2) | 1,              // FRAMES-1 (3) | CURRENT (3) | YOYO (2)
+               (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
                (8 << 4) | 0,                         // PERIOD_2 (4) | PERIOD_3 (4)
                qDogWalkRF0 & 0xFF, qDogWalkRF0 >> 8, // PTR_QUAD (16)
