@@ -8,20 +8,20 @@
 #include <stdbool.h>
 
 typedef struct {
-    bool level_1;
-    bool level_2;
+    bool loadRoom_1;
+    bool loadroom_2;
     bool player_moveLeft;
     bool player_moveRight;
     bool player_moveUp;
     bool player_moveDown;
-} GameFlags;
+} InputFlags;
 
 void init();
 bool input();
 void update();
-void loadRoom(int roomID);
+void loadRoom(uint8_t roomID);
 
-GameFlags gameFlags;
+InputFlags inputFlags;
 
 /*----------------------------------------------------------------------------*/
 
@@ -60,8 +60,10 @@ void init() {
     init_ram();
     init_renderer();
 
-    loadRoom(1);
-    drawTilebuffer();
+    uint8_t roomID = beebram[PLAYER + PLR_ROOM6_REDRAW2] >> 2;
+
+    loadRoom(roomID);
+    renderBackground();
     renderStaticEntities();
 }
 
@@ -77,17 +79,17 @@ bool input() {
 
     const uint8_t *keystates = SDL_GetKeyboardState(NULL);
     if (keystates[SDL_SCANCODE_UP])
-        gameFlags.player_moveUp = true;
+        inputFlags.player_moveUp = true;
     if (keystates[SDL_SCANCODE_DOWN])
-        gameFlags.player_moveDown = true;
+        inputFlags.player_moveDown = true;
     if (keystates[SDL_SCANCODE_LEFT])
-        gameFlags.player_moveLeft = true;
+        inputFlags.player_moveLeft = true;
     if (keystates[SDL_SCANCODE_RIGHT])
-        gameFlags.player_moveRight = true;
+        inputFlags.player_moveRight = true;
     if (keystates[SDL_SCANCODE_1])
-        gameFlags.level_1 = true;
+        inputFlags.loadRoom_1 = true;
     if (keystates[SDL_SCANCODE_2])
-        gameFlags.level_2 = true;
+        inputFlags.loadroom_2 = true;
 
     return true;
 }
@@ -95,44 +97,44 @@ bool input() {
 /*----------------------------------------------------------------------------*/
 
 void update() {
-    if (gameFlags.level_1) {
-        fprintf(stderr, "\nLoad room: 1");
+    if (inputFlags.loadRoom_1) {
+        fprintf(stderr, "LOAD ROOM: 1\n");
         loadRoom(1);
-        drawTilebuffer();
+        renderBackground();
         renderStaticEntities();
-        gameFlags.level_1 = false;
+        inputFlags.loadRoom_1 = false;
     }
 
-    if (gameFlags.level_2) {
-        fprintf(stderr, "\nLoad room: 2");
+    if (inputFlags.loadroom_2) {
+        fprintf(stderr, "LOAD ROOM: 2\n");
         loadRoom(2);
-        drawTilebuffer();
+        renderBackground();
         renderStaticEntities();
-        gameFlags.level_2 = false;
+        inputFlags.loadroom_2 = false;
     }
 
-    if (gameFlags.player_moveUp) {
-        movePlayer(PLRDIR_N);
+    if (inputFlags.player_moveUp) {
+        movePlayer(PLRDIR_U);
         animatePlayer();
-        gameFlags.player_moveUp = false;
+        inputFlags.player_moveUp = false;
     }
 
-    if (gameFlags.player_moveDown) {
-        movePlayer(PLRDIR_S);
+    if (inputFlags.player_moveDown) {
+        movePlayer(PLRDIR_D);
         animatePlayer();
-        gameFlags.player_moveDown = false;
+        inputFlags.player_moveDown = false;
     }
 
-    if (gameFlags.player_moveLeft) {
-        movePlayer(PLRDIR_W);
+    if (inputFlags.player_moveLeft) {
+        movePlayer(PLRDIR_L);
         animatePlayer();
-        gameFlags.player_moveLeft = false;
+        inputFlags.player_moveLeft = false;
     }
 
-    if (gameFlags.player_moveRight) {
-        movePlayer(PLRDIR_E);
+    if (inputFlags.player_moveRight) {
+        movePlayer(PLRDIR_R);
         animatePlayer();
-        gameFlags.player_moveRight = false;
+        inputFlags.player_moveRight = false;
     }
 
     animateStaticEntities();
@@ -150,33 +152,44 @@ void update() {
 
 /*----------------------------------------------------------------------------*/
 
-void loadRoom(int roomID) {
-    memset(&beebram[TILEBUFFER], 0, (size_t)(OFFBUFFER - TILEBUFFER));
-    inflate_map(roomID);
+void loadRoom(uint8_t roomID) {
+    memset(&beebram[CAMERA], 0, (size_t)(OFFBUFFER - CAMERA));
+    beebram[CAMERA + CAM_ROOMID] = roomID;
 
-    // find the static entities for this room and copy their pointers into camera
-    uint8_t se_count = 0;
-    uint16_t se_ptr = STATENTS, camera_se_ptr_base = CAMERA + 0x0D;
-    for (int i = 0; i < 32; i++) {
-        uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
-        se_ptr += 2;
+    // inflate the stored map into the cambuffer
+    inflateMap(roomID);
 
-        uint8_t se_roomID = (beebram[se_addr + SE_NQUADS2_ROOMID6] & 0b00111111);
+    // find subset of static entities for this room and copy their pointers into the camera
+    uint8_t entities_copied = 0;
+    uint8_t se_table_size = ((SE_DEFS - SE_TABLE) >> 1);
+    uint16_t se_ptr_table = SE_TABLE;
+    uint16_t se_ptr_camera = (CAMERA + CAM_PSE0_LO);
+
+    // walk all static entities and copy those with matching roomID
+    for (uint8_t i = 0; i < se_table_size; i++) {
+        uint16_t se_addr = beebram[se_ptr_table] + (beebram[se_ptr_table + 1] << 8);
+        se_ptr_table += 2;
+
+        uint8_t se_roomID = (beebram[se_addr + SE_ROOMID6_REDRAW2]) >> 2;
         if (se_roomID == roomID) {
+
             // add the static entity to the camera
-            uint16_t camera_se_ptr = camera_se_ptr_base + (2 * se_count);
-            beebram[camera_se_ptr + 0] = se_addr & 0xFF; // lo
-            beebram[camera_se_ptr + 1] = se_addr >> 8;   // hi
+            beebram[se_ptr_camera] = se_addr & 0xFF;   // lo
+            beebram[se_ptr_camera + 1] = se_addr >> 8; // hi
+            se_ptr_camera += 2;
 
-            // its redraw flag should be raised on insert
-            beebram[se_addr + SE_REDRAW1_DATA7] |= 0b10000000;
+            // make sure this entity is marked for redraw
+            beebram[se_addr + SE_ROOMID6_REDRAW2] |= 1;
 
-            se_count++;
-            if (se_count > 4)
+            entities_copied++;
+            if (entities_copied > 10)
                 break;
         }
     }
-    beebram[CAMERA + 0x0C] = se_count;
+
+    // save number of entities copied
+    beebram[CAMERA + CAM_NME4_NSE4] &= 0xF0;
+    beebram[CAMERA + CAM_NME4_NSE4] |= (entities_copied & 0x0F);
 }
 
 /*----------------------------------------------------------------------------*/

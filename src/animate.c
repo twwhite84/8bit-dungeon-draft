@@ -19,16 +19,16 @@ void animateStaticEntities() {
         if (se_pvizdef < ANIMDEFS)
             continue;
 
-        uint8_t se_elapsed_frames = (beebram[se_addr + SE_ELAPSED5_TYPE3] & 0b11111000) >> 3;
-        uint8_t frames = ((beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b11100000) >> 5) + 1;
-        uint8_t current = (beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
-        uint8_t yoyo = beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b000000011;
+        uint8_t elapsed = beebram[se_addr + SE_FELAPSED5_FCURRENT3] >> 3;
+        uint8_t current = beebram[se_addr + SE_FELAPSED5_FCURRENT3] & 0b111;
+        uint8_t frames = beebram[se_pvizdef + AD_FRAMES4_YOYO4] >> 4;
+        uint8_t yoyo = beebram[se_pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
         uint8_t period;
 
         // update the static entity's elapsed frame count
-        se_elapsed_frames++;
-        beebram[se_addr + SE_ELAPSED5_TYPE3] &= 0b00000111;
-        beebram[se_addr + SE_ELAPSED5_TYPE3] |= (se_elapsed_frames << 3);
+        elapsed++;
+        beebram[se_addr + SE_FELAPSED5_FCURRENT3] &= 0b00000111;
+        beebram[se_addr + SE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
         // fetch the period for the current frame index
         switch (current) {
@@ -50,44 +50,44 @@ void animateStaticEntities() {
         }
 
         // if the elapsed frame count > period, cycle the frame and reset the elapsed
-        if (se_elapsed_frames > period) {
+        if (elapsed > period) {
 
-            // 00: yoyo off
-            // 01: yoyo on, direction forward
-            // 11: yoyo on, direction negative
-            (yoyo == 0b00 || yoyo == 0b01) ? current++ : current--;
+            // 0: yoyo off
+            // 1: direction forward
+            // 2: direction backward
+            (yoyo == 0 || yoyo == 1) ? current++ : current--;
 
             // if past upper end
             if (current >= frames) {
                 if (!yoyo)
                     current = 0;
-                if (yoyo == 0b01) {
+                if (yoyo == 1) {
                     current -= 2;
-                    yoyo = 0b11;
+                    yoyo = 2;
                 }
             }
 
             // if past lower end ($80 to &FF are - in uint8)
             if (current >= 0x80) {
                 current += 2;
-                yoyo = 0b01;
+                yoyo = 1;
             }
 
-            // write current
-            beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11100011;
-            beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] |= (current << 2);
+            // save current
+            beebram[se_addr + SE_FELAPSED5_FCURRENT3] &= 0b11111000;
+            beebram[se_addr + SE_FELAPSED5_FCURRENT3] |= current;
 
-            // write yoyo
-            beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11111100;
-            beebram[se_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] |= yoyo;
+            // save yoyo
+            beebram[se_pvizdef + AD_FRAMES4_YOYO4] &= 0xF0;
+            beebram[se_pvizdef + AD_FRAMES4_YOYO4] |= yoyo;
 
             // write elapsed frames
-            se_elapsed_frames = 0;
-            beebram[se_addr + SE_ELAPSED5_TYPE3] &= 0b00000111;
-            beebram[se_addr + SE_ELAPSED5_TYPE3] |= (se_elapsed_frames << 3);
+            elapsed = 0;
+            beebram[se_addr + SE_FELAPSED5_FCURRENT3] &= 0b00000111;
+            beebram[se_addr + SE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
             // raise redraw flag so that renderStaticEntities() draws it
-            beebram[se_addr + SE_REDRAW1_DATA7] |= 0b10000000;
+            beebram[se_addr + SE_ROOMID6_REDRAW2] |= 1;
         }
     }
 }
@@ -103,16 +103,16 @@ void animatePlayer() {
     if (plr_pvizdef < ANIMDEFS)
         return;
 
-    uint8_t elapsed_frames = (beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] & 0b11111100) >> 2;
-    uint8_t frames = ((beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b11100000) >> 5) + 1;
-    uint8_t current = (beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
-    uint8_t yoyo = beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b000000011;
+    uint8_t elapsed = beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] >> 3;
+    uint8_t current = beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] & 0b111;
+    uint8_t frames = (beebram[plr_pvizdef + AD_FRAMES4_YOYO4] & 0xF0) >> 4;
+    uint8_t yoyo = beebram[plr_pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
     uint8_t period;
 
     // update the player's elapsed frame count
-    elapsed_frames++;
-    beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] &= 0b00000011;
-    beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] |= (elapsed_frames << 2);
+    elapsed++;
+    beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] &= 0b00000111;
+    beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
     // fetch the period for the current frame index
     switch (current) {
@@ -134,44 +134,43 @@ void animatePlayer() {
     }
 
     // if the elapsed frame count > period, cycle the frame and reset the elapsed
-    if (elapsed_frames > period) {
+    if (elapsed > period) {
 
-        // 00: yoyo off
-        // 01: yoyo on, direction forward
-        // 11: yoyo on, direction negative
-        (yoyo == 0b00 || yoyo == 0b01) ? current++ : current--;
+        // 0: yoyo off
+        // 1: direction forward
+        // 2: direction backward
+        (yoyo == 0 || yoyo == 1) ? current++ : current--;
 
         // if past upper end
         if (current >= frames) {
             if (!yoyo)
                 current = 0;
-            if (yoyo == 0b01) {
+            if (yoyo == 1) {
                 current -= 2;
-                yoyo = 0b11;
+                yoyo = 2;
             }
         }
 
         // if past lower end ($80 to &FF are - in uint8)
         if (current >= 0x80) {
             current += 2;
-            yoyo = 0b01;
+            yoyo = 1;
         }
 
-        // write current
-        beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11100011;
-        beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] |= (current << 2);
+        // save current
+        beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] &= 0b11111000;
+        beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] |= current;
 
-        // write yoyo
-        beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] &= 0b11111100;
-        beebram[plr_pvizdef + AD_FRAMES3_CURRENT3_YOYO2] |= yoyo;
+        // save yoyo
+        beebram[plr_pvizdef + AD_FRAMES4_YOYO4] &= 0xF0;
+        beebram[plr_pvizdef + AD_FRAMES4_YOYO4] |= yoyo;
 
         // write elapsed frames
-        elapsed_frames = 0;
-        beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] &= 0b00000011;
-        beebram[PLAYER + PLR_ELAPSED6_CLEANUP2] |= (elapsed_frames << 2);
+        elapsed = 0;
+        beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] &= 0b00000111;
+        beebram[PLAYER + PLR_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
         // raise redraw flag so that renderStaticEntities() draws it
-        beebram[PLAYER + PLR_ROOM6_REDRAW2] &= 0b11111100;
-        beebram[PLAYER + PLR_ROOM6_REDRAW2] |= 0b00000001;
+        beebram[PLAYER + PLR_ROOM6_REDRAW2] |= 1;
     }
 }

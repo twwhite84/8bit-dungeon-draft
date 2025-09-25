@@ -19,18 +19,6 @@ void updateSpriteContainer(uint16_t actor) {
     uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
     uint16_t corner_old = corner_new;
 
-    // on first sprite container setup, set cleanup to false
-    if (beebram[actor + PLR_ELAPSED6_CLEANUP2] & 0b11 == 2) {
-        beebram[actor + PLR_ELAPSED6_CLEANUP2] &= 11111100;
-    }
-
-    // on subsequent computations, cleanup is raised if sprite container has moved
-    else {
-        corner_old = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
-        if ((corner_new - corner_old) != 0)
-            beebram[actor + PLR_ELAPSED6_CLEANUP2] |= true;
-    }
-
     // write the new sprite container corner to the player
     beebram[actor + PLR_PCORNER_LO] = corner_new & 0xFF;
     beebram[actor + PLR_PCORNER_HI] = corner_new >> 8;
@@ -46,7 +34,7 @@ void bufferSpriteBackground(uint16_t actor) {
     // for each of the 9 tiles of the sprite container
     for (int i = 8; i >= 0; i--) {
         // fetch the corresponding background tile id from the tilebuffer
-        uint8_t tileID = beebram[TILEBUFFER + ((corner + roff + boff) >> 3)];
+        uint8_t tileID = beebram[CAMBUFFER + ((corner + roff + boff) >> 3)];
 
         // paint the background to the offbuffer
         uint16_t offstart = OFFBUFFER + boff;
@@ -78,9 +66,9 @@ void bufferSpriteForeground(uint16_t actor) {
 
     // if the vizdef is an animdef, get the current frame
     if (pvizdef >= ANIMDEFS) {
-        uint8_t current = (beebram[pvizdef + AD_FRAMES3_CURRENT3_YOYO2] >> 2) & 0b00000111;
+        uint8_t current = beebram[PLAYER+PLR_FELAPSED5_FCURRENT3] & 0b111;
         current *= 2;
-        pcompdef = beebram[pvizdef + AD_PQUADDEF_LO + current] | (beebram[pvizdef + AD_PQUADDEF_HI + current] << 8);
+        pcompdef = beebram[pvizdef + AD_PFRAME0_LB + current] | (beebram[pvizdef + AD_PFRAME0_HB + current] << 8);
     } else {
         pcompdef = pvizdef;
     }
@@ -110,10 +98,10 @@ void bufferSpriteForeground(uint16_t actor) {
             } else if (hflipped) {
                 uint8_t texture_data = beebram[ptexture + s];
                 uint8_t mask_data = beebram[pmask + s];
-                overL = beebram[LUT_REVBYTES + texture_data] >> rshift;
-                overR = beebram[LUT_REVBYTES + texture_data] << lshift;
-                maskL = beebram[LUT_REVBYTES + mask_data] >> rshift;
-                maskR = beebram[LUT_REVBYTES + mask_data] << lshift;
+                overL = beebram[LUT_REVERSE + texture_data] >> rshift;
+                overR = beebram[LUT_REVERSE + texture_data] << lshift;
+                maskL = beebram[LUT_REVERSE + mask_data] >> rshift;
+                maskR = beebram[LUT_REVERSE + mask_data] << lshift;
             }
 
             if (s == ushift) {

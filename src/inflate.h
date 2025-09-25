@@ -4,6 +4,6 @@
 #include "shared.h"
 #include <stdint.h>
 
-void inflate_map(uint8_t mapID);
+void inflateMap(uint8_t mapID);
 
 #endif

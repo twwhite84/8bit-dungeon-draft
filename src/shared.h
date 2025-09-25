@@ -4,6 +4,107 @@
 #include <stdint.h>
 
 enum {
+    // MEMORY SECTIONS
+    LUT_REVERSE = 0x2200,
+    TEXDEFS = 0x2300,
+    QUADDEFS = 0x2C00,
+    Q_PLAINDEFS = QUADDEFS,
+    Q_COMPDEFS = Q_PLAINDEFS + (8 * 48),
+    ANIMDEFS = 0x2FA0,
+    PLAYER = 0x3050,
+    SE_TABLE = 0x3070,
+    SE_DEFS = 0x30D0,
+    MOVENTS = 0x3360,
+    CAMERA = 0x3460,
+    CAMBUFFER = 0x3480,
+    OFFBUFFER = 0x3890,
+    TMAP_TABLE = 0x38F0,
+    TMAP_DEFS = 0x3950,
+    LITEMAPS = 0x4E00,
+    SCREEN = 0x5800,
+
+    // ANIMDEF FIELDS
+    AD_FRAMES4_YOYO4 = 0x0,
+    AD_PERIOD0_PERIOD1 = 0x1,
+    AD_PERIOD2_PERIOD3 = 0x2,
+    AD_PFRAME0_LB = 0x3,
+    AD_PFRAME0_HB = 0x4,
+
+    // PLAYER FIELDS
+    PLR_X_LO = 0x0,
+    PLR_X_HI = 0x1,
+    PLR_Y_LO = 0x2,
+    PLR_Y_HI = 0x3,
+    PLR_ROOM6_REDRAW2 = 0x4,
+    PLR_DX4_DY4 = 0x5,
+    PLR_HSHIFT4_VSHIFT4 = 0x6,
+    PLR_FELAPSED5_FCURRENT3 = 0x7,
+    PLR_PCORNER_LO = 0x8,
+    PLR_PCORNER_HI = 0x9,
+    PLR_PVIZDEF_LO = 0xA,
+    PLR_PVIZDEF_HI = 0xB,
+    PLR_HP = 0xC,
+    PLR_MP = 0xD,
+    PLR_PINV0_LO = 0xE,
+    PLR_PINV0_HI = 0xF,
+    PLR_PINV1_LO = 0x10,
+    PLR_PINV1_HI = 0x11,
+    PLR_PINV2_LO = 0x12,
+    PLR_PINV2_HI = 0x13,
+
+    // STATIC ENTITY FIELDS
+    // I, J & VIZDEF REPEAT. APPLY DYNAMIC OFFSETTING WHEN USING
+    SE_FELAPSED5_FCURRENT3 = 0x0,
+    SE_ROOMID6_REDRAW2 = 0x1,
+    SE_TYPE4_NQUADS4 = 0x2,
+    SE_DATA24 = 0x3,
+    SE_I = 0x6,
+    SE_J = 0x7,
+    SE_PVIZDEF_LO = 0x8,
+    SE_PVIZDEF_HI = 0x9,
+
+    // CAMERA FIELDS
+    CAM_ROOMID = 0x00,
+    CAM_PLITEMAP_LO = 0x01,
+    CAM_PLITEMAP_HI = 0x02,
+    CAM_NME4_NSE4 = 0x03,
+    CAM_PME0_LO = 0x04,
+    CAM_PME0_HI = 0x05,
+    CAM_PME1_LO = 0x06,
+    CAM_PME1_HI = 0x07,
+    CAM_PME2_LO = 0x08,
+    CAM_PME2_HI = 0x09,
+    CAM_PME3_LO = 0x0A,
+    CAM_PME3_HI = 0x0B,
+    CAM_PSE0_LO = 0x0C,
+    CAM_PSE0_HI = 0x0D,
+    CAM_PSE1_LO = 0x0E,
+    CAM_PSE1_HI = 0x0F,
+    CAM_PSE2_LO = 0x10,
+    CAM_PSE2_HI = 0x11,
+    CAM_PSE3_LO = 0x12,
+    CAM_PSE3_HI = 0x13,
+    CAM_PSE4_LO = 0x14,
+    CAM_PSE4_HI = 0x15,
+    CAM_PSE5_LO = 0x16,
+    CAM_PSE5_HI = 0x17,
+    CAM_PSE6_LO = 0x18,
+    CAM_PSE6_HI = 0x19,
+    CAM_PSE7_LO = 0x1A,
+    CAM_PSE7_HI = 0x1B,
+    CAM_PSE8_LO = 0x1C,
+    CAM_PSE8_HI = 0x1D,
+    CAM_PSE9_LO = 0x1E,
+    CAM_PSE9_HI = 0x1F,
+
+    // ANIMDEF INSTANCES
+    ADPTR_FFIELD = ANIMDEFS,
+    ADPTR_DOGWALKU = ADPTR_FFIELD + 7,
+    ADPTR_DOGWALKD = ADPTR_DOGWALKU + 9,
+    ADPTR_DOGWALKL = ADPTR_DOGWALKD + 9,
+    ADPTR_DOGWALKR = ADPTR_DOGWALKL + 9,
+
+    // MISC CONSTANTS
     STORED_ROWS = 13,
     STORED_COLUMNS = 20,
     CAMERA_ROWS = (2 * STORED_ROWS),
@@ -11,71 +112,10 @@ enum {
     CAMERA_WIDTH = (8 * CAMERA_COLUMNS),
     CAMERA_HEIGHT = (8 * CAMERA_ROWS),
 
-    LUT_REVBYTES = 0x2200, // [0-255] in reverse
-    TEXTURES = 0x2300,     // 4x48 textures + 4x24 texture-mask pairs (worst case)
-    QUADDEFS = 0x2C00,     // 122 quaddefs
-    ANIMDEFS = 0x2FD0,     // ~15 animdefs varsize
-    PLAYER = 0x3050,       //
-    STATENTS = 0x3070,     // 48 indices + ~48 statents varsize
-    MOVEENTS = 0x3360,     // 12 entities
-    TILEBUFFER = 0x3460,   // 26x40 8x8px tiles
-    CAMERA = 0x3870,       //
-    OFFBUFFER = 0x3890,    // 12 8x8px tiles
-    TILEMAPS = 0x3900,     // 32 maps
-    LITEMAPS = 0x4E00,     // 17 maps
-    SCREEN = 0x5800,
-
-    SE_ELAPSED5_TYPE3 = 0,
-    SE_NQUADS2_ROOMID6 = 1,
-    SE_REDRAW1_DATA7 = 2,
-    SE_DATA24 = 3,
-    SE_I = 6,
-    SE_J = 7,
-    SE_PVIZDEF_LO = 8,
-    SE_PVIZDEF_HI = 9,
-
-    AD_FRAMES3_CURRENT3_YOYO2 = 0,
-    AD_PERIOD0_PERIOD1 = 1,
-    AD_PERIOD2_PERIOD3 = 2,
-    AD_PQUADDEF_LO = 3,
-    AD_PQUADDEF_HI = 4,
-
-    ADPTR_FFIELD = ANIMDEFS,
-    ADPTR_DOGWALKU = ADPTR_FFIELD + 7,
-    ADPTR_DOGWALKD = ADPTR_DOGWALKU + 9,
-    ADPTR_DOGWALKL = ADPTR_DOGWALKD + 9,
-    ADPTR_DOGWALKR = ADPTR_DOGWALKL + 9,
-
-    PLR_X_LO = 0,
-    PLR_X_HI = 1,
-    PLR_Y_LO = 2,
-    PLR_Y_HI = 3,
-    PLR_ROOM6_REDRAW2 = 4,
-    PLR_DX4_DY4 = 5,
-    PLR_HSHIFT4_VSHIFT4 = 6,
-    PLR_ELAPSED6_CLEANUP2 = 7,
-    PLR_PCORNER_LO = 8,
-    PLR_PCORNER_HI = 9,
-    PLR_PVIZDEF_LO = 10,
-    PLR_PVIZDEF_HI = 11,
-    PLR_HP = 12,
-    PLR_MP = 13,
-    PLR_PINV0_LO = 14,
-    PLR_PINV0_HI = 15,
-    PLR_PINV1_LO = 16,
-    PLR_PINV1_HI = 17,
-    PLR_PINV2_LO = 18,
-    PLR_PINV2_HI = 19,
-
-    CAM_ROOMID = 0,
-    CAM_PLITEMAP_LO = 1,
-    CAM_PLITEMAP_HI = 2,
-    CAM_NMOVS = 3,
-
-    PLRDIR_N = 0,
-    PLRDIR_E = 1,
-    PLRDIR_S = 2,
-    PLRDIR_W = 3,
+    PLRDIR_U = 0,
+    PLRDIR_D = 1,
+    PLRDIR_L = 2,
+    PLRDIR_R = 3,
 
     SETYPE_DOORLOCKED = 0,
     SETYPE_PICKUP = 1

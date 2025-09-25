@@ -37,8 +37,7 @@ static void inflate(uint16_t src, uint16_t dest) {
             break;
 
         case 1:
-            outbyte =
-                (beebram[src + inidx] << 2 | beebram[src + inidx + 1] >> 6) & 0x1F;
+            outbyte = (beebram[src + inidx] << 2 | beebram[src + inidx + 1] >> 6) & 0x1F;
             inidx++;
             if (newpair) {
                 a = outbyte;
@@ -63,8 +62,7 @@ static void inflate(uint16_t src, uint16_t dest) {
             break;
 
         case 3:
-            outbyte =
-                (beebram[src + inidx] << 4 | beebram[src + inidx + 1] >> 4) & 0x1F;
+            outbyte = (beebram[src + inidx] << 4 | beebram[src + inidx + 1] >> 4) & 0x1F;
             inidx++;
             if (newpair) {
                 a = outbyte;
@@ -77,8 +75,7 @@ static void inflate(uint16_t src, uint16_t dest) {
             break;
 
         case 4:
-            outbyte =
-                (beebram[src + inidx] << 1 | beebram[src + inidx + 1] >> 7) & 0x1F;
+            outbyte = (beebram[src + inidx] << 1 | beebram[src + inidx + 1] >> 7) & 0x1F;
             inidx++;
             if (newpair) {
                 a = outbyte;
@@ -103,8 +100,7 @@ static void inflate(uint16_t src, uint16_t dest) {
             break;
 
         case 6:
-            outbyte =
-                (beebram[src + inidx] << 3 | beebram[src + inidx + 1] >> 5) & 0x1F;
+            outbyte = (beebram[src + inidx] << 3 | beebram[src + inidx + 1] >> 5) & 0x1F;
             inidx++;
             if (newpair) {
                 a = outbyte;
@@ -173,12 +169,12 @@ static void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
 /*----------------------------------------------------------------------------*/
 
 static uint16_t mapIDtoAddr(uint8_t id) {
-    uint16_t pointer = TILEMAPS + 2 * (id - 1);
-    uint16_t map_addr = beebram[pointer] + (uint16_t)(beebram[pointer + 1] << 8);
-    return map_addr;
+    uint16_t pmap = TMAP_TABLE + 2 * id;
+    uint16_t map = beebram[pmap] | (beebram[pmap + 1] << 8);
+    return map;
 }
 
 /*----------------------------------------------------------------------------*/
 
 // expand the given room's stored 13x20 map into the 26x40 tilebuffer
-void inflate_map(uint8_t mapID) { inflate(mapIDtoAddr(mapID), TILEBUFFER); }
+void inflateMap(uint8_t mapID) { inflate(mapIDtoAddr(mapID), CAMBUFFER); }

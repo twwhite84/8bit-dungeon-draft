@@ -14,7 +14,7 @@ void init_renderer();
 void render();
 
 void renderBeebram();
-void drawTilebuffer();
+void renderBackground();
 void eraseTile(uint8_t i, uint8_t j);
 
 void renderStaticEntities();

@@ -37,7 +37,7 @@ void init_renderer() {
 
 /*----------------------------------------------------------------------------*/
 
-void drawTilebuffer() {
+void renderBackground() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
             eraseTile(i, j);
@@ -49,9 +49,9 @@ void drawTilebuffer() {
 
 // i,j are in 26x40 layout
 void eraseTile(uint8_t i, uint8_t j) {
-    uint8_t tid = beebram[TILEBUFFER + 40 * i + j];
+    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
     uint16_t tileptr = getTileTextureAddr(tid);
-    uint16_t screenpos = 0x5800 + (0x0140 * i) + (8 * j);
+    uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
 
     // using int in the loop because uint8_t screws up on wrap around
     for (int s = 7; s >= 0; s--) {
@@ -110,14 +110,14 @@ static void plot(int x, int y, int color, CanvasContext ctx) {
 
 /*----------------------------------------------------------------------------*/
 
-// draws static entities held in camera if redraw flag up
+// draws any static entities held in camera if their redraw flag is raised
 void renderStaticEntities() {
 
     uint16_t penbase;
     uint16_t offbase;
 
-    uint16_t se_ptr = CAMERA + 0x0D;
-    uint8_t se_n = beebram[CAMERA + 0x0C];
+    uint16_t se_ptr = CAMERA + CAM_PSE0_LO;
+    uint8_t se_n = beebram[CAMERA + CAM_NME4_NSE4] & 0x0F;
     for (int i = 0; i < se_n; i++) {
 
         // get the entity
@@ -125,13 +125,13 @@ void renderStaticEntities() {
         se_ptr += 2;
 
         // skip entity if redraw flag down, otherwise lower flag to skip in future calls
-        uint8_t se_redraw = (beebram[se_addr + SE_REDRAW1_DATA7] & 0b10000000) >> 7;
+        uint8_t se_redraw = (beebram[se_addr + SE_ROOMID6_REDRAW2] & 0b00000011);
         if (!se_redraw)
             continue;
         else
-            beebram[se_addr + SE_REDRAW1_DATA7] &= 0b01111111;
+            beebram[se_addr + SE_ROOMID6_REDRAW2] &= 0b11111100;
 
-        uint8_t se_nquads = ((beebram[se_addr + SE_NQUADS2_ROOMID6] & 0b11000000) >> 6) + 1;
+        uint8_t se_nquads = beebram[se_addr + SE_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < se_nquads; q++) {
             uint8_t se_TLi = beebram[(se_addr + SE_I) + (4 * q)]; // 4q because 4 fields per quad
             uint8_t se_TLj = beebram[(se_addr + SE_J) + (4 * q)];
@@ -145,16 +145,15 @@ void renderStaticEntities() {
 
         animdef:
             uint16_t animdef = se_vizdef;
-            uint8_t current = (beebram[animdef + AD_FRAMES3_CURRENT3_YOYO2] & 0b00011100) >> 2;
+            uint8_t current = beebram[se_addr + SE_FELAPSED5_FCURRENT3] & 0b00000111;
 
-            // pass the current frame to the quaddef routine
-            se_vizdef = beebram[(animdef + AD_PQUADDEF_LO) + (2 * current)];
-            se_vizdef |= (beebram[(animdef + AD_PQUADDEF_HI) + (2 * current)] << 8);
-            // 0x2d10
+            // get the current frame for rendering to offbuffer
+            se_vizdef = beebram[(animdef + AD_PFRAME0_LB) + (2 * current)];
+            se_vizdef |= (beebram[(animdef + AD_PFRAME0_HB) + (2 * current)] << 8);
             goto quaddef;
 
         quaddef:
-            if (se_vizdef < (QUADDEFS + 48 * 8))
+            if (se_vizdef < Q_COMPDEFS)
                 goto plaindef;
 
         compdef:
@@ -163,7 +162,7 @@ void renderStaticEntities() {
             offbase = OFFBUFFER;
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 2; j++) {
-                    uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
+                    uint8_t tileID = beebram[CAMBUFFER + (se_TLi + i) * 40 + se_TLj + j];
                     uint16_t bg_texture_addr = getTileTextureAddr(tileID);
                     for (int s = 7; s >= 0; s--) {
                         beebram[offbase + s] = beebram[bg_texture_addr + s];
@@ -193,9 +192,9 @@ void renderStaticEntities() {
                         uint8_t mask_data = beebram[mask + s];
                         uint8_t texture_data = beebram[texture + s];
 
-                        beebram[offbase + s] &= (beebram[LUT_REVBYTES + mask_data] ^ 0xFF);
+                        beebram[offbase + s] &= (beebram[LUT_REVERSE + mask_data] ^ 0xFF);
                         beebram[offbase + s] |=
-                            (beebram[LUT_REVBYTES + texture_data] & beebram[LUT_REVBYTES + mask_data]);
+                            (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
                     }
                 }
 
@@ -203,7 +202,7 @@ void renderStaticEntities() {
             }
 
             // paint the offbuffer back to screen at static entity's coordinates
-            penbase = 0x5800 + se_TLi * 0x140 + se_TLj * 8;
+            penbase = SCREEN + se_TLi * 0x140 + se_TLj * 8;
             for (int s = 7; s >= 0; s--) {
                 beebram[penbase + s] = beebram[OFFBUFFER + s];
                 beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
@@ -219,7 +218,7 @@ void renderStaticEntities() {
             offbase = OFFBUFFER;
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 2; j++) {
-                    uint8_t tileID = beebram[TILEBUFFER + (se_TLi + i) * 40 + se_TLj + j];
+                    uint8_t tileID = beebram[CAMBUFFER + (se_TLi + i) * 40 + se_TLj + j];
                     uint16_t bg_texture_addr = getTileTextureAddr(tileID);
                     for (int s = 7; s >= 0; s--) {
                         beebram[offbase + s] = beebram[bg_texture_addr + s];
