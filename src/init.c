@@ -421,16 +421,19 @@ static void initTilemaps() {
 /*----------------------------------------------------------------------------*/
 
 void initStaticEnts() {
+    // 0xFFFF will specify null pointers where no entity has been assigned
+    memset(&beebram[SE_TABLE], 0xFF, (size_t)(SE_DEFS - SE_TABLE));
+
     // (I,J) is 26x40 here, not 13x20
     uint16_t se_ptr = SE_TABLE, se_def = SE_TABLE + 0x60;
 
-    // map01: locked door
+    // map00: locked door
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | SETYPE_DOORLOCKED,        // ELAPSED_FRAMES (5) | TYPE (3)
-               (1 << 6) | 1,                        // N_QUADS-1 (2) | ROOMID (6)
-               (0 << 7) | 0,                        // REDRAW (1) | DATA (7)
+               (0 << 3) | 0,                        // FELAPSED (5) | FCURRENT (3)
+               (0 << 2) | 0,                        // ROOMID (6) | REDRAW (2)
+               (SETYPE_DOORLOCKED << 4) | 2,        // TYPE (4) | NQUADS (4)
                0, 0, 0,                             // DATA (24)
                4, 26,                               // I (8), J (8)
                qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF (16)
@@ -441,13 +444,13 @@ void initStaticEnts() {
     se_ptr += 2;
     se_def += 14;
 
-    // map01: ball pickup
+    // map00: ball pickup
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | SETYPE_PICKUP, // ELAPSED_FRAMES (5) | TYPE (3)
-               (0 << 6) | 1,             // N_QUADS-1 (2) | ROOMID (6)
-               (0 << 7) | 0,             // REDRAW (1) | DATA (7)
+               (0 << 3) | 0,             // FELAPSED (5) | FCURRENT (3)
+               (0 << 2) | 0,             // ROOMID (6) | REDRAW (2)
+               (SETYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
                0, 0, 0,                  // DATA (24)
                10, 8,                    // I (8), J (8)
                qBall & 0xFF, qBall >> 8  // PTR_VIZDEF (16)
@@ -456,13 +459,13 @@ void initStaticEnts() {
     se_ptr += 2;
     se_def += 10;
 
-    // map01: force field (animated)
+    // map00: force field (animated)
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | SETYPE_DOORLOCKED,           // ELAPSED_FRAMES (5) | TYPE (3)
-               (2 << 6) | 1,                           // N_QUADS-1 (2) | ROOMID (6)
-               (0 << 7) | 0,                           // REDRAW (1) | DATA (7)
+               (0 << 3) | 0,                           // FELAPSED (5) | FCURRENT (3)
+               (0 << 2) | 0,                           // ROOMID (6) | REDRAW (2)
+               (SETYPE_DOORLOCKED << 4) | 3,           // TYPE (4) | NQUADS (4)
                0, 0, 0,                                // DATA (24)
                8, 4,                                   // I (8), J (8)
                ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
@@ -475,13 +478,13 @@ void initStaticEnts() {
     se_ptr += 2;
     se_def += 18;
 
-    // map01: dog (animated)
+    // map00: dog (animated)
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | SETYPE_PICKUP,                   // ELAPSED_FRAMES (5) | TYPE (3)
-               (0 << 6) | 1,                               // N_QUADS-1 (2) | ROOMID (6)
-               (0 << 7) | 0,                               // REDRAW (1) | DATA (7)
+               (0 << 3) | 0,                               // FELAPSED (5) | FCURRENT (3)
+               (0 << 2) | 0,                               // ROOMID (6) | REDRAW (2)
+               (SETYPE_PICKUP << 4) | 1,                   // TYPE (4) | NQUADS (4)
                0, 0, 0,                                    // DATA (24)
                18, 6,                                      // I (8), J (8)
                ADPTR_DOGWALKD & 0xFF, ADPTR_DOGWALKD >> 8, // PTR_VIZDEF (16)
@@ -568,7 +571,7 @@ void initAnimdefs() {
 void initPlayer() {
     memset(&beebram[PLAYER], 0, (size_t)32);
 
-    beebram[PLAYER + PLR_ROOM6_REDRAW2] |= (1 << 2); // room 1
+    beebram[PLAYER + PLR_ROOM6_REDRAW2] |= (0 << 2); // room 1
     beebram[PLAYER + PLR_ROOM6_REDRAW2] |= true;
     beebram[PLAYER + PLR_X_LO] = 8;
     beebram[PLAYER + PLR_X_HI] = 0;

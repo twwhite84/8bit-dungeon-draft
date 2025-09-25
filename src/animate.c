@@ -1,15 +1,16 @@
 #include "animate.h"
 #include "shared.h"
 #include <stdint.h>
+#include <stdio.h>
 
 // walk the camera buffer and update any static entities which have animated tiles
 void animateStaticEntities() {
-    uint8_t se_n = beebram[CAMERA + 0x0C];
-    uint16_t se_ptr = CAMERA + 0x0D;
+    uint8_t se_n = beebram[CAMERA + CAM_NME4_NSE4] & 0x0F;
+    uint16_t se_ptr = CAMERA + CAM_PSE0_LO;
 
     for (int i = 0; i < se_n; i++) {
         // fetch the next static entity
-        uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
+        uint16_t se_addr = beebram[se_ptr] | (beebram[se_ptr + 1] << 8);
         se_ptr += 2;
 
         // get its first vizdef (you only need one to determine if the entity is animated)
@@ -108,6 +109,8 @@ void animatePlayer() {
     uint8_t frames = (beebram[plr_pvizdef + AD_FRAMES4_YOYO4] & 0xF0) >> 4;
     uint8_t yoyo = beebram[plr_pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
     uint8_t period;
+
+    fprintf(stderr, "PLAYER CURRENT FRAME: %d\n", current);
 
     // update the player's elapsed frame count
     elapsed++;

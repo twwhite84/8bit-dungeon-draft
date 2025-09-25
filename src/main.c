@@ -8,8 +8,8 @@
 #include <stdbool.h>
 
 typedef struct {
-    bool loadRoom_1;
-    bool loadroom_2;
+    bool loadRoom_0;
+    bool loadroom_1;
     bool player_moveLeft;
     bool player_moveRight;
     bool player_moveUp;
@@ -87,9 +87,9 @@ bool input() {
     if (keystates[SDL_SCANCODE_RIGHT])
         inputFlags.player_moveRight = true;
     if (keystates[SDL_SCANCODE_1])
-        inputFlags.loadRoom_1 = true;
+        inputFlags.loadRoom_0 = true;
     if (keystates[SDL_SCANCODE_2])
-        inputFlags.loadroom_2 = true;
+        inputFlags.loadroom_1 = true;
 
     return true;
 }
@@ -97,20 +97,20 @@ bool input() {
 /*----------------------------------------------------------------------------*/
 
 void update() {
-    if (inputFlags.loadRoom_1) {
+    if (inputFlags.loadRoom_0) {
+        fprintf(stderr, "LOAD ROOM: 0\n");
+        loadRoom(0);
+        renderBackground();
+        renderStaticEntities();
+        inputFlags.loadRoom_0 = false;
+    }
+
+    if (inputFlags.loadroom_1) {
         fprintf(stderr, "LOAD ROOM: 1\n");
         loadRoom(1);
         renderBackground();
         renderStaticEntities();
-        inputFlags.loadRoom_1 = false;
-    }
-
-    if (inputFlags.loadroom_2) {
-        fprintf(stderr, "LOAD ROOM: 2\n");
-        loadRoom(2);
-        renderBackground();
-        renderStaticEntities();
-        inputFlags.loadroom_2 = false;
+        inputFlags.loadroom_1 = false;
     }
 
     if (inputFlags.player_moveUp) {
@@ -161,13 +161,17 @@ void loadRoom(uint8_t roomID) {
 
     // find subset of static entities for this room and copy their pointers into the camera
     uint8_t entities_copied = 0;
-    uint8_t se_table_size = ((SE_DEFS - SE_TABLE) >> 1);
     uint16_t se_ptr_table = SE_TABLE;
     uint16_t se_ptr_camera = (CAMERA + CAM_PSE0_LO);
 
     // walk all static entities and copy those with matching roomID
-    for (uint8_t i = 0; i < se_table_size; i++) {
-        uint16_t se_addr = beebram[se_ptr_table] + (beebram[se_ptr_table + 1] << 8);
+    while (true) {
+        uint16_t se_addr = beebram[se_ptr_table] | (beebram[se_ptr_table + 1] << 8);
+
+        // 0xFFFF is sentinel, means no more pointers in the table
+        if (se_addr == 0xFFFF)
+            break;
+
         se_ptr_table += 2;
 
         uint8_t se_roomID = (beebram[se_addr + SE_ROOMID6_REDRAW2]) >> 2;
@@ -182,7 +186,7 @@ void loadRoom(uint8_t roomID) {
             beebram[se_addr + SE_ROOMID6_REDRAW2] |= 1;
 
             entities_copied++;
-            if (entities_copied > 10)
+            if (entities_copied >= 10)
                 break;
         }
     }
