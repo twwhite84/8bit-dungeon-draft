@@ -1,6 +1,5 @@
 #include "animate.h"
 #include "shared.h"
-#include <stdio.h>
 
 void animateEntity(uint16_t pentity) {
 
