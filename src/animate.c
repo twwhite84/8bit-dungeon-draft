@@ -1,6 +1,5 @@
 #include "animate.h"
 #include "shared.h"
-#include <stdint.h>
 #include <stdio.h>
 
 // walk the camera buffer and update any static entities which have animated tiles
@@ -95,42 +94,42 @@ void animateStaticEntities() {
 
 /*----------------------------------------------------------------------------*/
 
-void animatePlayer() {
+void animateME(uint16_t pme) {
 
     // get the player's vizdef. this points to a specific animdef, not the animdefs index
-    uint16_t plr_pvizdef = beebram[PLAYER + ME_PVIZDEF_LO] | (beebram[PLAYER + ME_PVIZDEF_HI] << 8);
+    uint16_t pvizdef = beebram[pme + ME_PVIZDEF_LO] | (beebram[pme + ME_PVIZDEF_HI] << 8);
 
     // skip if not an animdef (sometimes the player vizdef will just be a quad, eg for idle)
-    if (plr_pvizdef < ANIMDEFS)
+    if (pvizdef < ANIMDEFS)
         return;
 
-    uint8_t elapsed = beebram[PLAYER + CE_FELAPSED5_FCURRENT3] >> 3;
-    uint8_t current = beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111;
-    uint8_t frames = (beebram[plr_pvizdef + AD_FRAMES4_YOYO4] & 0xF0) >> 4;
-    uint8_t yoyo = beebram[plr_pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
+    uint8_t elapsed = beebram[pme + CE_FELAPSED5_FCURRENT3] >> 3;
+    uint8_t current = beebram[pme + CE_FELAPSED5_FCURRENT3] & 0b111;
+    uint8_t frames = (beebram[pvizdef + AD_FRAMES4_YOYO4] & 0xF0) >> 4;
+    uint8_t yoyo = beebram[pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
     uint8_t period;
 
     // update the player's elapsed frame count
     elapsed++;
-    beebram[PLAYER + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
-    beebram[PLAYER + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+    beebram[pme + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
+    beebram[pme + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
     // fetch the period for the current frame index
     switch (current) {
     case 0:
-        period = (beebram[plr_pvizdef + AD_PERIODA4_PERIODB4] & 0b11110000) >> 4;
+        period = (beebram[pvizdef + AD_PERIODA4_PERIODB4] & 0b11110000) >> 4;
         break;
 
     case 1:
-        period = (beebram[plr_pvizdef + AD_PERIODA4_PERIODB4] & 0b00001111);
+        period = (beebram[pvizdef + AD_PERIODA4_PERIODB4] & 0b00001111);
         break;
 
     case 2:
-        period = (beebram[plr_pvizdef + AD_PERIODC4_PERIODD4] & 0b11110000) >> 4;
+        period = (beebram[pvizdef + AD_PERIODC4_PERIODD4] & 0b11110000) >> 4;
         break;
 
     case 3:
-        period = (beebram[plr_pvizdef + AD_PERIODC4_PERIODD4] & 0b00001111);
+        period = (beebram[pvizdef + AD_PERIODC4_PERIODD4] & 0b00001111);
         break;
     }
 
@@ -159,19 +158,19 @@ void animatePlayer() {
         }
 
         // save current
-        beebram[PLAYER + CE_FELAPSED5_FCURRENT3] &= 0b11111000;
-        beebram[PLAYER + CE_FELAPSED5_FCURRENT3] |= current;
+        beebram[pme + CE_FELAPSED5_FCURRENT3] &= 0b11111000;
+        beebram[pme + CE_FELAPSED5_FCURRENT3] |= current;
 
         // save yoyo
-        beebram[plr_pvizdef + AD_FRAMES4_YOYO4] &= 0xF0;
-        beebram[plr_pvizdef + AD_FRAMES4_YOYO4] |= yoyo;
+        beebram[pvizdef + AD_FRAMES4_YOYO4] &= 0xF0;
+        beebram[pvizdef + AD_FRAMES4_YOYO4] |= yoyo;
 
         // write elapsed frames
         elapsed = 0;
-        beebram[PLAYER + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
-        beebram[PLAYER + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+        beebram[pme + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
+        beebram[pme + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
         // raise redraw flag so that renderStaticEntities() draws it
-        beebram[PLAYER + CE_ROOMID6_REDRAW2] |= 1;
+        beebram[pme + CE_ROOMID6_REDRAW2] |= 1;
     }
 }
