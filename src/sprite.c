@@ -6,22 +6,22 @@ void updateSpriteContainer(uint16_t actor) {
     // ONLY IMPLEMENTED FOR PLAYER FOR NOW
 
     // get current player position
-    uint16_t x = beebram[actor + PLR_X_LO] | (beebram[actor + PLR_X_HI] << 8);
-    uint16_t y = beebram[actor + PLR_Y_LO] | (beebram[actor + PLR_Y_HI] << 8);
+    uint16_t x = beebram[actor + ME_X_LO] | (beebram[actor + ME_X_HI] << 8);
+    uint16_t y = beebram[actor + ME_Y_LO] | (beebram[actor + ME_Y_HI] << 8);
 
     // compute and set the shifts for the sprite container
     uint8_t hshift = x & 0b111;
     uint8_t vshift = y & 0b111;
-    beebram[actor + PLR_HSHIFT4_VSHIFT4] = (beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
-    beebram[actor + PLR_HSHIFT4_VSHIFT4] = (beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
+    beebram[actor + ME_HSHIFT4_VSHIFT4] = (beebram[actor + ME_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
+    beebram[actor + ME_HSHIFT4_VSHIFT4] = (beebram[actor + ME_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
     // compute relative screen address for origin of sprite container (top-left corner)
     uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
     uint16_t corner_old = corner_new;
 
     // write the new sprite container corner to the player
-    beebram[actor + PLR_PCORNER_LO] = corner_new & 0xFF;
-    beebram[actor + PLR_PCORNER_HI] = corner_new >> 8;
+    beebram[actor + ME_PCORNER_LO] = corner_new & 0xFF;
+    beebram[actor + ME_PCORNER_HI] = corner_new >> 8;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ void updateSpriteContainer(uint16_t actor) {
 // paint the background tiles for the sprite container into the offbuffer
 void bufferSpriteBackground(uint16_t actor) {
     int boff = 0, roff = 0, t = 3;
-    uint16_t corner = beebram[actor + PLR_PCORNER_LO] | (beebram[actor + PLR_PCORNER_HI] << 8);
+    uint16_t corner = beebram[actor + ME_PCORNER_LO] | (beebram[actor + ME_PCORNER_HI] << 8);
 
     // for each of the 9 tiles of the sprite container
     for (int i = 8; i >= 0; i--) {
@@ -55,20 +55,20 @@ void bufferSpriteBackground(uint16_t actor) {
 
 void bufferSpriteForeground(uint16_t actor) {
     // only implemented for player for now
-    int rshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] >> 4;
+    int rshift = beebram[actor + ME_HSHIFT4_VSHIFT4] >> 4;
     int lshift = 8 - rshift;
 
-    int dshift = beebram[actor + PLR_HSHIFT4_VSHIFT4] & 0x0F;
+    int dshift = beebram[actor + ME_HSHIFT4_VSHIFT4] & 0x0F;
     int ushift = 8 - dshift;
 
-    uint16_t pvizdef = beebram[actor + PLR_PVIZDEF_LO] | (beebram[actor + PLR_PVIZDEF_HI] << 8);
+    uint16_t pvizdef = beebram[actor + ME_PVIZDEF_LO] | (beebram[actor + ME_PVIZDEF_HI] << 8);
     uint16_t pcompdef;
 
     // if the vizdef is an animdef, get the current frame
     if (pvizdef >= ANIMDEFS) {
-        uint8_t current = beebram[PLAYER+PLR_FELAPSED5_FCURRENT3] & 0b111;
+        uint8_t current = beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111;
         current *= 2;
-        pcompdef = beebram[pvizdef + AD_PFRAME0_LB + current] | (beebram[pvizdef + AD_PFRAME0_HB + current] << 8);
+        pcompdef = beebram[pvizdef + AD_PFRAME_LO + current] | (beebram[pvizdef + AD_PFRAME_HI + current] << 8);
     } else {
         pcompdef = pvizdef;
     }

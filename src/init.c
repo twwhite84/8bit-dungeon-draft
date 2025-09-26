@@ -431,8 +431,8 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | 0,                        // FELAPSED (5) | FCURRENT (3)
                (0 << 2) | 0,                        // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,                        // FELAPSED (5) | FCURRENT (3)
                (SETYPE_DOORLOCKED << 4) | 2,        // TYPE (4) | NQUADS (4)
                0, 0, 0,                             // DATA (24)
                4, 26,                               // I (8), J (8)
@@ -448,8 +448,8 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | 0,             // FELAPSED (5) | FCURRENT (3)
                (0 << 2) | 0,             // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,             // FELAPSED (5) | FCURRENT (3)
                (SETYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
                0, 0, 0,                  // DATA (24)
                10, 8,                    // I (8), J (8)
@@ -463,8 +463,8 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | 0,                           // FELAPSED (5) | FCURRENT (3)
                (0 << 2) | 0,                           // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,                           // FELAPSED (5) | FCURRENT (3)
                (SETYPE_DOORLOCKED << 4) | 3,           // TYPE (4) | NQUADS (4)
                0, 0, 0,                                // DATA (24)
                8, 4,                                   // I (8), J (8)
@@ -482,8 +482,8 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 3) | 0,                               // FELAPSED (5) | FCURRENT (3)
                (0 << 2) | 0,                               // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,                               // FELAPSED (5) | FCURRENT (3)
                (SETYPE_PICKUP << 4) | 1,                   // TYPE (4) | NQUADS (4)
                0, 0, 0,                                    // DATA (24)
                18, 6,                                      // I (8), J (8)
@@ -497,11 +497,6 @@ void initStaticEnts() {
 }
 
 /*----------------------------------------------------------------------------*/
-
-// aForceField
-// aDogWalkD
-// aDogWalkU
-// aDogWalkR
 
 void initAnimdefs() {
 
@@ -571,12 +566,12 @@ void initAnimdefs() {
 void initPlayer() {
     memset(&beebram[PLAYER], 0, (size_t)32);
 
-    beebram[PLAYER + PLR_ROOM6_REDRAW2] |= (0 << 2); // room 1
-    beebram[PLAYER + PLR_ROOM6_REDRAW2] |= true;
-    beebram[PLAYER + PLR_X_LO] = 8;
-    beebram[PLAYER + PLR_X_HI] = 0;
-    beebram[PLAYER + PLR_Y_LO] = 8;
-    beebram[PLAYER + PLR_Y_HI] = 0;
-    beebram[PLAYER + PLR_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
-    beebram[PLAYER + PLR_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
+    beebram[PLAYER + CE_ROOMID6_REDRAW2] |= (0 << 2); // room 0
+    beebram[PLAYER + CE_ROOMID6_REDRAW2] |= true;
+    beebram[PLAYER + ME_X_LO] = 8;
+    beebram[PLAYER + ME_X_HI] = 0;
+    beebram[PLAYER + ME_Y_LO] = 8;
+    beebram[PLAYER + ME_Y_HI] = 0;
+    beebram[PLAYER + ME_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
+    beebram[PLAYER + ME_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
 }

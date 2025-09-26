@@ -60,7 +60,7 @@ void init() {
     init_ram();
     init_renderer();
 
-    uint8_t roomID = beebram[PLAYER + PLR_ROOM6_REDRAW2] >> 2;
+    uint8_t roomID = beebram[PLAYER + CE_ROOMID6_REDRAW2] >> 2;
 
     loadRoom(roomID);
     renderBackground();
@@ -98,7 +98,6 @@ bool input() {
 
 void update() {
     if (inputFlags.loadRoom_0) {
-        fprintf(stderr, "LOAD ROOM: 0\n");
         loadRoom(0);
         renderBackground();
         renderStaticEntities();
@@ -106,7 +105,6 @@ void update() {
     }
 
     if (inputFlags.loadroom_1) {
-        fprintf(stderr, "LOAD ROOM: 1\n");
         loadRoom(1);
         renderBackground();
         renderStaticEntities();
@@ -141,7 +139,7 @@ void update() {
     renderStaticEntities();
 
     // if player's redraw flag is raised, redraw
-    uint8_t redraw = beebram[PLAYER + PLR_ROOM6_REDRAW2] & 0b11;
+    uint8_t redraw = beebram[PLAYER + CE_ROOMID6_REDRAW2] & 0b11;
     if (redraw) {
         updateSpriteContainer(PLAYER);
         bufferSpriteBackground(PLAYER);
@@ -174,7 +172,7 @@ void loadRoom(uint8_t roomID) {
 
         se_ptr_table += 2;
 
-        uint8_t se_roomID = (beebram[se_addr + SE_ROOMID6_REDRAW2]) >> 2;
+        uint8_t se_roomID = (beebram[se_addr + CE_ROOMID6_REDRAW2]) >> 2;
         if (se_roomID == roomID) {
 
             // add the static entity to the camera
@@ -183,7 +181,7 @@ void loadRoom(uint8_t roomID) {
             se_ptr_camera += 2;
 
             // make sure this entity is marked for redraw
-            beebram[se_addr + SE_ROOMID6_REDRAW2] |= 1;
+            beebram[se_addr + CE_ROOMID6_REDRAW2] |= 1;
 
             entities_copied++;
             if (entities_copied >= 10)

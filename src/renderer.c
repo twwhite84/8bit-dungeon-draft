@@ -125,11 +125,11 @@ void renderStaticEntities() {
         se_ptr += 2;
 
         // skip entity if redraw flag down, otherwise lower flag to skip in future calls
-        uint8_t se_redraw = (beebram[se_addr + SE_ROOMID6_REDRAW2] & 0b00000011);
+        uint8_t se_redraw = (beebram[se_addr + CE_ROOMID6_REDRAW2] & 0b00000011);
         if (!se_redraw)
             continue;
         else
-            beebram[se_addr + SE_ROOMID6_REDRAW2] &= 0b11111100;
+            beebram[se_addr + CE_ROOMID6_REDRAW2] &= 0b11111100;
 
         uint8_t se_nquads = beebram[se_addr + SE_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < se_nquads; q++) {
@@ -145,11 +145,11 @@ void renderStaticEntities() {
 
         animdef:
             uint16_t animdef = se_vizdef;
-            uint8_t current = beebram[se_addr + SE_FELAPSED5_FCURRENT3] & 0b00000111;
+            uint8_t current = beebram[se_addr + CE_FELAPSED5_FCURRENT3] & 0b00000111;
 
             // get the current frame for rendering to offbuffer
-            se_vizdef = beebram[(animdef + AD_PFRAME0_LB) + (2 * current)];
-            se_vizdef |= (beebram[(animdef + AD_PFRAME0_HB) + (2 * current)] << 8);
+            se_vizdef = beebram[(animdef + AD_PFRAME_LO) + (2 * current)];
+            se_vizdef |= (beebram[(animdef + AD_PFRAME_HI) + (2 * current)] << 8);
             goto quaddef;
 
         quaddef:
@@ -254,7 +254,7 @@ void renderStaticEntities() {
 /*----------------------------------------------------------------------------*/
 
 void renderPlayer() {
-    uint16_t corner = beebram[PLAYER + PLR_PCORNER_LO] | (beebram[PLAYER + PLR_PCORNER_HI] << 8);
+    uint16_t corner = beebram[PLAYER + ME_PCORNER_LO] | (beebram[PLAYER + ME_PCORNER_HI] << 8);
     uint16_t penbase = SCREEN + corner;
     for (int s = 7; s >= 0; s--) {
         beebram[penbase + s] = beebram[OFFBUFFER + s];
@@ -267,7 +267,7 @@ void renderPlayer() {
         beebram[penbase + s + 648] = beebram[OFFBUFFER + 56 + s];
         beebram[penbase + s + 656] = beebram[OFFBUFFER + 64 + s];
     }
-    beebram[PLAYER + PLR_ROOM6_REDRAW2] &= 0b11111100;
+    beebram[PLAYER + CE_ROOMID6_REDRAW2] &= 0b11111100;
 }
 
 /*----------------------------------------------------------------------------*/
