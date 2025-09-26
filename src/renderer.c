@@ -136,7 +136,7 @@ void renderStaticEntities() {
             uint8_t se_TLi = beebram[(se_addr + SE_I) + (4 * q)]; // 4q because 4 fields per quad
             uint8_t se_TLj = beebram[(se_addr + SE_J) + (4 * q)];
             uint16_t se_vizdef =
-                beebram[(se_addr + SE_PVIZDEF_LO) + (4 * q)] + (beebram[(se_addr + SE_PVIZDEF_HI) + (4 * q)] << 8);
+                beebram[(se_addr + CE_PVIZDEF_LO) + (4 * q)] + (beebram[(se_addr + CE_PVIZDEF_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
             if (se_vizdef >= QUADDEFS && se_vizdef < ANIMDEFS) {

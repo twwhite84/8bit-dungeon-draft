@@ -113,25 +113,25 @@ void update() {
 
     if (inputFlags.player_moveUp) {
         movePlayer(PLRDIR_U);
-        animateME(PLAYER);
+        animateEntity(PLAYER);
         inputFlags.player_moveUp = false;
     }
 
     if (inputFlags.player_moveDown) {
         movePlayer(PLRDIR_D);
-        animateME(PLAYER);
+        animateEntity(PLAYER);
         inputFlags.player_moveDown = false;
     }
 
     if (inputFlags.player_moveLeft) {
         movePlayer(PLRDIR_L);
-        animateME(PLAYER);
+        animateEntity(PLAYER);
         inputFlags.player_moveLeft = false;
     }
 
     if (inputFlags.player_moveRight) {
         movePlayer(PLRDIR_R);
-        animateME(PLAYER);
+        animateEntity(PLAYER);
         inputFlags.player_moveRight = false;
     }
 

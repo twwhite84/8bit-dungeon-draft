@@ -61,7 +61,7 @@ void bufferSpriteForeground(uint16_t actor) {
     int dshift = beebram[actor + ME_HSHIFT4_VSHIFT4] & 0x0F;
     int ushift = 8 - dshift;
 
-    uint16_t pvizdef = beebram[actor + ME_PVIZDEF_LO] | (beebram[actor + ME_PVIZDEF_HI] << 8);
+    uint16_t pvizdef = beebram[actor + CE_PVIZDEF_LO] | (beebram[actor + CE_PVIZDEF_HI] << 8);
     uint16_t pcompdef;
 
     // if the vizdef is an animdef, get the current frame

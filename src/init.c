@@ -572,6 +572,6 @@ void initPlayer() {
     beebram[PLAYER + ME_X_HI] = 0;
     beebram[PLAYER + ME_Y_LO] = 8;
     beebram[PLAYER + ME_Y_HI] = 0;
-    beebram[PLAYER + ME_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
-    beebram[PLAYER + ME_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
+    beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
+    beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
 }

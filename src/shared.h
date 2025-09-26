@@ -33,6 +33,8 @@ enum {
     // COMMON ENTITY FIELDS
     CE_ROOMID6_REDRAW2 = 0x0,
     CE_FELAPSED5_FCURRENT3 = 0x1,
+    CE_PVIZDEF_LO = 0x8,
+    CE_PVIZDEF_HI = 0x9,
 
     // COMMON ME FIELDS
     ME_X_LO = 0x2,
@@ -41,10 +43,8 @@ enum {
     ME_Y_HI = 0x5,
     ME_DX4_DY4 = 0x6,
     ME_HSHIFT4_VSHIFT4 = 0x7,
-    ME_PCORNER_LO = 0x8,
-    ME_PCORNER_HI = 0x9,
-    ME_PVIZDEF_LO = 0xA,
-    ME_PVIZDEF_HI = 0xB,
+    ME_PCORNER_LO = 0xA,
+    ME_PCORNER_HI = 0xB,
 
     // PLAYER FIELDS
     PLR_HP = 0xC,
@@ -62,8 +62,6 @@ enum {
     SE_DATA24 = 0x3,
     SE_I = 0x6,
     SE_J = 0x7,
-    SE_PVIZDEF_LO = 0x8,
-    SE_PVIZDEF_HI = 0x9,
 
     // CAMERA FIELDS
     CAM_ROOMID = 0x00,

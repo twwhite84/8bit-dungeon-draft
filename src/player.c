@@ -14,8 +14,8 @@ void movePlayer(uint8_t dir) {
     uint16_t x, y;
     switch (dir) {
     case PLRDIR_R:
-        beebram[PLAYER + ME_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
-        beebram[PLAYER + ME_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
+        beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
+        beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
         x = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8);
         x++;
         beebram[PLAYER + ME_X_LO] = x & 0xFF;
@@ -23,8 +23,8 @@ void movePlayer(uint8_t dir) {
         break;
 
     case PLRDIR_L:
-        beebram[PLAYER + ME_PVIZDEF_LO] = ADPTR_DOGWALKL & 0xFF;
-        beebram[PLAYER + ME_PVIZDEF_HI] = ADPTR_DOGWALKL >> 8;
+        beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKL & 0xFF;
+        beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKL >> 8;
         x = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8);
         x--;
         beebram[PLAYER + ME_X_LO] = x & 0xFF;
@@ -32,8 +32,8 @@ void movePlayer(uint8_t dir) {
 
         break;
     case PLRDIR_U:
-        beebram[PLAYER + ME_PVIZDEF_LO] = ADPTR_DOGWALKU & 0xFF;
-        beebram[PLAYER + ME_PVIZDEF_HI] = ADPTR_DOGWALKU >> 8;
+        beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKU & 0xFF;
+        beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKU >> 8;
         y = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
         y--;
         beebram[PLAYER + ME_Y_LO] = y & 0xFF;
@@ -41,8 +41,8 @@ void movePlayer(uint8_t dir) {
         break;
 
     case PLRDIR_D:
-        beebram[PLAYER + ME_PVIZDEF_LO] = ADPTR_DOGWALKD & 0xFF;
-        beebram[PLAYER + ME_PVIZDEF_HI] = ADPTR_DOGWALKD >> 8;
+        beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKD & 0xFF;
+        beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKD >> 8;
         y = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
         y++;
         beebram[PLAYER + ME_Y_LO] = y & 0xFF;
