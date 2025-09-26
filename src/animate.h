@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-void animateStaticEntities();
+void animateSE(uint16_t pse);
+void animateCameraSE();
 void animateME(uint16_t pme);
 
 #endif

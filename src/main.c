@@ -135,7 +135,14 @@ void update() {
         inputFlags.player_moveRight = false;
     }
 
-    animateStaticEntities();
+    // animate SEs held in camera
+    // uint16_t cam_se_ptr = CAMERA + CAM_PSE0_LO;
+    // for (uint8_t i = 0; i < (beebram[CAMERA + CAM_NME4_NSE4] & 0x0F); i++) {
+    //     animateSE(beebram[cam_se_ptr] | (beebram[cam_se_ptr + 1] << 8));
+    //     cam_se_ptr += 2;
+    // }
+    animateCameraSE();
+
     renderStaticEntities();
 
     // if player's redraw flag is raised, redraw

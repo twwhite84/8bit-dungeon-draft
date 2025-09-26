@@ -96,7 +96,11 @@ enum {
     PLRDIR_R = 3,
 
     SETYPE_DOORLOCKED = 0,
-    SETYPE_PICKUP = 1
+    SETYPE_PICKUP = 1,
+
+    YOYO_OFF = 0,
+    YOYO_FORWARD = 1,
+    YOYO_BACKWARD = 2
 };
 
 typedef struct {
