@@ -2,6 +2,87 @@
 #include "shared.h"
 #include <stdio.h>
 
+void animateEntity(uint16_t pse) {
+
+    // havent implemented allowing an SE to have a mix of static and animated quads
+    // this just assumes they're all one or the other, i may revisit this
+    uint16_t pvizdef = beebram[pse + SE_PVIZDEF_LO] + (beebram[pse + SE_PVIZDEF_HI] << 8);
+
+    // bail if not an animdef
+    if (pvizdef < ANIMDEFS)
+        return;
+
+    uint8_t elapsed = beebram[pse + CE_FELAPSED5_FCURRENT3] >> 3;
+    uint8_t current = beebram[pse + CE_FELAPSED5_FCURRENT3] & 0b111;
+    uint8_t frames = beebram[pvizdef + AD_FRAMES4_YOYO4] >> 4;
+    uint8_t yoyo = beebram[pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
+    uint8_t period;
+
+    // update the elapsed frame count
+    elapsed++;
+    beebram[pse + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
+    beebram[pse + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+
+    // fetch the period for the current frame index
+    switch (current) {
+    case 0:
+        period = (beebram[pvizdef + AD_PERIODA4_PERIODB4] & 0b11110000) >> 4;
+        break;
+
+    case 1:
+        period = (beebram[pvizdef + AD_PERIODA4_PERIODB4] & 0b00001111);
+        break;
+
+    case 2:
+        period = (beebram[pvizdef + AD_PERIODC4_PERIODD4] & 0b11110000) >> 4;
+        break;
+
+    case 3:
+        period = (beebram[pvizdef + AD_PERIODC4_PERIODD4] & 0b00001111);
+        break;
+    }
+
+    // if the elapsed frame count > period, cycle the frame and reset the elapsed
+    if (elapsed > period) {
+
+        (yoyo == YOYO_OFF || yoyo == YOYO_FORWARD) ? current++ : current--;
+
+        // current is beyond end of animation sequence
+        if (current >= frames) {
+            if (yoyo == YOYO_OFF)
+                current = 0;
+            if (yoyo == YOYO_FORWARD) {
+                current -= 2;
+                yoyo = YOYO_BACKWARD;
+            }
+        }
+
+        // current is before start of animation sequence ($80 to &FF are - in uint8)
+        if (current >= 0x80) {
+            current += 2;
+            yoyo = YOYO_FORWARD;
+        }
+
+        // save current
+        beebram[pse + CE_FELAPSED5_FCURRENT3] &= 0b11111000;
+        beebram[pse + CE_FELAPSED5_FCURRENT3] |= current;
+
+        // save yoyo
+        beebram[pvizdef + AD_FRAMES4_YOYO4] &= 0xF0;
+        beebram[pvizdef + AD_FRAMES4_YOYO4] |= yoyo;
+
+        // write elapsed frames
+        elapsed = 0;
+        beebram[pse + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
+        beebram[pse + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+
+        // raise redraw flag so that renderStaticEntities() draws it
+        beebram[pse + CE_ROOMID6_REDRAW2] |= 1;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
 void animateSE(uint16_t pse) {
 
     // havent implemented allowing an SE to have a mix of static and animated quads
