@@ -111,28 +111,57 @@ static void plot(int x, int y, int color, CanvasContext ctx) {
 /*----------------------------------------------------------------------------*/
 
 // dont pass i,j because that requires a heavy calculation on each call
-void bufferTile(uint16_t penstart, uint8_t tid) {
-    uint16_t texture = getTileTextureAddr(tid);
-    for (int s = 7; s >= 0; s--) {
-        beebram[penstart + s] = beebram[texture + s];
-    }
-}
-
 void bufferBGQuad(uint8_t abs_i, uint8_t abs_j) {
     uint16_t penstart = OFFBUFFER;
     for (int rel_i = 0; rel_i < 2; rel_i++) {
         for (int rel_j = 0; rel_j < 2; rel_j++) {
             uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
-            bufferTile(penstart, tileID);
+            uint16_t texture = getTileTextureAddr(tileID);
+            renderTileToBuffer(penstart, texture, 0xFFFF);
             penstart += 8;
         }
     }
 }
 
+void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
+
+    if (mask != 0xFFFF)
+        goto compdef;
+
+plaindef:
+    for (int s = 7; s >= 0; s--) {
+        beebram[penstart + s] = beebram[texture + s];
+    }
+    return;
+
+compdef:
+    uint8_t hflipped = texture >> 15;
+
+    if (!hflipped) {
+        for (int s = 7; s >= 0; s--) {
+            beebram[penstart + s] &= (beebram[mask + s] ^ 0xFF);
+            beebram[penstart + s] |= (beebram[texture + s] & beebram[mask + s]);
+        }
+    }
+
+    else {
+        texture &= 0x7FFF;
+        mask &= 0x7FFF;
+        for (int s = 7; s >= 0; s--) {
+            uint8_t mask_data = beebram[mask + s];
+            uint8_t texture_data = beebram[texture + s];
+            beebram[penstart + s] &= (beebram[LUT_REVERSE + mask_data] ^ 0xFF);
+            beebram[penstart + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
+        }
+    }
+
+    return;
+}
+
 /*----------------------------------------------------------------------------*/
 
 void renderQuad(uint16_t pvizdef, uint8_t qi, uint8_t qj) {
-    uint16_t penbase, offbase;
+    uint16_t penstart;
 
 quaddef:
     if (pvizdef >= Q_COMPDEFS)
@@ -144,71 +173,34 @@ plaindef:
     bufferBGQuad(qi, qj);
 
     // paint static entity textures into the offbuffer, no compositing for a plaindef
-    offbase = OFFBUFFER;
+    penstart = OFFBUFFER;
+    // get each texture from the quad
     for (int i = 0; i < 4; i++) {
-        // get each texture from the quad
         uint16_t texture = beebram[pvizdef + 2 * i] + (beebram[pvizdef + 2 * i + 1] << 8);
-        for (int s = 7; s >= 0; s--) {
-            beebram[offbase + s] = beebram[texture + s];
-        }
-        offbase += 8;
+        renderTileToBuffer(penstart, texture, 0xFFFF);
+        penstart += 8;
     }
 
-    // paint the offbuffer back to screen at static entity's coordinates
-    penbase = 0x5800 + qi * 0x140 + qj * 8;
-    for (int s = 7; s >= 0; s--) {
-        beebram[penbase + s] = beebram[OFFBUFFER + s];
-        beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
-        beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
-        beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
-    }
-
-    return;
+    goto render;
 
 compdef:
-
-    // fetch corresponding background tiles and paint to offbuffer
     bufferBGQuad(qi, qj);
-
-    // paint static entity textures into the offbuffer, compositing for a compdef
-    offbase = OFFBUFFER;
+    penstart = OFFBUFFER;
     for (int i = 0; i < 4; i++) {
         uint16_t texture = beebram[pvizdef + 2 * i] + (beebram[pvizdef + 2 * i + 1] << 8);
         uint16_t mask = beebram[pvizdef + 8 + 2 * i] + (beebram[pvizdef + 8 + 2 * i + 1] << 8);
-        uint8_t hflipped = texture >> 15;
-
-        if (!hflipped) {
-            for (int s = 7; s >= 0; s--) {
-                beebram[offbase + s] &= (beebram[mask + s] ^ 0xFF);
-                beebram[offbase + s] |= (beebram[texture + s] & beebram[mask + s]);
-            }
-        }
-
-        else if (hflipped) {
-            texture &= 0x7FFF;
-            mask &= 0x7FFF;
-            for (int s = 7; s >= 0; s--) {
-                uint8_t mask_data = beebram[mask + s];
-                uint8_t texture_data = beebram[texture + s];
-
-                beebram[offbase + s] &= (beebram[LUT_REVERSE + mask_data] ^ 0xFF);
-                beebram[offbase + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
-            }
-        }
-
-        offbase += 8;
+        renderTileToBuffer(penstart, texture, mask);
+        penstart += 8;
     }
 
-    // paint the offbuffer back to screen at static entity's coordinates
-    penbase = SCREEN + qi * 0x140 + qj * 8;
+render:
+    penstart = SCREEN + qi * 0x140 + qj * 8;
     for (int s = 7; s >= 0; s--) {
-        beebram[penbase + s] = beebram[OFFBUFFER + s];
-        beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
-        beebram[penbase + s + 320] = beebram[OFFBUFFER + 16 + s];
-        beebram[penbase + s + 328] = beebram[OFFBUFFER + 24 + s];
+        beebram[penstart + s] = beebram[OFFBUFFER + s];
+        beebram[penstart + s + 8] = beebram[OFFBUFFER + 8 + s];
+        beebram[penstart + s + 320] = beebram[OFFBUFFER + 16 + s];
+        beebram[penstart + s + 328] = beebram[OFFBUFFER + 24 + s];
     }
-
-    return;
 }
 
 /*----------------------------------------------------------------------------*/
