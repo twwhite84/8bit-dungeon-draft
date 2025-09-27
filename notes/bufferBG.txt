@@ -1,31 +1,84 @@
-STATIC:
-painting the background cells for a static into the offbuffer:
--a static may span multiple quads
--each static already has i,j coordinates for each of its quads
--paint 4 tiles for the quad into the offbuffer
+// paint the background tiles for the sprite container into the offbuffer
+void bufferSpriteBackground(uint16_t actor) {
+    int boff = 0, roff = 0, t = 3;
+    uint16_t corner = beebram[actor + ME_PCORNER_LO] | (beebram[actor + ME_PCORNER_HI] << 8);
 
-SPRITE:
-painting the background cells for a sprite into the offbuffer:
--a sprite spans 1 quad only
--find the sprite container corner
--paint 9 tiles into the offbuffer
+    // for each of the 9 tiles of the sprite container
+    for (int i = 8; i >= 0; i--) {
+        // fetch the corresponding background tile id from the tilebuffer
+        uint8_t tileID = beebram[CAMBUFFER + ((corner + roff + boff) >> 3)];
 
--------------------------------------------------------------------------------------
-
-// passed i, j are relative to the OFFBUFFER, not the SCREEN
-void bufferTile(uint8_t ri, uint8_t rj, uint8_t tid) {
-
-    //  0   1   2
-    // [0   8   16] 0
-    // [24  32  40] 1 -i-
-    // [48  56  64] 2
-    //     -j-
-
-    uint16_t penstart = OFFBUFFER + (24 * ri) + (8 * rj);
-    uint16_t texture = getTileTextureAddr(tid);
-    for (int s = 7; s >= 0; s--) {
-        beebram[penstart + s] = beebram[texture + s];
+        // paint the background to the offbuffer
+        uint16_t offstart = OFFBUFFER + boff;
+        uint16_t bg_texture_addr = getTileTextureAddr(tileID);
+        for (int s = 7; s >= 0; s--) {
+            beebram[offstart + s] = beebram[bg_texture_addr + s];
+        }
+        t--;
+        if (t == 0) {
+            roff += 0x0128;
+            t = 3;
+        }
+        boff += 8;
     }
 }
 
--------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+
+
+uint16_t corner = beebram[actor + ME_PCORNER_LO] | (beebram[actor + ME_PCORNER_HI] << 8);
+
+// suppose my corner is $140 + $8
+// that will give me i,j of 1,1
+
+void mark2() {
+
+}
+
+--------------------------------------------------------------------------------
+
+void renderBGQuadToBuffer(uint8_t abs_i, uint8_t abs_j) {
+    uint16_t penstart = OFFBUFFER;
+    for (int rel_i = 0; rel_i < 2; rel_i++) {
+        for (int rel_j = 0; rel_j < 2; rel_j++) {
+            uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
+            uint16_t texture = getTileTextureAddr(tileID);
+            renderTileToBuffer(penstart, texture, 0xFFFF);
+            penstart += 8;
+        }
+    }
+}
+
+--------------------------------------------------------------------------------
+
+void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
+    if (mask != 0xFFFF)
+        goto compdef;
+
+plaindef:
+    for (int s = 7; s >= 0; s--) {
+        beebram[penstart + s] = beebram[texture + s];
+    }
+    return;
+
+compdef:
+    uint8_t hflipped = texture >> 15;
+
+    if (!hflipped) {
+        for (int s = 7; s >= 0; s--) {
+            beebram[penstart + s] &= (beebram[mask + s] ^ 0xFF);
+            beebram[penstart + s] |= (beebram[texture + s] & beebram[mask + s]);
+        }
+    }
+
+    else {
+        texture &= 0x7FFF;
+        mask &= 0x7FFF;
+        for (int s = 7; s >= 0; s--) {
+            uint8_t mask_data = beebram[mask + s];
+            uint8_t texture_data = beebram[texture + s];
+            beebram[penstart + s] &= (beebram[LUT_REVERSE + mask_data] ^ 0xFF);
+            beebram[penstart + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
+        }
+    }
+}

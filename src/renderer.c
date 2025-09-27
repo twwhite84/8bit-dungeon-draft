@@ -171,12 +171,12 @@ compdef:
 
 /*----------------------------------------------------------------------------*/
 
-void renderSEQuad(uint16_t pvizdef, uint8_t qi, uint8_t qj) {
-    renderBGQuadToBuffer(qi, qj);
+void renderSEQuad(uint16_t pvizdef, uint8_t abs_i, uint8_t abs_j) {
+    renderBGQuadToBuffer(abs_i, abs_j);
     renderFGQuadToBuffer(pvizdef);
 
 render:
-    uint16_t penstart = SCREEN + qi * 0x140 + qj * 8;
+    uint16_t penstart = SCREEN + abs_i * 0x140 + abs_j * 8;
     for (int s = 7; s >= 0; s--) {
         beebram[penstart + s] = beebram[OFFBUFFER + s];
         beebram[penstart + s + 8] = beebram[OFFBUFFER + 8 + s];
