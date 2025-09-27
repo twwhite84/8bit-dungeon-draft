@@ -110,6 +110,27 @@ static void plot(int x, int y, int color, CanvasContext ctx) {
 
 /*----------------------------------------------------------------------------*/
 
+// dont pass i,j because that requires a heavy calculation on each call
+void bufferTile(uint16_t penstart, uint8_t tid) {
+    uint16_t texture = getTileTextureAddr(tid);
+    for (int s = 7; s >= 0; s--) {
+        beebram[penstart + s] = beebram[texture + s];
+    }
+}
+
+void bufferBGQuad(uint8_t abs_i, uint8_t abs_j) {
+    uint16_t penstart = OFFBUFFER;
+    for (int rel_i = 0; rel_i < 2; rel_i++) {
+        for (int rel_j = 0; rel_j < 2; rel_j++) {
+            uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
+            bufferTile(penstart, tileID);
+            penstart += 8;
+        }
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
 void renderQuad(uint16_t pvizdef, uint8_t qi, uint8_t qj) {
     uint16_t penbase, offbase;
 
@@ -120,17 +141,7 @@ quaddef:
 plaindef:
 
     // fetch corresponding background tiles and paint to offbuffer
-    offbase = OFFBUFFER;
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            uint8_t tileID = beebram[CAMBUFFER + (qi + i) * 40 + qj + j];
-            uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-            for (int s = 7; s >= 0; s--) {
-                beebram[offbase + s] = beebram[bg_texture_addr + s];
-            }
-            offbase += 8;
-        }
-    }
+    bufferBGQuad(qi, qj);
 
     // paint static entity textures into the offbuffer, no compositing for a plaindef
     offbase = OFFBUFFER;
@@ -157,17 +168,7 @@ plaindef:
 compdef:
 
     // fetch corresponding background tiles and paint to offbuffer
-    offbase = OFFBUFFER;
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            uint8_t tileID = beebram[CAMBUFFER + (qi + i) * 40 + qj + j];
-            uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-            for (int s = 7; s >= 0; s--) {
-                beebram[offbase + s] = beebram[bg_texture_addr + s];
-            }
-            offbase += 8;
-        }
-    }
+    bufferBGQuad(qi, qj);
 
     // paint static entity textures into the offbuffer, compositing for a compdef
     offbase = OFFBUFFER;
@@ -257,6 +258,7 @@ void renderStaticEntities() {
 
 /*----------------------------------------------------------------------------*/
 
+// PAINTS THE OFFBUFFER TO THE SCREEN
 void renderPlayer() {
     uint16_t corner = beebram[PLAYER + ME_PCORNER_LO] | (beebram[PLAYER + ME_PCORNER_HI] << 8);
     uint16_t penbase = SCREEN + corner;

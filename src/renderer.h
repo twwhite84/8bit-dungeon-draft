@@ -16,6 +16,7 @@ void render();
 void renderBeebram();
 void renderBackground();
 void eraseTile(uint8_t i, uint8_t j);
+void bufferTile(uint16_t penstart, uint8_t tid);
 
 void renderStaticEntities();
 void renderPlayer();

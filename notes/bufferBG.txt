@@ -1,0 +1,31 @@
+STATIC:
+painting the background cells for a static into the offbuffer:
+-a static may span multiple quads
+-each static already has i,j coordinates for each of its quads
+-paint 4 tiles for the quad into the offbuffer
+
+SPRITE:
+painting the background cells for a sprite into the offbuffer:
+-a sprite spans 1 quad only
+-find the sprite container corner
+-paint 9 tiles into the offbuffer
+
+-------------------------------------------------------------------------------------
+
+// passed i, j are relative to the OFFBUFFER, not the SCREEN
+void bufferTile(uint8_t ri, uint8_t rj, uint8_t tid) {
+
+    //  0   1   2
+    // [0   8   16] 0
+    // [24  32  40] 1 -i-
+    // [48  56  64] 2
+    //     -j-
+
+    uint16_t penstart = OFFBUFFER + (24 * ri) + (8 * rj);
+    uint16_t texture = getTileTextureAddr(tid);
+    for (int s = 7; s >= 0; s--) {
+        beebram[penstart + s] = beebram[texture + s];
+    }
+}
+
+-------------------------------------------------------------------------------------
