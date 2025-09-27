@@ -110,8 +110,7 @@ static void plot(int x, int y, int color, CanvasContext ctx) {
 
 /*----------------------------------------------------------------------------*/
 
-// dont pass i,j because that requires a heavy calculation on each call
-void bufferBGQuad(uint8_t abs_i, uint8_t abs_j) {
+void renderBGQuadToBuffer(uint8_t abs_i, uint8_t abs_j) {
     uint16_t penstart = OFFBUFFER;
     for (int rel_i = 0; rel_i < 2; rel_i++) {
         for (int rel_j = 0; rel_j < 2; rel_j++) {
@@ -123,8 +122,22 @@ void bufferBGQuad(uint8_t abs_i, uint8_t abs_j) {
     }
 }
 
-void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
+void renderFGQuadToBuffer(uint16_t pquad) {
+    uint16_t penstart = OFFBUFFER;
+    uint16_t mask = 0xFFFF, texture = 0;
 
+    for (uint8_t tile = 0; tile < 4; tile++) {
+        texture = beebram[pquad + 2 * tile] + (beebram[pquad + 2 * tile + 1] << 8);
+
+        if (pquad >= QUADS_COMP)
+            mask = beebram[pquad + 8 + 2 * tile] + (beebram[pquad + 8 + 2 * tile + 1] << 8);
+
+        renderTileToBuffer(penstart, texture, mask);
+        penstart += 8;
+    }
+}
+
+void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
     if (mask != 0xFFFF)
         goto compdef;
 
@@ -154,47 +167,16 @@ compdef:
             beebram[penstart + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
         }
     }
-
-    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-void renderQuad(uint16_t pvizdef, uint8_t qi, uint8_t qj) {
-    uint16_t penstart;
-
-quaddef:
-    if (pvizdef >= Q_COMPDEFS)
-        goto compdef;
-
-plaindef:
-
-    // fetch corresponding background tiles and paint to offbuffer
-    bufferBGQuad(qi, qj);
-
-    // paint static entity textures into the offbuffer, no compositing for a plaindef
-    penstart = OFFBUFFER;
-    // get each texture from the quad
-    for (int i = 0; i < 4; i++) {
-        uint16_t texture = beebram[pvizdef + 2 * i] + (beebram[pvizdef + 2 * i + 1] << 8);
-        renderTileToBuffer(penstart, texture, 0xFFFF);
-        penstart += 8;
-    }
-
-    goto render;
-
-compdef:
-    bufferBGQuad(qi, qj);
-    penstart = OFFBUFFER;
-    for (int i = 0; i < 4; i++) {
-        uint16_t texture = beebram[pvizdef + 2 * i] + (beebram[pvizdef + 2 * i + 1] << 8);
-        uint16_t mask = beebram[pvizdef + 8 + 2 * i] + (beebram[pvizdef + 8 + 2 * i + 1] << 8);
-        renderTileToBuffer(penstart, texture, mask);
-        penstart += 8;
-    }
+void renderSEQuad(uint16_t pvizdef, uint8_t qi, uint8_t qj) {
+    renderBGQuadToBuffer(qi, qj);
+    renderFGQuadToBuffer(pvizdef);
 
 render:
-    penstart = SCREEN + qi * 0x140 + qj * 8;
+    uint16_t penstart = SCREEN + qi * 0x140 + qj * 8;
     for (int s = 7; s >= 0; s--) {
         beebram[penstart + s] = beebram[OFFBUFFER + s];
         beebram[penstart + s + 8] = beebram[OFFBUFFER + 8 + s];
@@ -232,7 +214,7 @@ void renderStaticEntities() {
 
             // if not animated, jump ahead to directly rendering the quad
             if (pvizdef < ANIMDEFS) {
-                renderQuad(pvizdef, qi, qj);
+                renderSEQuad(pvizdef, qi, qj);
                 continue;
             }
 
@@ -243,7 +225,7 @@ void renderStaticEntities() {
             // get the current frame for rendering to offbuffer
             pvizdef = beebram[(animdef + AD_PFRAME_LO) + (2 * current)];
             pvizdef |= (beebram[(animdef + AD_PFRAME_HI) + (2 * current)] << 8);
-            renderQuad(pvizdef, qi, qj);
+            renderSEQuad(pvizdef, qi, qj);
         }
     }
 }

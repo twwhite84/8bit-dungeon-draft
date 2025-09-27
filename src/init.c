@@ -13,156 +13,156 @@ static void initPlayer();
 
 /*------------------------------ MEMORY OFFSETS ------------------------------*/
 
-// TEXDEFS 0x2300 to 0x2C00
+// TEXTURES 0x2300 to 0x2C00
 // these can be stored at any position provided masks immediately follow defs
-static const int tTiled0 = TEXDEFS + 8 * 0; // Q0
-static const int tMesh0 = TEXDEFS + 8 * 1;  // Q1
-static const int tMesh1 = TEXDEFS + 8 * 2;
-static const int tMesh2 = TEXDEFS + 8 * 3;
-static const int tTread0 = TEXDEFS + 8 * 4;   // Q2
-static const int tDiamond0 = TEXDEFS + 8 * 5; // Q3
-static const int tDirt0 = TEXDEFS + 8 * 6;    // Q4
-static const int tDirt1 = TEXDEFS + 8 * 7;
-static const int tDirt2 = TEXDEFS + 8 * 8;
-static const int tDirt3 = TEXDEFS + 8 * 9;
-static const int tSquare0 = TEXDEFS + 8 * 10; // Q5
-static const int tSquare1 = TEXDEFS + 8 * 11;
-static const int tSquare2 = TEXDEFS + 8 * 12;
-static const int tSquare3 = TEXDEFS + 8 * 13;
-static const int tCrate0 = TEXDEFS + 8 * 14; // Q6
-static const int tCrate1 = TEXDEFS + 8 * 15;
-static const int tCrate2 = TEXDEFS + 8 * 16;
-static const int tCrate3 = TEXDEFS + 8 * 17;
-static const int tDoor0 = TEXDEFS + 8 * 18; // Q32
-static const int tDoor1 = TEXDEFS + 8 * 19;
-static const int tDoor2 = TEXDEFS + 8 * 20;
-static const int tDoor3 = TEXDEFS + 8 * 21;
-static const int tDoorLocked0 = TEXDEFS + 8 * 22; // Q33
-static const int tDoorLocked1 = TEXDEFS + 8 * 23;
-static const int tDoorLocked2 = TEXDEFS + 8 * 24;
-static const int tDoorLocked3 = TEXDEFS + 8 * 25;
-static const int tForceField00 = TEXDEFS + 8 * 26; // Q34
-static const int tForceField01 = TEXDEFS + 8 * 27;
-static const int tForceField10 = TEXDEFS + 8 * 28; // Q35
-static const int tForceField11 = TEXDEFS + 8 * 29;
+static const int tTiled0 = TEXTURES + 8 * 0; // Q0
+static const int tMesh0 = TEXTURES + 8 * 1;  // Q1
+static const int tMesh1 = TEXTURES + 8 * 2;
+static const int tMesh2 = TEXTURES + 8 * 3;
+static const int tTread0 = TEXTURES + 8 * 4;   // Q2
+static const int tDiamond0 = TEXTURES + 8 * 5; // Q3
+static const int tDirt0 = TEXTURES + 8 * 6;    // Q4
+static const int tDirt1 = TEXTURES + 8 * 7;
+static const int tDirt2 = TEXTURES + 8 * 8;
+static const int tDirt3 = TEXTURES + 8 * 9;
+static const int tSquare0 = TEXTURES + 8 * 10; // Q5
+static const int tSquare1 = TEXTURES + 8 * 11;
+static const int tSquare2 = TEXTURES + 8 * 12;
+static const int tSquare3 = TEXTURES + 8 * 13;
+static const int tCrate0 = TEXTURES + 8 * 14; // Q6
+static const int tCrate1 = TEXTURES + 8 * 15;
+static const int tCrate2 = TEXTURES + 8 * 16;
+static const int tCrate3 = TEXTURES + 8 * 17;
+static const int tDoor0 = TEXTURES + 8 * 18; // Q32
+static const int tDoor1 = TEXTURES + 8 * 19;
+static const int tDoor2 = TEXTURES + 8 * 20;
+static const int tDoor3 = TEXTURES + 8 * 21;
+static const int tDoorLocked0 = TEXTURES + 8 * 22; // Q33
+static const int tDoorLocked1 = TEXTURES + 8 * 23;
+static const int tDoorLocked2 = TEXTURES + 8 * 24;
+static const int tDoorLocked3 = TEXTURES + 8 * 25;
+static const int tForceField00 = TEXTURES + 8 * 26; // Q34
+static const int tForceField01 = TEXTURES + 8 * 27;
+static const int tForceField10 = TEXTURES + 8 * 28; // Q35
+static const int tForceField11 = TEXTURES + 8 * 29;
 
 // def-mask pairs
-static const int tBall0 = TEXDEFS + 8 * 30; // Q48
-static const int tBall2 = TEXDEFS + 8 * 31;
-static const int tBallMask0 = TEXDEFS + 8 * 32; // Q49
-static const int tBallMask2 = TEXDEFS + 8 * 33;
+static const int tBall0 = TEXTURES + 8 * 30; // Q48
+static const int tBall2 = TEXTURES + 8 * 31;
+static const int tBallMask0 = TEXTURES + 8 * 32; // Q49
+static const int tBallMask2 = TEXTURES + 8 * 33;
 
-static const int tDogIdleD_0 = TEXDEFS + 8 * 34; // Q50
-static const int tDogIdleD_2 = TEXDEFS + 8 * 35;
-static const int tDogIdleMaskD_0 = TEXDEFS + 8 * 36; // Q51
-static const int tDogIdleMaskD_2 = TEXDEFS + 8 * 37;
+static const int tDogIdleD_0 = TEXTURES + 8 * 34; // Q50
+static const int tDogIdleD_2 = TEXTURES + 8 * 35;
+static const int tDogIdleMaskD_0 = TEXTURES + 8 * 36; // Q51
+static const int tDogIdleMaskD_2 = TEXTURES + 8 * 37;
 
-static const int tDogWalkD_0 = TEXDEFS + 8 * 38; // Q52
-static const int tDogWalkD_2 = TEXDEFS + 8 * 39;
-static const int tDogWalkD_3 = TEXDEFS + 8 * 40;
+static const int tDogWalkD_0 = TEXTURES + 8 * 38; // Q52
+static const int tDogWalkD_2 = TEXTURES + 8 * 39;
+static const int tDogWalkD_3 = TEXTURES + 8 * 40;
 
-static const int tDogWalkMaskD_0 = TEXDEFS + 8 * 41; // Q53
-static const int tDogWalkMaskD_2 = TEXDEFS + 8 * 42;
-static const int tDogWalkMaskD_3 = TEXDEFS + 8 * 43;
+static const int tDogWalkMaskD_0 = TEXTURES + 8 * 41; // Q53
+static const int tDogWalkMaskD_2 = TEXTURES + 8 * 42;
+static const int tDogWalkMaskD_3 = TEXTURES + 8 * 43;
 
-static const int tDogIdleU_0 = TEXDEFS + 8 * 44;
-static const int tDogIdleU_2 = TEXDEFS + 8 * 45;
-static const int tDogIdleMaskU_0 = TEXDEFS + 8 * 46;
-static const int tDogIdleMaskU_2 = TEXDEFS + 8 * 47;
+static const int tDogIdleU_0 = TEXTURES + 8 * 44;
+static const int tDogIdleU_2 = TEXTURES + 8 * 45;
+static const int tDogIdleMaskU_0 = TEXTURES + 8 * 46;
+static const int tDogIdleMaskU_2 = TEXTURES + 8 * 47;
 
-static const int tDogWalkU_0 = TEXDEFS + 8 * 48;
-static const int tDogWalkU_2 = TEXDEFS + 8 * 49;
-static const int tDogWalkU_3 = TEXDEFS + 8 * 50;
-static const int tDogWalkMaskU_0 = TEXDEFS + 8 * 51;
-static const int tDogWalkMaskU_2 = TEXDEFS + 8 * 52;
-static const int tDogWalkMaskU_3 = TEXDEFS + 8 * 53;
+static const int tDogWalkU_0 = TEXTURES + 8 * 48;
+static const int tDogWalkU_2 = TEXTURES + 8 * 49;
+static const int tDogWalkU_3 = TEXTURES + 8 * 50;
+static const int tDogWalkMaskU_0 = TEXTURES + 8 * 51;
+static const int tDogWalkMaskU_2 = TEXTURES + 8 * 52;
+static const int tDogWalkMaskU_3 = TEXTURES + 8 * 53;
 
-static const int tDogIdleR_0 = TEXDEFS + 8 * 54;
-static const int tDogIdleR_1 = TEXDEFS + 8 * 55;
-static const int tDogIdleR_2 = TEXDEFS + 8 * 56;
-static const int tDogIdleR_3 = TEXDEFS + 8 * 57;
-static const int tDogIdleMaskR_0 = TEXDEFS + 8 * 58;
-static const int tDogIdleMaskR_1 = TEXDEFS + 8 * 59;
-static const int tDogIdleMaskR_2 = TEXDEFS + 8 * 60;
-static const int tDogIdleMaskR_3 = TEXDEFS + 8 * 61;
+static const int tDogIdleR_0 = TEXTURES + 8 * 54;
+static const int tDogIdleR_1 = TEXTURES + 8 * 55;
+static const int tDogIdleR_2 = TEXTURES + 8 * 56;
+static const int tDogIdleR_3 = TEXTURES + 8 * 57;
+static const int tDogIdleMaskR_0 = TEXTURES + 8 * 58;
+static const int tDogIdleMaskR_1 = TEXTURES + 8 * 59;
+static const int tDogIdleMaskR_2 = TEXTURES + 8 * 60;
+static const int tDogIdleMaskR_3 = TEXTURES + 8 * 61;
 
-static const int tDogWalkRF0_0 = TEXDEFS + 8 * 62;
-static const int tDogWalkRF0_1 = TEXDEFS + 8 * 63;
-static const int tDogWalkRF0_2 = TEXDEFS + 8 * 64;
-static const int tDogWalkRF0_3 = TEXDEFS + 8 * 65;
-static const int tDogWalkMaskRF0_0 = TEXDEFS + 8 * 66;
-static const int tDogWalkMaskRF0_1 = TEXDEFS + 8 * 67;
-static const int tDogWalkMaskRF0_2 = TEXDEFS + 8 * 68;
-static const int tDogWalkMaskRF0_3 = TEXDEFS + 8 * 69;
+static const int tDogWalkRF0_0 = TEXTURES + 8 * 62;
+static const int tDogWalkRF0_1 = TEXTURES + 8 * 63;
+static const int tDogWalkRF0_2 = TEXTURES + 8 * 64;
+static const int tDogWalkRF0_3 = TEXTURES + 8 * 65;
+static const int tDogWalkMaskRF0_0 = TEXTURES + 8 * 66;
+static const int tDogWalkMaskRF0_1 = TEXTURES + 8 * 67;
+static const int tDogWalkMaskRF0_2 = TEXTURES + 8 * 68;
+static const int tDogWalkMaskRF0_3 = TEXTURES + 8 * 69;
 
-static const int tDogWalkRF2_0 = TEXDEFS + 8 * 70;
-static const int tDogWalkRF2_1 = TEXDEFS + 8 * 71;
-static const int tDogWalkRF2_2 = TEXDEFS + 8 * 72;
-static const int tDogWalkRF2_3 = TEXDEFS + 8 * 73;
-static const int tDogWalkMaskRF2_0 = TEXDEFS + 8 * 74;
-static const int tDogWalkMaskRF2_1 = TEXDEFS + 8 * 75;
-static const int tDogWalkMaskRF2_2 = TEXDEFS + 8 * 76;
-static const int tDogWalkMaskRF2_3 = TEXDEFS + 8 * 77;
+static const int tDogWalkRF2_0 = TEXTURES + 8 * 70;
+static const int tDogWalkRF2_1 = TEXTURES + 8 * 71;
+static const int tDogWalkRF2_2 = TEXTURES + 8 * 72;
+static const int tDogWalkRF2_3 = TEXTURES + 8 * 73;
+static const int tDogWalkMaskRF2_0 = TEXTURES + 8 * 74;
+static const int tDogWalkMaskRF2_1 = TEXTURES + 8 * 75;
+static const int tDogWalkMaskRF2_2 = TEXTURES + 8 * 76;
+static const int tDogWalkMaskRF2_3 = TEXTURES + 8 * 77;
 
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
-static const int qTiled = QUADDEFS + 8 * 0;
-static const int qMesh = QUADDEFS + 8 * 1;
-static const int qTread = QUADDEFS + 8 * 2;
-static const int qDiamond = QUADDEFS + 8 * 3;
-static const int qDirt = QUADDEFS + 8 * 4;
-static const int qSquare = QUADDEFS + 8 * 5;
-static const int qCrate = QUADDEFS + 8 * 6;
+static const int qTiled = QUADS_PLAIN + 8 * 0;
+static const int qMesh = QUADS_PLAIN + 8 * 1;
+static const int qTread = QUADS_PLAIN + 8 * 2;
+static const int qDiamond = QUADS_PLAIN + 8 * 3;
+static const int qDirt = QUADS_PLAIN + 8 * 4;
+static const int qSquare = QUADS_PLAIN + 8 * 5;
+static const int qCrate = QUADS_PLAIN + 8 * 6;
 
 // these quads correspond to 32-47 object textures (16 of these)
-static const int qDoor = QUADDEFS + 8 * 32;
-static const int qDoorLocked = QUADDEFS + 8 * 33;
-static const int qForceField0 = QUADDEFS + 8 * 34;
-static const int qForceField1 = QUADDEFS + 8 * 35;
+static const int qDoor = QUADS_PLAIN + 8 * 32;
+static const int qDoorLocked = QUADS_PLAIN + 8 * 33;
+static const int qForceField0 = QUADS_PLAIN + 8 * 34;
+static const int qForceField1 = QUADS_PLAIN + 8 * 35;
 
 // these quads correspond to 48-95 composite pairs (24 of these)
-static const int qBall = QUADDEFS + 8 * 48;
-static const int qBallMask = QUADDEFS + 8 * 49;
+static const int qBall = QUADS_PLAIN + 8 * 48;
+static const int qBallMask = QUADS_PLAIN + 8 * 49;
 
 // dog d
-static const int qDogIdleD = QUADDEFS + 8 * 50;
-static const int qDogIdleMaskD = QUADDEFS + 8 * 51;
+static const int qDogIdleD = QUADS_PLAIN + 8 * 50;
+static const int qDogIdleMaskD = QUADS_PLAIN + 8 * 51;
 
-static const int qDogWalkDF0 = QUADDEFS + 8 * 52;
-static const int qDogWalkMaskDF0 = QUADDEFS + 8 * 53;
-static const int qDogWalkDF2 = QUADDEFS + 8 * 54;
-static const int qDogWalkMaskDF2 = QUADDEFS + 8 * 55;
+static const int qDogWalkDF0 = QUADS_PLAIN + 8 * 52;
+static const int qDogWalkMaskDF0 = QUADS_PLAIN + 8 * 53;
+static const int qDogWalkDF2 = QUADS_PLAIN + 8 * 54;
+static const int qDogWalkMaskDF2 = QUADS_PLAIN + 8 * 55;
 
 // dog u
-static const int qDogIdleU = QUADDEFS + 8 * 56;
-static const int qDogIdleMaskU = QUADDEFS + 8 * 57;
+static const int qDogIdleU = QUADS_PLAIN + 8 * 56;
+static const int qDogIdleMaskU = QUADS_PLAIN + 8 * 57;
 
-static const int qDogWalkUF0 = QUADDEFS + 8 * 58;
-static const int qDogWalkMaskUF0 = QUADDEFS + 8 * 59;
-static const int qDogWalkUF2 = QUADDEFS + 8 * 60;
-static const int qDogWalkMaskUF2 = QUADDEFS + 8 * 61;
+static const int qDogWalkUF0 = QUADS_PLAIN + 8 * 58;
+static const int qDogWalkMaskUF0 = QUADS_PLAIN + 8 * 59;
+static const int qDogWalkUF2 = QUADS_PLAIN + 8 * 60;
+static const int qDogWalkMaskUF2 = QUADS_PLAIN + 8 * 61;
 
 // dog r
-static const int qDogIdleR = QUADDEFS + 8 * 62;
-static const int qDogIdleMaskR = QUADDEFS + 8 * 63;
+static const int qDogIdleR = QUADS_PLAIN + 8 * 62;
+static const int qDogIdleMaskR = QUADS_PLAIN + 8 * 63;
 
-static const int qDogWalkRF0 = QUADDEFS + 8 * 64;
-static const int qDogWalkMaskRF0 = QUADDEFS + 8 * 65;
-static const int qDogWalkRF1 = QUADDEFS + 8 * 66;
-static const int qDogWalkMaskRF1 = QUADDEFS + 8 * 67;
-static const int qDogWalkRF2 = QUADDEFS + 8 * 68;
-static const int qDogWalkMaskRF2 = QUADDEFS + 8 * 69;
+static const int qDogWalkRF0 = QUADS_PLAIN + 8 * 64;
+static const int qDogWalkMaskRF0 = QUADS_PLAIN + 8 * 65;
+static const int qDogWalkRF1 = QUADS_PLAIN + 8 * 66;
+static const int qDogWalkMaskRF1 = QUADS_PLAIN + 8 * 67;
+static const int qDogWalkRF2 = QUADS_PLAIN + 8 * 68;
+static const int qDogWalkMaskRF2 = QUADS_PLAIN + 8 * 69;
 
 // dog l
-static const int qDogIdleL = QUADDEFS + 8 * 70;
-static const int qDogIdleMaskL = QUADDEFS + 8 * 71;
+static const int qDogIdleL = QUADS_PLAIN + 8 * 70;
+static const int qDogIdleMaskL = QUADS_PLAIN + 8 * 71;
 
-static const int qDogWalkLF0 = QUADDEFS + 8 * 72;
-static const int qDogWalkMaskLF0 = QUADDEFS + 8 * 73;
-static const int qDogWalkLF1 = QUADDEFS + 8 * 74;
-static const int qDogWalkMaskLF1 = QUADDEFS + 8 * 75;
-static const int qDogWalkLF2 = QUADDEFS + 8 * 76;
-static const int qDogWalkMaskLF2 = QUADDEFS + 8 * 77;
+static const int qDogWalkLF0 = QUADS_PLAIN + 8 * 72;
+static const int qDogWalkMaskLF0 = QUADS_PLAIN + 8 * 73;
+static const int qDogWalkLF1 = QUADS_PLAIN + 8 * 74;
+static const int qDogWalkMaskLF1 = QUADS_PLAIN + 8 * 75;
+static const int qDogWalkLF2 = QUADS_PLAIN + 8 * 76;
+static const int qDogWalkMaskLF2 = QUADS_PLAIN + 8 * 77;
 
 // ANIMDEFS 32 of these
 static const int aForceField = ANIMDEFS + 2 * 0;
@@ -309,6 +309,7 @@ static void initTextures() {
 /*----------------------------------------------------------------------------*/
 
 static void initQuads() {
+    // PLAINDEFS
     memcpy(&beebram[qTiled], (uint16_t[]){tTiled0, tTiled0, tTiled0, tTiled0}, 8);
     memcpy(&beebram[qMesh], (uint16_t[]){tMesh0, tMesh1, tMesh2, tMesh0}, 8);
     memcpy(&beebram[qTread], (uint16_t[]){tTread0, tTread0, tTread0, tTread0}, 8);
@@ -318,12 +319,12 @@ static void initQuads() {
     memcpy(&beebram[qCrate], (uint16_t[]){tCrate0, tCrate1, tCrate2, tCrate3}, 8);
     memcpy(&beebram[qDoor], (uint16_t[]){tDoor0, tDoor1, tDoor2, tDoor3}, 8);
     memcpy(&beebram[qDoorLocked], (uint16_t[]){tDoorLocked0, tDoorLocked1, tDoorLocked2, tDoorLocked3}, 8);
-
-    memcpy(&beebram[qBall], (uint16_t[]){tBall0, (tBall0 | 0x8000), tBall2, (tBall2 | 0x8000)}, 8);
-    memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, (tBallMask0 | 0x8000), tBallMask2, tBallMask2 | 0x8000}, 8);
-
     memcpy(&beebram[qForceField0], (uint16_t[]){tForceField00, tForceField00, tForceField01, tForceField01}, 8);
     memcpy(&beebram[qForceField1], (uint16_t[]){tForceField10, tForceField10, tForceField11, tForceField11}, 8);
+
+    // COMPDEFS
+    memcpy(&beebram[qBall], (uint16_t[]){tBall0, (tBall0 | 0x8000), tBall2, (tBall2 | 0x8000)}, 8);
+    memcpy(&beebram[qBallMask], (uint16_t[]){tBallMask0, (tBallMask0 | 0x8000), tBallMask2, tBallMask2 | 0x8000}, 8);
 
     // dog d
     memcpy(&beebram[qDogIdleD], (uint16_t[]){tDogIdleD_0, (tDogIdleD_0 | 0x8000), tDogIdleD_2, (tDogIdleD_2 | 0x8000)},
