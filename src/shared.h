@@ -32,6 +32,8 @@ enum {
     // COMMON ENTITY FIELDS
     CE_ROOMID6_REDRAW2 = 0x0,
     CE_FELAPSED5_FCURRENT3 = 0x1,
+    CE_I = 0x6,
+    CE_J = 0x7,
     CE_PVIZDEF_LO = 0x8,
     CE_PVIZDEF_HI = 0x9,
 
@@ -40,10 +42,8 @@ enum {
     ME_X_HI = 0x3,
     ME_Y_LO = 0x4,
     ME_Y_HI = 0x5,
-    ME_DX4_DY4 = 0x6,
-    ME_HSHIFT4_VSHIFT4 = 0x7,
-    ME_PCORNER_LO = 0xA,
-    ME_PCORNER_HI = 0xB,
+    ME_DX4_DY4 = 0xA,
+    ME_HSHIFT4_VSHIFT4 = 0xB,
 
     // PLAYER FIELDS
     PLR_HP = 0xC,
@@ -59,8 +59,6 @@ enum {
     // I, J & VIZDEF REPEAT. APPLY DYNAMIC OFFSETTING WHEN USING
     SE_TYPE4_NQUADS4 = 0x2,
     SE_DATA24 = 0x3,
-    SE_I = 0x6,
-    SE_J = 0x7,
 
     // CAMERA FIELDS
     CAM_ROOMID = 0x00,
@@ -112,5 +110,13 @@ extern int bhops[4];
 FloorResults floordiv(int a, int b);
 
 uint16_t getTileTextureAddr(uint8_t tid);
+
+uint16_t ij2ramloc(uint8_t i, uint8_t j);
+
+uint16_t ramloc2ij(uint16_t ramloc);
+
+uint16_t xy2ramloc(uint16_t x, uint16_t y);
+
+uint16_t xy2ij(uint16_t x, uint16_t y);
 
 #endif

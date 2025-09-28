@@ -110,10 +110,11 @@ static void plot(int x, int y, int color, CanvasContext ctx) {
 
 /*----------------------------------------------------------------------------*/
 
-void renderBGQuadToBuffer(uint8_t abs_i, uint8_t abs_j) {
+void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
     uint16_t penstart = OFFBUFFER;
-    for (int rel_i = 0; rel_i < 2; rel_i++) {
-        for (int rel_j = 0; rel_j < 2; rel_j++) {
+
+    for (int rel_i = 0; rel_i < dim; rel_i++) {
+        for (int rel_j = 0; rel_j < dim; rel_j++) {
             uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
             renderTileToBuffer(penstart, texture, 0xFFFF);
@@ -121,6 +122,8 @@ void renderBGQuadToBuffer(uint8_t abs_i, uint8_t abs_j) {
         }
     }
 }
+
+/*----------------------------------------------------------------------------*/
 
 void renderFGQuadToBuffer(uint16_t pquad) {
     uint16_t penstart = OFFBUFFER;
@@ -136,6 +139,8 @@ void renderFGQuadToBuffer(uint16_t pquad) {
         penstart += 8;
     }
 }
+
+/*----------------------------------------------------------------------------*/
 
 void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
     if (mask != 0xFFFF)
@@ -172,7 +177,7 @@ compdef:
 /*----------------------------------------------------------------------------*/
 
 void renderSEQuad(uint16_t pvizdef, uint8_t abs_i, uint8_t abs_j) {
-    renderBGQuadToBuffer(abs_i, abs_j);
+    bufferBG(abs_i, abs_j, 2);
     renderFGQuadToBuffer(pvizdef);
 
 render:
@@ -207,10 +212,10 @@ void renderStaticEntities() {
 
         uint8_t se_nquads = beebram[se_addr + SE_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < se_nquads; q++) {
-            uint8_t qi = beebram[(se_addr + SE_I) + (4 * q)]; // 4q because 4 fields per quad
-            uint8_t qj = beebram[(se_addr + SE_J) + (4 * q)];
+            uint8_t qi = beebram[(se_addr + CE_I) + (4 * q)]; // 4q because repeating section 4 fields long
+            uint8_t qj = beebram[(se_addr + CE_J) + (4 * q)];
             uint16_t pvizdef =
-                beebram[(se_addr + CE_PVIZDEF_LO) + (4 * q)] + (beebram[(se_addr + CE_PVIZDEF_HI) + (4 * q)] << 8);
+                beebram[(se_addr + CE_PVIZDEF_LO) + (4 * q)] | (beebram[(se_addr + CE_PVIZDEF_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
             if (pvizdef < ANIMDEFS) {
@@ -234,7 +239,8 @@ void renderStaticEntities() {
 
 // PAINTS THE OFFBUFFER TO THE SCREEN
 void renderPlayer() {
-    uint16_t corner = beebram[PLAYER + ME_PCORNER_LO] | (beebram[PLAYER + ME_PCORNER_HI] << 8);
+    // uint16_t corner = beebram[PLAYER + ME_PCORNER_LO] | (beebram[PLAYER + ME_PCORNER_HI] << 8);
+    uint16_t corner = ij2ramloc(beebram[PLAYER + CE_I], beebram[PLAYER + CE_J]);
     uint16_t penbase = SCREEN + corner;
     for (int s = 7; s >= 0; s--) {
         beebram[penbase + s] = beebram[OFFBUFFER + s];

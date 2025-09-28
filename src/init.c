@@ -437,7 +437,7 @@ void initStaticEnts() {
                (SETYPE_DOORLOCKED << 4) | 2,        // TYPE (4) | NQUADS (4)
                0, 0, 0,                             // DATA (24)
                4, 26,                               // I (8), J (8)
-               qDoor & 0xFF, qDoor >> 8,            // PTR_VIZDEF (16)
+               qDoor & 0xFF, qDoor >> 8,            // PVIZDEF (16)
                6, 26,                               // I (8), J (8)
                qDoorLocked & 0xFF, qDoorLocked >> 8 // PTR_VIZDEF (16)
            },
@@ -454,7 +454,7 @@ void initStaticEnts() {
                (SETYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
                0, 0, 0,                  // DATA (24)
                10, 8,                    // I (8), J (8)
-               qBall & 0xFF, qBall >> 8  // PTR_VIZDEF (16)
+               qBall & 0xFF, qBall >> 8  // PVIZDEF (16)
            },
            (size_t)10);
     se_ptr += 2;
@@ -469,11 +469,11 @@ void initStaticEnts() {
                (SETYPE_DOORLOCKED << 4) | 3,           // TYPE (4) | NQUADS (4)
                0, 0, 0,                                // DATA (24)
                8, 4,                                   // I (8), J (8)
-               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
+               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PVIZDEF (16)
                8, 6,                                   // I (8), J (8)
-               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
+               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PVIZDEF (16)
                8, 8,                                   // I (8), J (8)
-               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PTR_VIZDEF (16)
+               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PVIZDEF (16)
            },
            (size_t)18);
     se_ptr += 2;
@@ -488,7 +488,7 @@ void initStaticEnts() {
                (SETYPE_PICKUP << 4) | 1,                   // TYPE (4) | NQUADS (4)
                0, 0, 0,                                    // DATA (24)
                18, 6,                                      // I (8), J (8)
-               ADPTR_DOGWALKD & 0xFF, ADPTR_DOGWALKD >> 8, // PTR_VIZDEF (16)
+               ADPTR_DOGWALKD & 0xFF, ADPTR_DOGWALKD >> 8, // PVIZDEF (16)
            },
            (size_t)10);
     se_ptr += 2;

@@ -1,4 +1,5 @@
 #include "sprite.h"
+#include "renderer.h"
 #include "shared.h"
 #include <stdbool.h>
 
@@ -16,39 +17,9 @@ void updateSpriteContainer(uint16_t actor) {
     beebram[actor + ME_HSHIFT4_VSHIFT4] = (beebram[actor + ME_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
     // compute relative screen address for origin of sprite container (top-left corner)
-    uint16_t corner_new = (y >> 3) * 0x0140 + (x >> 3) * 8;
-    uint16_t corner_old = corner_new;
-
-    // write the new sprite container corner to the player
-    beebram[actor + ME_PCORNER_LO] = corner_new & 0xFF;
-    beebram[actor + ME_PCORNER_HI] = corner_new >> 8;
-}
-
-/*----------------------------------------------------------------------------*/
-
-// paint the background tiles for the sprite container into the offbuffer
-void bufferSpriteBackground(uint16_t actor) {
-    int boff = 0, roff = 0, t = 3;
-    uint16_t corner = beebram[actor + ME_PCORNER_LO] | (beebram[actor + ME_PCORNER_HI] << 8);
-
-    // for each of the 9 tiles of the sprite container
-    for (int i = 8; i >= 0; i--) {
-        // fetch the corresponding background tile id from the tilebuffer
-        uint8_t tileID = beebram[CAMBUFFER + ((corner + roff + boff) >> 3)];
-
-        // paint the background to the offbuffer
-        uint16_t offstart = OFFBUFFER + boff;
-        uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-        for (int s = 7; s >= 0; s--) {
-            beebram[offstart + s] = beebram[bg_texture_addr + s];
-        }
-        t--;
-        if (t == 0) {
-            roff += 0x0128;
-            t = 3;
-        }
-        boff += 8;
-    }
+    uint16_t corner = xy2ij(x, y);
+    beebram[actor + CE_I] = corner >> 8;
+    beebram[actor + CE_J] = corner & 0xFF;
 }
 
 /*----------------------------------------------------------------------------*/

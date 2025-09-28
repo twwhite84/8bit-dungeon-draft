@@ -144,7 +144,11 @@ void update() {
     uint8_t redraw = beebram[PLAYER + CE_ROOMID6_REDRAW2] & 0b11;
     if (redraw) {
         updateSpriteContainer(PLAYER);
-        bufferSpriteBackground(PLAYER);
+
+        uint8_t i = beebram[PLAYER + CE_I];
+        uint8_t j = beebram[PLAYER + CE_J];
+        bufferBG(i, j, 3);
+
         bufferSpriteForeground(PLAYER);
         renderPlayer();
     }
