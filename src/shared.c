@@ -15,9 +15,6 @@ FloorResults floordiv(int a, int b) {
     return results;
 }
 
-// these can probably just go in zero page somewhere as globals
-int bhops[4] = {0, 8, 24, 32};
-
 uint16_t getTileTextureAddr(uint8_t tid) {
     uint16_t ptr_location = QUADS_PLAIN + 2 * tid;
     uint16_t ptr = beebram[ptr_location] | (beebram[ptr_location + 1] << 8);

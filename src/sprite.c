@@ -24,42 +24,34 @@ void updateSpriteContainer(uint16_t actor) {
 
 /*----------------------------------------------------------------------------*/
 
-void bufferSpriteForeground(uint16_t actor) {
-    // only implemented for player for now
-    int rshift = beebram[actor + ME_HSHIFT4_VSHIFT4] >> 4;
-    int lshift = 8 - rshift;
+void bufferSpriteForeground(uint16_t movable) {
 
-    int dshift = beebram[actor + ME_HSHIFT4_VSHIFT4] & 0x0F;
-    int ushift = 8 - dshift;
-
-    uint16_t pvizdef = beebram[actor + CE_PVIZDEF_LO] | (beebram[actor + CE_PVIZDEF_HI] << 8);
-    uint16_t pcompdef;
-
-    // if the vizdef is an animdef, get the current frame
-    if (pvizdef >= ANIMDEFS) {
-        uint8_t current = beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111;
-        current *= 2;
-        pcompdef = beebram[pvizdef + AD_PFRAME_LO + current] | (beebram[pvizdef + AD_PFRAME_HI + current] << 8);
-    } else {
-        pcompdef = pvizdef;
+    // get the quad, either directly or via an animdef
+    uint16_t pquad = beebram[movable + CE_PVIZDEF_LO] | (beebram[movable + CE_PVIZDEF_HI] << 8);
+    if (pquad >= ANIMDEFS) {
+        uint8_t frame_offset = (beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111) << 1;
+        pquad = beebram[pquad + AD_PFRAME_LO + frame_offset] | (beebram[pquad + AD_PFRAME_HI + frame_offset] << 8);
     }
 
-    uint16_t penbase = OFFBUFFER + dshift;
+    // get the shifts
+    uint8_t rshift = beebram[movable + ME_HSHIFT4_VSHIFT4] >> 4;
+    uint8_t lshift = 8 - rshift;
+    uint8_t dshift = beebram[movable + ME_HSHIFT4_VSHIFT4] & 0x0F;
+    uint8_t ushift = 8 - dshift;
 
-    // position each portion of the quad into place
-    int tidx_lo = 6; // [(0,1),(2,3),(4,5),(6,7)]
-    for (int t = 3; t >= 0; t--) {
-        uint16_t penstart = penbase + bhops[t]; // +15 and penstart -=16 to decrement inner loop
+    // position each sprite tile in the container by its shifts
+    uint8_t thops[4] = {0, 8, 24, 32}; // +8, +16, +8 ... 1, 2, 1
 
-        uint16_t ptexture = beebram[pcompdef + tidx_lo] | (beebram[pcompdef + tidx_lo + 1] << 8);
-        uint16_t pmask = beebram[pcompdef + 8 + tidx_lo] | (beebram[pcompdef + 8 + tidx_lo + 1] << 8);
-        tidx_lo -= 2;
+    for (uint8_t tile = 0; tile < 4; tile++) {
+        uint16_t penstart = OFFBUFFER + dshift + thops[tile];
+
+        uint16_t ptexture = beebram[pquad + (tile << 1)] | (beebram[pquad + (tile << 1) + 1] << 8);
+        uint16_t pmask = beebram[pquad + (tile << 1) + 8] | (beebram[pquad + (tile << 1) + 9] << 8);
         uint8_t hflipped = ptexture >> 15;
         ptexture &= 0x7FFF;
         pmask &= 0x7FFF;
 
-        // to get this to decrement, penstart -= 16 with initial penbase + 15 (or something)
-        for (int s = 0; s < 8; s++) {
+        for (uint8_t s = 0; s < 8; s++) {
             uint8_t overL, overR, maskL, maskR;
             if (!hflipped) {
                 overL = beebram[ptexture + s] >> rshift;
@@ -75,6 +67,7 @@ void bufferSpriteForeground(uint16_t actor) {
                 maskR = beebram[LUT_REVERSE + mask_data] << lshift;
             }
 
+            // stripes have crossed to lower tile
             if (s == ushift) {
                 penstart += 16;
             }

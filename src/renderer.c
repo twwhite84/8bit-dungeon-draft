@@ -117,7 +117,7 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
             uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
-            renderTileToBuffer(penstart, texture, 0xFFFF);
+            bufferTile(penstart, texture, 0xFFFF);
             penstart += 8;
         }
     }
@@ -135,14 +135,14 @@ void renderFGQuadToBuffer(uint16_t pquad) {
         if (pquad >= QUADS_COMP)
             mask = beebram[pquad + 8 + 2 * tile] + (beebram[pquad + 8 + 2 * tile + 1] << 8);
 
-        renderTileToBuffer(penstart, texture, mask);
+        bufferTile(penstart, texture, mask);
         penstart += 8;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
+void bufferTile(uint16_t penstart, uint16_t texture, uint16_t mask) {
     if (mask != 0xFFFF)
         goto compdef;
 

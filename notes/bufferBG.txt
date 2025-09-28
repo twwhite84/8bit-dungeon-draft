@@ -1,57 +1,23 @@
-// paint the background tiles for the sprite container into the offbuffer
-void bufferSpriteBackground(uint16_t actor) {
-    int boff = 0, roff = 0, t = 3;
-    uint16_t corner = beebram[actor + ME_PCORNER_LO] | (beebram[actor + ME_PCORNER_HI] << 8);
+// STATIC
 
-    // for each of the 9 tiles of the sprite container
-    for (int i = 8; i >= 0; i--) {
-        // fetch the corresponding background tile id from the tilebuffer
-        uint8_t tileID = beebram[CAMBUFFER + ((corner + roff + boff) >> 3)];
-
-        // paint the background to the offbuffer
-        uint16_t offstart = OFFBUFFER + boff;
-        uint16_t bg_texture_addr = getTileTextureAddr(tileID);
-        for (int s = 7; s >= 0; s--) {
-            beebram[offstart + s] = beebram[bg_texture_addr + s];
-        }
-        t--;
-        if (t == 0) {
-            roff += 0x0128;
-            t = 3;
-        }
-        boff += 8;
-    }
-}
-
-----------------------------------------------------------------------------------
-
-
-uint16_t corner = beebram[actor + ME_PCORNER_LO] | (beebram[actor + ME_PCORNER_HI] << 8);
-
-// suppose my corner is $140 + $8
-// that will give me i,j of 1,1
-
-void mark2() {
-
-}
-
---------------------------------------------------------------------------------
-
-void renderBGQuadToBuffer(uint8_t abs_i, uint8_t abs_j) {
+void renderFGQuadToBuffer(uint16_t pquad) {
     uint16_t penstart = OFFBUFFER;
-    for (int rel_i = 0; rel_i < 2; rel_i++) {
-        for (int rel_j = 0; rel_j < 2; rel_j++) {
-            uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
-            uint16_t texture = getTileTextureAddr(tileID);
-            renderTileToBuffer(penstart, texture, 0xFFFF);
-            penstart += 8;
-        }
+    uint16_t mask = 0xFFFF, texture = 0;
+
+    for (uint8_t tile = 0; tile < 4; tile++) {
+        texture = beebram[pquad + 2 * tile] + (beebram[pquad + 2 * tile + 1] << 8);
+
+        if (pquad >= QUADS_COMP)
+            mask = beebram[pquad + 8 + 2 * tile] + (beebram[pquad + 8 + 2 * tile + 1] << 8);
+
+        bufferTile(penstart, texture, mask);
+        penstart += 8;
     }
 }
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------
 
-void renderTileToBuffer(uint16_t penstart, uint16_t texture, uint16_t mask) {
+void bufferTile(uint16_t penstart, uint16_t texture, uint16_t mask) {
     if (mask != 0xFFFF)
         goto compdef;
 
@@ -81,4 +47,70 @@ compdef:
             beebram[penstart + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
         }
     }
+}
+
+----------------------------------------------------------------------
+
+// SPRITE
+
+void bufferSpriteForeground(uint16_t movable) {
+
+    // get the quad, either directly or via an animdef
+    uint16_t pquad = beebram[movable + CE_PVIZDEF_LO] | (beebram[movable + CE_PVIZDEF_HI] << 8);
+    if (pquad >= ANIMDEFS) {
+        uint8_t frame_offset = (beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111) << 1;
+        pquad = beebram[pquad + AD_PFRAME_LO + frame_offset] | (beebram[pquad + AD_PFRAME_HI + frame_offset] << 8);
+    }
+
+    // get the shifts
+    uint8_t rshift = beebram[movable + ME_HSHIFT4_VSHIFT4] >> 4;
+    uint8_t lshift = 8 - rshift;
+    uint8_t dshift = beebram[movable + ME_HSHIFT4_VSHIFT4] & 0x0F;
+    uint8_t ushift = 8 - dshift;
+
+    // position each sprite tile in the container by its shifts
+    uint8_t thops[4] = {0, 8, 24, 32}; // +8, +16, +8 ... 1, 2, 1
+
+    for (uint8_t tile = 0; tile < 4; tile++) {
+        uint16_t penstart = OFFBUFFER + dshift + thops[tile];
+        uint16_t ptexture = beebram[pquad + (tile << 1)] | (beebram[pquad + (tile << 1) + 1] << 8);
+        uint16_t pmask = beebram[pquad + (tile << 1) + 8] | (beebram[pquad + (tile << 1) + 9] << 8);
+        bufferSpriteTile(penstart, ptexture, pmask);
+    }
+}
+
+void bufferSpriteTile(uint16_t penstart, uint16_t ptexture, uint16_t pmask) {
+uint8_t hflipped = ptexture >> 15;
+        ptexture &= 0x7FFF;
+        pmask &= 0x7FFF;
+
+        for (uint8_t s = 0; s < 8; s++) {
+            uint8_t overL, overR, maskL, maskR;
+            if (!hflipped) {
+                overL = beebram[ptexture + s] >> rshift;
+                overR = beebram[ptexture + s] << lshift;
+                maskL = beebram[pmask + s] >> rshift;
+                maskR = beebram[pmask + s] << lshift;
+            } else if (hflipped) {
+                uint8_t texture_data = beebram[ptexture + s];
+                uint8_t mask_data = beebram[pmask + s];
+                overL = beebram[LUT_REVERSE + texture_data] >> rshift;
+                overR = beebram[LUT_REVERSE + texture_data] << lshift;
+                maskL = beebram[LUT_REVERSE + mask_data] >> rshift;
+                maskR = beebram[LUT_REVERSE + mask_data] << lshift;
+            }
+
+            // stripes have crossed to lower tile
+            if (s == ushift) {
+                penstart += 16;
+            }
+
+            // lhs
+            beebram[penstart + s] = beebram[penstart + s] & (maskL ^ 0xFF);
+            beebram[penstart + s] = beebram[penstart + s] | overL;
+
+            // rhs
+            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] & (maskR ^ 0xFF);
+            beebram[penstart + 8 + s] = beebram[penstart + 8 + s] | overR;
+        }
 }
