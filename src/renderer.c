@@ -181,13 +181,14 @@ void renderSEQuad(uint16_t pvizdef, uint8_t abs_i, uint8_t abs_j) {
     renderFGQuadToBuffer(pvizdef);
 
 render:
-    uint16_t penstart = SCREEN + abs_i * 0x140 + abs_j * 8;
-    for (int s = 7; s >= 0; s--) {
-        beebram[penstart + s] = beebram[OFFBUFFER + s];
-        beebram[penstart + s + 8] = beebram[OFFBUFFER + 8 + s];
-        beebram[penstart + s + 320] = beebram[OFFBUFFER + 16 + s];
-        beebram[penstart + s + 328] = beebram[OFFBUFFER + 24 + s];
-    }
+    // uint16_t penstart = SCREEN + abs_i * 0x140 + abs_j * 8;
+    // for (int s = 7; s >= 0; s--) {
+    //     beebram[penstart + s] = beebram[OFFBUFFER + s];
+    //     beebram[penstart + s + 8] = beebram[OFFBUFFER + 8 + s];
+    //     beebram[penstart + s + 320] = beebram[OFFBUFFER + 16 + s];
+    //     beebram[penstart + s + 328] = beebram[OFFBUFFER + 24 + s];
+    // }
+    renderWhatever(abs_i, abs_j, 2);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -239,20 +240,23 @@ void renderStaticEntities() {
 
 // PAINTS THE OFFBUFFER TO THE SCREEN
 void renderPlayer() {
-    // uint16_t corner = beebram[PLAYER + ME_PCORNER_LO] | (beebram[PLAYER + ME_PCORNER_HI] << 8);
-    uint16_t corner = ij2ramloc(beebram[PLAYER + CE_I], beebram[PLAYER + CE_J]);
-    uint16_t penbase = SCREEN + corner;
-    for (int s = 7; s >= 0; s--) {
-        beebram[penbase + s] = beebram[OFFBUFFER + s];
-        beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
-        beebram[penbase + s + 16] = beebram[OFFBUFFER + 16 + s];
-        beebram[penbase + s + 320] = beebram[OFFBUFFER + 24 + s];
-        beebram[penbase + s + 328] = beebram[OFFBUFFER + 32 + s];
-        beebram[penbase + s + 336] = beebram[OFFBUFFER + 40 + s];
-        beebram[penbase + s + 640] = beebram[OFFBUFFER + 48 + s];
-        beebram[penbase + s + 648] = beebram[OFFBUFFER + 56 + s];
-        beebram[penbase + s + 656] = beebram[OFFBUFFER + 64 + s];
-    }
+    // uint16_t corner = ij2ramloc(beebram[PLAYER + CE_I], beebram[PLAYER + CE_J]);
+    // uint16_t penbase = SCREEN + corner;
+    // for (int s = 7; s >= 0; s--) {
+    //     beebram[penbase + s] = beebram[OFFBUFFER + s];
+    //     beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
+    //     beebram[penbase + s + 16] = beebram[OFFBUFFER + 16 + s];
+    //     beebram[penbase + s + 320] = beebram[OFFBUFFER + 24 + s];
+    //     beebram[penbase + s + 328] = beebram[OFFBUFFER + 32 + s];
+    //     beebram[penbase + s + 336] = beebram[OFFBUFFER + 40 + s];
+    //     beebram[penbase + s + 640] = beebram[OFFBUFFER + 48 + s];
+    //     beebram[penbase + s + 648] = beebram[OFFBUFFER + 56 + s];
+    //     beebram[penbase + s + 656] = beebram[OFFBUFFER + 64 + s];
+    // }
+    uint8_t i = beebram[PLAYER + CE_I];
+    uint8_t j = beebram[PLAYER + CE_J];
+    renderWhatever(i, j, 3);
+
     beebram[PLAYER + CE_ROOMID6_REDRAW2] &= 0b11111100;
 }
 
@@ -261,3 +265,19 @@ void renderPlayer() {
 void render() { renderBeebram(); }
 
 /*----------------------------------------------------------------------------*/
+
+void renderWhatever(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
+    uint16_t penstart = SCREEN + abs_i * 0x140 + abs_j * 8;
+    uint16_t offbase = OFFBUFFER;
+
+    for (int rel_i = 0; rel_i < dim; rel_i++) {
+        for (int rel_j = 0; rel_j < dim; rel_j++) {
+            for (int s = 7; s >= 0; s--) {
+                beebram[penstart + s] = beebram[offbase + s];
+            }
+            offbase += 8;
+            penstart += 8;
+        }
+        penstart += 320 - (dim * 8);
+    }
+}

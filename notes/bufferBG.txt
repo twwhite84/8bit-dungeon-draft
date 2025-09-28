@@ -51,7 +51,7 @@ compdef:
 
 ----------------------------------------------------------------------
 
-// SPRITE
+// MOVABLE
 
 void bufferSpriteForeground(uint16_t movable) {
 

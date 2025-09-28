@@ -44,9 +44,9 @@ void bufferSpriteForeground(uint16_t movable) {
 
     for (uint8_t tile = 0; tile < 4; tile++) {
         uint16_t penstart = OFFBUFFER + dshift + thops[tile];
-
         uint16_t ptexture = beebram[pquad + (tile << 1)] | (beebram[pquad + (tile << 1) + 1] << 8);
         uint16_t pmask = beebram[pquad + (tile << 1) + 8] | (beebram[pquad + (tile << 1) + 9] << 8);
+
         uint8_t hflipped = ptexture >> 15;
         ptexture &= 0x7FFF;
         pmask &= 0x7FFF;
