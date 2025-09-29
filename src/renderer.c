@@ -101,10 +101,7 @@ void renderStatics() {
 
             // if not animated, jump ahead to directly rendering the quad
             if (pvizdef < ANIMDEFS) {
-                bufferBG(qi, qj, 2);
-                bufferFGQuad(pvizdef);
-                renderOffbuffer(qi, qj, 2);
-                continue;
+                goto render;
             }
 
         animdef:
@@ -115,6 +112,7 @@ void renderStatics() {
             pvizdef = beebram[(animdef + AD_PFRAME_LO) + (2 * current)];
             pvizdef |= (beebram[(animdef + AD_PFRAME_HI) + (2 * current)] << 8);
 
+        render:
             bufferBG(qi, qj, 2);
             bufferFGQuad(pvizdef);
             renderOffbuffer(qi, qj, 2);
