@@ -8,7 +8,8 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim);
 
 void renderCambuffer();
 void renderOffbuffer(uint8_t abs_i, uint8_t abs_j, uint8_t dim);
-void renderPlayer();
+void renderMovable(uint16_t pmovable);
+void renderMovables();
 void renderStatics();
 
 #endif

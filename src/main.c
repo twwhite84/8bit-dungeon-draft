@@ -138,14 +138,15 @@ void update() {
     }
 
     // animate SEs held in camera
-    animateCameraSE();
+    animateStatics();
 }
 
 /*----------------------------------------------------------------------------*/
 
 void render() {
     renderStatics();
-    renderPlayer();
+    renderMovable(PLAYER); // because player isn't held in camera
+    renderMovables();      // non-player movables
     mySDLRender();
 }
 
@@ -153,6 +154,7 @@ void render() {
 
 void loadRoom(uint8_t roomID) {
     memset(&beebram[CAMERA], 0, (size_t)(OFFBUFFER - CAMERA));
+    memset(&beebram[CAMERA + CAM_PME0_LO], 0xFF, (size_t)(CAMBUFFER - CAMERA - CAM_PME0_LO));
     beebram[CAMERA + CAM_ROOMID] = roomID;
 
     // inflate the stored map into the cambuffer
@@ -189,10 +191,4 @@ void loadRoom(uint8_t roomID) {
                 break;
         }
     }
-
-    // save number of entities copied
-    beebram[CAMERA + CAM_NME4_NSE4] &= 0xF0;
-    beebram[CAMERA + CAM_NME4_NSE4] |= (entities_copied & 0x0F);
 }
-
-/*----------------------------------------------------------------------------*/

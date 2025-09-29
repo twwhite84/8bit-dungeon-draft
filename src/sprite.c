@@ -21,7 +21,7 @@ void updateSpriteContainer(uint16_t movable) {
 
 /*----------------------------------------------------------------------------*/
 
-void bufferSpriteForeground(uint16_t movable) {
+void bufferFGSprite(uint16_t movable) {
 
     // get the quad, either directly or via an animdef
     uint16_t pquad = beebram[movable + CE_PVIZDEF_LO] | (beebram[movable + CE_PVIZDEF_HI] << 8);

@@ -84,13 +84,13 @@ void animateEntity(uint16_t pentity) {
 /*----------------------------------------------------------------------------*/
 
 // walk the camera buffer and update any static entities which have animated tiles
-void animateCameraSE() {
-    uint8_t se_n = beebram[CAMERA + CAM_NME4_NSE4] & 0x0F;
-    uint16_t cam_se_start = CAMERA + CAM_PSE0_LO;
-
-    for (uint8_t i = 0; i < se_n; i++) {
-        uint16_t se_ptr = beebram[cam_se_start] | (beebram[cam_se_start + 1] << 8);
-        cam_se_start += 2;
-        animateEntity(se_ptr);
+void animateStatics() {
+    uint16_t pstart = CAMERA + CAM_PSE0_LO;
+    for (uint8_t i = 0; i < 10; i++) {
+        uint16_t pstatic = beebram[pstart] | (beebram[pstart + 1] << 8);
+        pstart += 2;
+        if (pstatic == 0xFFFF)
+            break;
+        animateEntity(pstatic);
     }
 }

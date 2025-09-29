@@ -38,7 +38,7 @@ void mySDLInitRenderer() {
     }
 }
 
-// dumps simulated framebuffer (beebram 0x5800-0x7FFF) to SDL canvas
+// dumps simulated framebuffer [0x5800-0x7FFF] to SDL canvas
 void mySDLRender() {
     CanvasContext ctx;
     if (SDL_LockTexture(canvas, NULL, &ctx.pixels, &ctx.pitch) < 0) {

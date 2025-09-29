@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "shared.h"
 #include "sprite.h"
+#include <stdbool.h>
 
 /*----------------------------------------------------------------------------*/
 
@@ -20,7 +21,7 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
 
 /*----------------------------------------------------------------------------*/
 
-void renderFGQuadToBuffer(uint16_t pquad) {
+void bufferFGQuad(uint16_t pquad) {
     uint16_t penstart = OFFBUFFER;
     uint16_t mask = 0xFFFF, texture = 0;
 
@@ -72,80 +73,88 @@ compdef:
 
 /*----------------------------------------------------------------------------*/
 
-void renderSEQuad(uint16_t pvizdef, uint8_t abs_i, uint8_t abs_j) {
-    bufferBG(abs_i, abs_j, 2);
-    renderFGQuadToBuffer(pvizdef);
-
-render:
-    renderOffbuffer(abs_i, abs_j, 2);
-}
-
-/*----------------------------------------------------------------------------*/
-
 // renders to framebuffer all statics held in camera that are marked for redraw
 void renderStatics() {
 
-    uint16_t se_ptr = CAMERA + CAM_PSE0_LO;
-    uint8_t se_n = beebram[CAMERA + CAM_NME4_NSE4] & 0x0F;
-    for (int i = 0; i < se_n; i++) {
+    uint16_t pstart = CAMERA + CAM_PSE0_LO;
+    for (int i = 0; i < 10; i++) {
 
-        // get the entity
-        uint16_t se_addr = beebram[se_ptr] + (beebram[se_ptr + 1] << 8);
-        se_ptr += 2;
+        // get the entity or quit loop early if sentinel
+        uint16_t pstatic = beebram[pstart] + (beebram[pstart + 1] << 8);
+        if (pstatic == 0xFFFF)
+            break;
+        pstart += 2;
 
-        // skip entity if redraw flag down, otherwise lower flag to skip in future calls
-        uint8_t se_redraw = (beebram[se_addr + CE_ROOMID6_REDRAW2] & 0b00000011);
-        if (!se_redraw)
+        // skip entity if not marked for redraw, or disable redraw until future update
+        uint8_t redraw = (beebram[pstatic + CE_ROOMID6_REDRAW2] & 0b00000011);
+        if (!redraw)
             continue;
         else
-            beebram[se_addr + CE_ROOMID6_REDRAW2] &= 0b11111100;
+            beebram[pstatic + CE_ROOMID6_REDRAW2] &= 0b11111100;
 
-        uint8_t se_nquads = beebram[se_addr + SE_TYPE4_NQUADS4] & 0x0F;
-        for (int q = 0; q < se_nquads; q++) {
-            uint8_t qi = beebram[(se_addr + CE_I) + (4 * q)]; // 4q because repeating section 4 fields long
-            uint8_t qj = beebram[(se_addr + CE_J) + (4 * q)];
+        uint8_t nquads = beebram[pstatic + SE_TYPE4_NQUADS4] & 0x0F;
+        for (int q = 0; q < nquads; q++) {
+            uint8_t qi = beebram[(pstatic + CE_I) + (4 * q)]; // 4q because repeating section 4 fields long
+            uint8_t qj = beebram[(pstatic + CE_J) + (4 * q)];
             uint16_t pvizdef =
-                beebram[(se_addr + CE_PVIZDEF_LO) + (4 * q)] | (beebram[(se_addr + CE_PVIZDEF_HI) + (4 * q)] << 8);
+                beebram[(pstatic + CE_PVIZDEF_LO) + (4 * q)] | (beebram[(pstatic + CE_PVIZDEF_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
             if (pvizdef < ANIMDEFS) {
-                renderSEQuad(pvizdef, qi, qj);
+                bufferBG(qi, qj, 2);
+                bufferFGQuad(pvizdef);
+                renderOffbuffer(qi, qj, 2);
                 continue;
             }
 
         animdef:
             uint16_t animdef = pvizdef;
-            uint8_t current = beebram[se_addr + CE_FELAPSED5_FCURRENT3] & 0b00000111;
+            uint8_t current = beebram[pstatic + CE_FELAPSED5_FCURRENT3] & 0b00000111;
 
             // get the current frame for rendering to offbuffer
             pvizdef = beebram[(animdef + AD_PFRAME_LO) + (2 * current)];
             pvizdef |= (beebram[(animdef + AD_PFRAME_HI) + (2 * current)] << 8);
-            renderSEQuad(pvizdef, qi, qj);
+
+            bufferBG(qi, qj, 2);
+            bufferFGQuad(pvizdef);
+            renderOffbuffer(qi, qj, 2);
         }
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-// renders to framebuffer the player if marked for redraw
-void renderPlayer() {
-    uint8_t redraw = beebram[PLAYER + CE_ROOMID6_REDRAW2] & 0b11;
+// renders to framebuffer a movable if marked for redraw
+void renderMovable(uint16_t pmovable) {
+    uint8_t redraw = beebram[pmovable + CE_ROOMID6_REDRAW2] & 0b11;
     if (!redraw)
         return;
-
-    updateSpriteContainer(PLAYER);
-
-    uint8_t i = beebram[PLAYER + CE_I];
-    uint8_t j = beebram[PLAYER + CE_J];
+    updateSpriteContainer(pmovable);
+    uint8_t i = beebram[pmovable + CE_I];
+    uint8_t j = beebram[pmovable + CE_J];
     bufferBG(i, j, 3);
-    bufferSpriteForeground(PLAYER);
+    bufferFGSprite(pmovable);
     renderOffbuffer(i, j, 3);
-    beebram[PLAYER + CE_ROOMID6_REDRAW2] &= 0b11111100;
+    beebram[pmovable + CE_ROOMID6_REDRAW2] &= 0b11111100;
 }
 
 /*----------------------------------------------------------------------------*/
 
-// renders the entire cambuffer to framebuffer
+// renders to framebuffer all movables held in camera that are marked for redraw
+void renderMovables() {
+    uint16_t pstart = CAMERA + CAM_PME0_LO;
+    for (uint8_t i = 0; i < 4; i++) {
+        uint16_t pmovable = beebram[pstart] | (beebram[pstart + 1] << 8);
+        if (pmovable == 0xFFFF)
+            break;
+        pstart += 2;
+        renderMovable(pmovable);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+// renders the entire cambuffer to framebuffer (iow: the background tilemap)
 void renderCambuffer() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {

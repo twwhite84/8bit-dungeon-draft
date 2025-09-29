@@ -64,7 +64,6 @@ enum {
     CAM_ROOMID = 0x00,
     CAM_PLITEMAP_LO = 0x01,
     CAM_PLITEMAP_HI = 0x02,
-    CAM_NME4_NSE4 = 0x03,
     CAM_PME0_LO = 0x04,
     CAM_PME0_HI = 0x05,
     CAM_PSE0_LO = 0x0C,

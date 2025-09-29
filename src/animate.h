@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-void animateCameraSE();
+void animateStatics();
 void animateEntity(uint16_t pentity);
 
 #endif
