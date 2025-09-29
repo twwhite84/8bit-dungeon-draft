@@ -3,23 +3,20 @@
 #include "shared.h"
 #include <stdbool.h>
 
-void updateSpriteContainer(uint16_t actor) {
-    // ONLY IMPLEMENTED FOR PLAYER FOR NOW
+void updateSpriteContainer(uint16_t movable) {
+    uint16_t x = beebram[movable + ME_X_LO] | (beebram[movable + ME_X_HI] << 8);
+    uint16_t y = beebram[movable + ME_Y_LO] | (beebram[movable + ME_Y_HI] << 8);
 
-    // get current player position
-    uint16_t x = beebram[actor + ME_X_LO] | (beebram[actor + ME_X_HI] << 8);
-    uint16_t y = beebram[actor + ME_Y_LO] | (beebram[actor + ME_Y_HI] << 8);
-
-    // compute and set the shifts for the sprite container
+    // sprite offsets within container
     uint8_t hshift = x & 0b111;
     uint8_t vshift = y & 0b111;
-    beebram[actor + ME_HSHIFT4_VSHIFT4] = (beebram[actor + ME_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
-    beebram[actor + ME_HSHIFT4_VSHIFT4] = (beebram[actor + ME_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
+    beebram[movable + ME_HSHIFT4_VSHIFT4] = (beebram[movable + ME_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
+    beebram[movable + ME_HSHIFT4_VSHIFT4] = (beebram[movable + ME_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
-    // compute relative screen address for origin of sprite container (top-left corner)
-    uint16_t corner = xy2ij(x, y);
-    beebram[actor + CE_I] = corner >> 8;
-    beebram[actor + CE_J] = corner & 0xFF;
+    // sprite container absolute i,j
+    uint16_t i_j = xy2ij(x, y);
+    beebram[movable + CE_I] = i_j >> 8;
+    beebram[movable + CE_J] = i_j & 0xFF;
 }
 
 /*----------------------------------------------------------------------------*/

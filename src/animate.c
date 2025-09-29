@@ -76,7 +76,7 @@ void animateEntity(uint16_t pentity) {
         beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
         beebram[pentity + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
-        // raise redraw flag so that renderStaticEntities() draws it
+        // raise redraw flag so that renderStatics() draws it
         beebram[pentity + CE_ROOMID6_REDRAW2] |= 1;
     }
 }

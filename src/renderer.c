@@ -1,115 +1,10 @@
 #include "renderer.h"
 #include "shared.h"
-
-typedef struct {
-    void *pixels;
-    int pitch;
-} CanvasContext;
-
-SDL_Window *window = NULL;
-static SDL_Renderer *renderer = NULL;
-static SDL_Texture *canvas = NULL;
-
-static void plot(int x, int y, int color, CanvasContext ctx);
+#include "sprite.h"
 
 /*----------------------------------------------------------------------------*/
 
-void init_renderer() {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-        printf("ERROR: %s\n", SDL_GetError());
-
-    window = SDL_CreateWindow("8-BIT ENGINE WIP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, EXTERNAL_WIDTH,
-                              EXTERNAL_HEIGHT, SDL_WINDOW_SHOWN);
-    if (!window) {
-        printf("ERROR: %s\n", SDL_GetError());
-    }
-
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer)
-        printf("ERROR: %s\n", SDL_GetError());
-
-    canvas = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, INTERNAL_WIDTH,
-                               INTERNAL_HEIGHT);
-    if (!canvas) {
-        printf("ERROR: %s\n", SDL_GetError());
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
-void renderBackground() {
-    for (uint8_t i = 0; i < 26; i++) {
-        for (uint8_t j = 0; j < 40; j++) {
-            eraseTile(i, j);
-        }
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
-// i,j are in 26x40 layout
-void eraseTile(uint8_t i, uint8_t j) {
-    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-    uint16_t tileptr = getTileTextureAddr(tid);
-    uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
-
-    // using int in the loop because uint8_t screws up on wrap around
-    for (int s = 7; s >= 0; s--) {
-        beebram[screenpos + s] = beebram[tileptr + s];
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
-void renderBeebram() {
-    CanvasContext ctx;
-    if (SDL_LockTexture(canvas, NULL, &ctx.pixels, &ctx.pitch) < 0) {
-        printf("\nERROR: Couldnt lock texture. %s", SDL_GetError());
-        return;
-    }
-
-    int screenbase = 0x5800;
-    for (int i = 0; i < 32; i++) {
-        for (int j = 0; j < 40; j++) {
-            for (int s = 0; s < 8; s++) {
-                uint16_t memloc = screenbase + i * 0x140 + j * 8 + s;
-                uint8_t stripe = beebram[memloc];
-                for (int p = 7; p >= 0; p--) {
-                    int value = ((stripe >> (7 - p)) & 0x01);
-                    int x = j * 8 + p;
-                    int y = i * 8 + s;
-                    plot(x, y, value, ctx);
-                }
-            }
-        }
-    }
-
-    SDL_UnlockTexture(canvas);
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, canvas, NULL, NULL);
-    SDL_RenderPresent(renderer);
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void plot(int x, int y, int color, CanvasContext ctx) {
-    uint32_t *pixel_buffer = (uint32_t *)ctx.pixels;
-
-    // 32-bit pixel buffer, so 4 bytes per pixel
-    int xy_index = y * (ctx.pitch / 4) + x;
-
-    switch (color) {
-    case 1:
-        pixel_buffer[xy_index] = 0xFFFFFFFF;
-        break;
-    case 0:
-        pixel_buffer[xy_index] = 0;
-        break;
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
+// renders to offbuffer a square selection of the cambuffer from i,j
 void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
     uint16_t penstart = OFFBUFFER;
 
@@ -142,6 +37,7 @@ void renderFGQuadToBuffer(uint16_t pquad) {
 
 /*----------------------------------------------------------------------------*/
 
+// renders to offbuffer one tile with optional masking
 void bufferTile(uint16_t penstart, uint16_t texture, uint16_t mask) {
     if (mask != 0xFFFF)
         goto compdef;
@@ -181,20 +77,13 @@ void renderSEQuad(uint16_t pvizdef, uint8_t abs_i, uint8_t abs_j) {
     renderFGQuadToBuffer(pvizdef);
 
 render:
-    // uint16_t penstart = SCREEN + abs_i * 0x140 + abs_j * 8;
-    // for (int s = 7; s >= 0; s--) {
-    //     beebram[penstart + s] = beebram[OFFBUFFER + s];
-    //     beebram[penstart + s + 8] = beebram[OFFBUFFER + 8 + s];
-    //     beebram[penstart + s + 320] = beebram[OFFBUFFER + 16 + s];
-    //     beebram[penstart + s + 328] = beebram[OFFBUFFER + 24 + s];
-    // }
-    renderWhatever(abs_i, abs_j, 2);
+    renderOffbuffer(abs_i, abs_j, 2);
 }
 
 /*----------------------------------------------------------------------------*/
 
-// draws any static entities held in camera if their redraw flag is raised
-void renderStaticEntities() {
+// renders to framebuffer all statics held in camera that are marked for redraw
+void renderStatics() {
 
     uint16_t se_ptr = CAMERA + CAM_PSE0_LO;
     uint8_t se_n = beebram[CAMERA + CAM_NME4_NSE4] & 0x0F;
@@ -238,46 +127,54 @@ void renderStaticEntities() {
 
 /*----------------------------------------------------------------------------*/
 
-// PAINTS THE OFFBUFFER TO THE SCREEN
+// renders to framebuffer the player if marked for redraw
 void renderPlayer() {
-    // uint16_t corner = ij2ramloc(beebram[PLAYER + CE_I], beebram[PLAYER + CE_J]);
-    // uint16_t penbase = SCREEN + corner;
-    // for (int s = 7; s >= 0; s--) {
-    //     beebram[penbase + s] = beebram[OFFBUFFER + s];
-    //     beebram[penbase + s + 8] = beebram[OFFBUFFER + 8 + s];
-    //     beebram[penbase + s + 16] = beebram[OFFBUFFER + 16 + s];
-    //     beebram[penbase + s + 320] = beebram[OFFBUFFER + 24 + s];
-    //     beebram[penbase + s + 328] = beebram[OFFBUFFER + 32 + s];
-    //     beebram[penbase + s + 336] = beebram[OFFBUFFER + 40 + s];
-    //     beebram[penbase + s + 640] = beebram[OFFBUFFER + 48 + s];
-    //     beebram[penbase + s + 648] = beebram[OFFBUFFER + 56 + s];
-    //     beebram[penbase + s + 656] = beebram[OFFBUFFER + 64 + s];
-    // }
+    uint8_t redraw = beebram[PLAYER + CE_ROOMID6_REDRAW2] & 0b11;
+    if (!redraw)
+        return;
+
+    updateSpriteContainer(PLAYER);
+
     uint8_t i = beebram[PLAYER + CE_I];
     uint8_t j = beebram[PLAYER + CE_J];
-    renderWhatever(i, j, 3);
-
+    bufferBG(i, j, 3);
+    bufferSpriteForeground(PLAYER);
+    renderOffbuffer(i, j, 3);
     beebram[PLAYER + CE_ROOMID6_REDRAW2] &= 0b11111100;
 }
 
 /*----------------------------------------------------------------------------*/
 
-void render() { renderBeebram(); }
+// renders the entire cambuffer to framebuffer
+void renderCambuffer() {
+    for (uint8_t i = 0; i < 26; i++) {
+        for (uint8_t j = 0; j < 40; j++) {
+            uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+            uint16_t tileptr = getTileTextureAddr(tid);
+            uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
+
+            for (uint8_t s = 0; s < 8; s++) {
+                beebram[screenpos + s] = beebram[tileptr + s];
+            }
+        }
+    }
+}
 
 /*----------------------------------------------------------------------------*/
 
-void renderWhatever(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
-    uint16_t penstart = SCREEN + abs_i * 0x140 + abs_j * 8;
+// renders square portion of the offbuffer to screen at absolute i,j
+void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
+    uint16_t penstart = SCREEN + i * 0x140 + j * 8;
     uint16_t offbase = OFFBUFFER;
 
-    for (int rel_i = 0; rel_i < dim; rel_i++) {
-        for (int rel_j = 0; rel_j < dim; rel_j++) {
-            for (int s = 7; s >= 0; s--) {
+    for (uint8_t rel_i = 0; rel_i < dim; rel_i++) {
+        for (uint8_t rel_j = 0; rel_j < dim; rel_j++) {
+            for (uint8_t s = 0; s < 8; s++) {
                 beebram[penstart + s] = beebram[offbase + s];
             }
             offbase += 8;
             penstart += 8;
         }
-        penstart += 320 - (dim * 8);
+        penstart += 320 - (dim << 3);
     }
 }

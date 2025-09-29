@@ -1,10 +1,11 @@
 #include "animate.h"
 #include "inflate.h"
 #include "init.h"
+#include "mySDL.h"
 #include "player.h"
 #include "renderer.h"
 #include "shared.h"
-#include "sprite.h"
+
 #include <stdbool.h>
 
 typedef struct {
@@ -19,6 +20,7 @@ typedef struct {
 void init();
 bool input();
 void update();
+void render();
 void loadRoom(uint8_t roomID);
 
 InputFlags inputFlags;
@@ -57,14 +59,14 @@ int main(int argc, char *args[]) {
 /*----------------------------------------------------------------------------*/
 
 void init() {
+    mySDLInitRenderer();
     init_ram();
-    init_renderer();
 
     uint8_t roomID = beebram[PLAYER + CE_ROOMID6_REDRAW2] >> 2;
 
     loadRoom(roomID);
-    renderBackground();
-    renderStaticEntities();
+    renderCambuffer();
+    renderStatics();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -99,15 +101,15 @@ bool input() {
 void update() {
     if (inputFlags.loadRoom_0) {
         loadRoom(0);
-        renderBackground();
-        renderStaticEntities();
+        renderCambuffer();
+        renderStatics();
         inputFlags.loadRoom_0 = false;
     }
 
     if (inputFlags.loadroom_1) {
         loadRoom(1);
-        renderBackground();
-        renderStaticEntities();
+        renderCambuffer();
+        renderStatics();
         inputFlags.loadroom_1 = false;
     }
 
@@ -137,21 +139,14 @@ void update() {
 
     // animate SEs held in camera
     animateCameraSE();
+}
 
-    renderStaticEntities();
+/*----------------------------------------------------------------------------*/
 
-    // if player's redraw flag is raised, redraw
-    uint8_t redraw = beebram[PLAYER + CE_ROOMID6_REDRAW2] & 0b11;
-    if (redraw) {
-        updateSpriteContainer(PLAYER);
-
-        uint8_t i = beebram[PLAYER + CE_I];
-        uint8_t j = beebram[PLAYER + CE_J];
-        bufferBG(i, j, 3);
-
-        bufferSpriteForeground(PLAYER);
-        renderPlayer();
-    }
+void render() {
+    renderStatics();
+    renderPlayer();
+    mySDLRender();
 }
 
 /*----------------------------------------------------------------------------*/
