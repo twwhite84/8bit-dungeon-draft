@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include "sprite.h"
 
 static void initLUT();
 static void initTextures();
@@ -575,4 +576,6 @@ void initPlayer() {
     beebram[PLAYER + ME_Y_HI] = 0;
     beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
     beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
+
+    updateSpriteContainer(PLAYER);
 }

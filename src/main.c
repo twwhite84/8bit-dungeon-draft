@@ -137,7 +137,6 @@ void update() {
         inputFlags.player_moveRight = false;
     }
 
-    // animate SEs held in camera
     animateStatics();
 }
 
