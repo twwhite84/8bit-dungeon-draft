@@ -43,7 +43,7 @@ int main(int argc, char *args[]) {
 
         render();
 
-        // LIMIT TO 60FPS
+        // LIMIT TO 30FPS
         et = SDL_GetTicks() - et;
         if (et < FRAME_CAP) {
             SDL_Delay(FRAME_CAP - et);
