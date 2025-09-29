@@ -127,7 +127,7 @@ void renderMovable(uint16_t pmovable) {
     uint8_t redraw = beebram[pmovable + CE_ROOMID6_REDRAW2] & 0b11;
     if (!redraw)
         return;
-    updateSpriteContainer(pmovable);
+    // updateSpriteContainer(pmovable);
     uint8_t i = beebram[pmovable + CE_I];
     uint8_t j = beebram[pmovable + CE_J];
     bufferBG(i, j, 3);

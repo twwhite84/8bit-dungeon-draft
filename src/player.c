@@ -1,10 +1,10 @@
 #include "player.h"
 #include "shared.h"
+#include "sprite.h"
 #include <stdbool.h>
 #include <stdio.h>
 
 void movePlayer(uint8_t dir) {
-    fprintf(stderr, "Player direction: %d\n", dir);
 
     // raise the redraw flag
     beebram[PLAYER + CE_ROOMID6_REDRAW2] &= 0b11111100;
@@ -50,9 +50,6 @@ void movePlayer(uint8_t dir) {
         break;
     }
 
-    // set the player direction vector
-
-    // check the next tile a pixel of movement in that direction will land
-
-    // take appropriate action
+    // update the sprite container
+    updateSpriteContainer(PLAYER);
 }
