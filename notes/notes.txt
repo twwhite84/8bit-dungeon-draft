@@ -1,0 +1,23 @@
+---=== NOTES ===--- 
+
+8:14 pm 30/09/2025
+
+Animation Problem
+
+GOAL: AVOID HAVING SEPARATE FUNCTIONS TO ANIMATE PLAYER VERSUS ENEMIES AND OTHER MOVABLE OBJECTS
+
+option #1: store pointers to animation sets directly on each movable / player with common label e.g. ME_UP, ME_DOWN, etc. 
+this will increase the size of each movable a lot as more animation sets are added, so probably wont scale well
+
+option #2: store an absolute offset from animdefs start on each movable / player. 
+this is essentially the same as storing a pointer on each object but you save a byte.
+
+option #3: store a base + relative offset on each movable / player without a pointer table. 
+this requires the various animation sets to be laid out in a common order AND size. 
+(eg PLAYER U 3 frames, D 3 frames ... ENEMY U 3 frames, D 3 frames ...)
+
+option #4: store a base + relative offset on each movable / player with a pointer table. 
+this requires animation sets to share a common order, but size can be variable. 
+(eg PLAYER U 3 frames, D 3 frames ... ENEMY U 2 frames, D 2 frames ... )
+
+I AM GOING WITH OPTION #4 FOR NOW
