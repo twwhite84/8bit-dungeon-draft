@@ -1,16 +1,30 @@
 #include "animate.h"
 #include "shared.h"
+#include <stdio.h>
 
 void animateEntity(uint16_t pentity) {
-
-    // if pentity is SE, then its quad(s) are determined to be animated based on its first pvizdef
-    // this means you cant mix animated and non-animated quads in a static entity
-    // e.g. if you want a glowing spot on a large static, you'll need two statics
     uint16_t pvizdef = beebram[pentity + CE_PVIZDEF_LO] + (beebram[pentity + CE_PVIZDEF_HI] << 8);
-
-    // bail if not an animdef
     if (pvizdef < ANIMDEFS)
         return;
+
+    // movables should have their animdef updated to match the current direction of travel
+    if (pentity >= PLAYER) {
+        uint8_t dir_x = beebram[pentity + ME_DX4_DY4] >> 4;
+        uint8_t dir_y = beebram[pentity + ME_DX4_DY4] & 0x0F;
+
+        if (dir_y == PLRDIR_U && pvizdef != ADPTR_DOGWALKU)
+            pvizdef = ADPTR_DOGWALKU;
+        if (dir_y == PLRDIR_D && pvizdef != ADPTR_DOGWALKD)
+            pvizdef = ADPTR_DOGWALKD;
+        if (dir_x == PLRDIR_L && pvizdef != ADPTR_DOGWALKL)
+            pvizdef = ADPTR_DOGWALKL;
+        if (dir_x == PLRDIR_R && pvizdef != ADPTR_DOGWALKR)
+            pvizdef = ADPTR_DOGWALKR;
+
+        beebram[pentity + CE_PVIZDEF_LO] = pvizdef & 0xFF;
+        beebram[pentity + CE_PVIZDEF_HI] = pvizdef >> 8;
+        beebram[pentity + ME_DX4_DY4] = 0;
+    }
 
     uint8_t elapsed = beebram[pentity + CE_FELAPSED5_FCURRENT3] >> 3;
     uint8_t current = beebram[pentity + CE_FELAPSED5_FCURRENT3] & 0b111;
@@ -75,6 +89,10 @@ void animateEntity(uint16_t pentity) {
         elapsed = 0;
         beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
         beebram[pentity + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+
+        // make sure pentity has the correct animdef before it gets rendered
+        // beebram[pentity + CE_PVIZDEF_LO] = pvizdef & 0x0F;
+        // beebram[pentity + CE_PVIZDEF_HI] = pvizdef >> 8;
 
         // raise redraw flag so that renderStatics() draws it
         beebram[pentity + CE_ROOMID6_REDRAW2] |= 1;
