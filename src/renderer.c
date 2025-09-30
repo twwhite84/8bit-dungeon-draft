@@ -94,8 +94,8 @@ void renderStatics() {
 
         uint8_t nquads = beebram[pstatic + SE_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < nquads; q++) {
-            uint8_t qi = beebram[(pstatic + CE_I) + (4 * q)]; // 4q because repeating section 4 fields long
-            uint8_t qj = beebram[(pstatic + CE_J) + (4 * q)];
+            uint8_t qi = beebram[(pstatic + CE_CONTAINER_I) + (4 * q)]; // 4q because repeating section 4 fields long
+            uint8_t qj = beebram[(pstatic + CE_CONTAINER_J) + (4 * q)];
             uint16_t pvizdef =
                 beebram[(pstatic + CE_PVIZDEF_LO) + (4 * q)] | (beebram[(pstatic + CE_PVIZDEF_HI) + (4 * q)] << 8);
 
@@ -128,8 +128,8 @@ void renderMovable(uint16_t pmovable) {
     if (!redraw)
         return;
     // updateSpriteContainer(pmovable);
-    uint8_t i = beebram[pmovable + CE_I];
-    uint8_t j = beebram[pmovable + CE_J];
+    uint8_t i = beebram[pmovable + CE_CONTAINER_I];
+    uint8_t j = beebram[pmovable + CE_CONTAINER_J];
     bufferBG(i, j, 3);
     bufferFGSprite(pmovable);
     renderOffbuffer(i, j, 3);

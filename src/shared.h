@@ -32,8 +32,8 @@ enum {
     // COMMON ENTITY FIELDS
     CE_ROOMID6_REDRAW2 = 0x0,
     CE_FELAPSED5_FCURRENT3 = 0x1,
-    CE_I = 0x6,
-    CE_J = 0x7,
+    CE_CONTAINER_I = 0x6,
+    CE_CONTAINER_J = 0x7,
     CE_PVIZDEF_LO = 0x8,
     CE_PVIZDEF_HI = 0x9,
 
@@ -84,10 +84,10 @@ enum {
     CAMERA_WIDTH = (8 * CAMERA_COLUMNS),
     CAMERA_HEIGHT = (8 * CAMERA_ROWS),
 
-    PLRDIR_U = 0,
-    PLRDIR_D = 1,
-    PLRDIR_L = 2,
-    PLRDIR_R = 3,
+    PLRDIR_U = 1,
+    PLRDIR_D = 2,
+    PLRDIR_L = 3,
+    PLRDIR_R = 4,
 
     SETYPE_DOORLOCKED = 0,
     SETYPE_PICKUP = 1,
