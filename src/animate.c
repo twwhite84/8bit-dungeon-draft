@@ -3,33 +3,51 @@
 #include <stdio.h>
 
 void animateEntity(uint16_t pentity) {
-    uint16_t pvizdef = beebram[pentity + CE_PVIZDEF_LO] + (beebram[pentity + CE_PVIZDEF_HI] << 8);
-    if (pvizdef < ANIMDEFS)
+
+    // vizbase refers to an animdef table entry
+    uint16_t pvizbase = beebram[pentity + CE_PVIZBASE_LO] | (beebram[pentity + CE_PVIZBASE_HI] << 8);
+    if (pvizbase < AD_TABLE)
         return;
+
+    uint8_t animset = 0;
+    if (pentity >= PLAYER)
+        animset = beebram[pentity + ME_ANIMOFF];
+
+    uint16_t panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
 
     // movables should have their animdef updated to match the current direction of travel
     if (pentity >= PLAYER) {
         uint8_t dir_x = beebram[pentity + ME_DX4_DY4] >> 4;
         uint8_t dir_y = beebram[pentity + ME_DX4_DY4] & 0x0F;
 
-        if (dir_y == PLRDIR_U && pvizdef != ADPTR_DOGWALKU)
-            pvizdef = ADPTR_DOGWALKU;
-        if (dir_y == PLRDIR_D && pvizdef != ADPTR_DOGWALKD)
-            pvizdef = ADPTR_DOGWALKD;
-        if (dir_x == PLRDIR_L && pvizdef != ADPTR_DOGWALKL)
-            pvizdef = ADPTR_DOGWALKL;
-        if (dir_x == PLRDIR_R && pvizdef != ADPTR_DOGWALKR)
-            pvizdef = ADPTR_DOGWALKR;
+        if (dir_y == PLRDIR_U && animset != ANIMSET_WALKU) {
+            animset = ANIMSET_WALKU;
+            panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
+        }
 
-        beebram[pentity + CE_PVIZDEF_LO] = pvizdef & 0xFF;
-        beebram[pentity + CE_PVIZDEF_HI] = pvizdef >> 8;
+        if (dir_y == PLRDIR_D && animset != ANIMSET_WALKD) {
+            animset = ANIMSET_WALKD;
+            panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
+        }
+
+        if (dir_x == PLRDIR_L && animset != ANIMSET_WALKL) {
+            animset = ANIMSET_WALKL;
+            panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
+        }
+
+        if (dir_x == PLRDIR_R && animset != ANIMSET_WALKR) {
+            animset = ANIMSET_WALKR;
+            panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
+        }
+
+        beebram[pentity + ME_ANIMOFF] = animset;
         beebram[pentity + ME_DX4_DY4] = 0;
     }
 
     uint8_t elapsed = beebram[pentity + CE_FELAPSED5_FCURRENT3] >> 3;
     uint8_t current = beebram[pentity + CE_FELAPSED5_FCURRENT3] & 0b111;
-    uint8_t frames = beebram[pvizdef + AD_FRAMES4_YOYO4] >> 4;
-    uint8_t yoyo = beebram[pvizdef + AD_FRAMES4_YOYO4] & 0x0F;
+    uint8_t frames = beebram[panimdef + AD_FRAMES4_YOYO4] >> 4;
+    uint8_t yoyo = beebram[panimdef + AD_FRAMES4_YOYO4] & 0x0F;
     uint8_t period;
 
     // update the elapsed frame count
@@ -40,19 +58,19 @@ void animateEntity(uint16_t pentity) {
     // fetch the period for the current frame index
     switch (current) {
     case 0:
-        period = (beebram[pvizdef + AD_PERIODA4_PERIODB4] & 0b11110000) >> 4;
+        period = (beebram[panimdef + AD_PERIODA4_PERIODB4] & 0b11110000) >> 4;
         break;
 
     case 1:
-        period = (beebram[pvizdef + AD_PERIODA4_PERIODB4] & 0b00001111);
+        period = (beebram[panimdef + AD_PERIODA4_PERIODB4] & 0b00001111);
         break;
 
     case 2:
-        period = (beebram[pvizdef + AD_PERIODC4_PERIODD4] & 0b11110000) >> 4;
+        period = (beebram[panimdef + AD_PERIODC4_PERIODD4] & 0b11110000) >> 4;
         break;
 
     case 3:
-        period = (beebram[pvizdef + AD_PERIODC4_PERIODD4] & 0b00001111);
+        period = (beebram[panimdef + AD_PERIODC4_PERIODD4] & 0b00001111);
         break;
     }
 
@@ -82,17 +100,13 @@ void animateEntity(uint16_t pentity) {
         beebram[pentity + CE_FELAPSED5_FCURRENT3] |= current;
 
         // save yoyo
-        beebram[pvizdef + AD_FRAMES4_YOYO4] &= 0xF0;
-        beebram[pvizdef + AD_FRAMES4_YOYO4] |= yoyo;
+        beebram[panimdef + AD_FRAMES4_YOYO4] &= 0xF0;
+        beebram[panimdef + AD_FRAMES4_YOYO4] |= yoyo;
 
         // write elapsed frames
         elapsed = 0;
         beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
         beebram[pentity + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
-
-        // make sure pentity has the correct animdef before it gets rendered
-        // beebram[pentity + CE_PVIZDEF_LO] = pvizdef & 0x0F;
-        // beebram[pentity + CE_PVIZDEF_HI] = pvizdef >> 8;
 
         // raise redraw flag so that renderStatics() draws it
         beebram[pentity + CE_ROOMID6_REDRAW2] |= 1;

@@ -1,8 +1,8 @@
 #include "shared.h"
+#include "sprite.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
-#include "sprite.h"
 
 static void initLUT();
 static void initTextures();
@@ -165,12 +165,14 @@ static const int qDogWalkMaskLF1 = QUADS_PLAIN + 8 * 75;
 static const int qDogWalkLF2 = QUADS_PLAIN + 8 * 76;
 static const int qDogWalkMaskLF2 = QUADS_PLAIN + 8 * 77;
 
-// ANIMDEFS 32 of these
-static const int aForceField = ANIMDEFS + 2 * 0;
-static const int aDogWalkD = ANIMDEFS + 2 * 1;
-static const int aDogWalkU = ANIMDEFS + 2 * 2;
-static const int aDogWalkR = ANIMDEFS + 2 * 3;
-static const int aDogWalkL = ANIMDEFS + 2 * 4;
+// ANIMDEFS 16 of these
+static const uint16_t aForceField = AD_TABLE + 2 * 0;
+
+// dog
+static const uint16_t aDogWalkU = AD_TABLE + 2 * 1;
+static const uint16_t aDogWalkD = AD_TABLE + 2 * 2;
+static const uint16_t aDogWalkL = AD_TABLE + 2 * 3;
+static const uint16_t aDogWalkR = AD_TABLE + 2 * 4;
 
 /*----------------------------------------------------------------------------*/
 
@@ -465,16 +467,16 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 2) | 0,                           // ROOMID (6) | REDRAW (2)
-               (0 << 3) | 0,                           // FELAPSED (5) | FCURRENT (3)
-               (SETYPE_DOORLOCKED << 4) | 3,           // TYPE (4) | NQUADS (4)
-               0, 0, 0,                                // DATA (24)
-               8, 4,                                   // I (8), J (8)
-               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PVIZDEF (16)
-               8, 6,                                   // I (8), J (8)
-               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PVIZDEF (16)
-               8, 8,                                   // I (8), J (8)
-               ADPTR_FFIELD & 0xFF, ADPTR_FFIELD >> 8, // PVIZDEF (16)
+               (0 << 2) | 0,                         // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,                         // FELAPSED (5) | FCURRENT (3)
+               (SETYPE_DOORLOCKED << 4) | 3,         // TYPE (4) | NQUADS (4)
+               0, 0, 0,                              // DATA (24)
+               8, 4,                                 // I (8), J (8)
+               aForceField & 0xFF, aForceField >> 8, // PVIZDEF (16)
+               8, 6,                                 // I (8), J (8)
+               aForceField & 0xFF, aForceField >> 8, // PVIZDEF (16)
+               8, 8,                                 // I (8), J (8)
+               aForceField & 0xFF, aForceField >> 8, // PVIZDEF (16)
            },
            (size_t)18);
     se_ptr += 2;
@@ -484,12 +486,12 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 2) | 0,                               // ROOMID (6) | REDRAW (2)
-               (0 << 3) | 0,                               // FELAPSED (5) | FCURRENT (3)
-               (SETYPE_PICKUP << 4) | 1,                   // TYPE (4) | NQUADS (4)
-               0, 0, 0,                                    // DATA (24)
-               18, 6,                                      // I (8), J (8)
-               ADPTR_DOGWALKD & 0xFF, ADPTR_DOGWALKD >> 8, // PVIZDEF (16)
+               (0 << 2) | 0,                     // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,                     // FELAPSED (5) | FCURRENT (3)
+               (SETYPE_PICKUP << 4) | 1,         // TYPE (4) | NQUADS (4)
+               0, 0, 0,                          // DATA (24)
+               18, 6,                            // I (8), J (8)
+               aDogWalkD & 0xFF, aDogWalkD >> 8, // PVIZDEF (16)
            },
            (size_t)10);
     se_ptr += 2;
@@ -501,9 +503,14 @@ void initStaticEnts() {
 /*----------------------------------------------------------------------------*/
 
 void initAnimdefs() {
+    // 0xFFFF will specify null pointers where no entity has been assigned
+    memset(&beebram[AD_TABLE], 0xFF, (size_t)(AD_DEFS - AD_TABLE));
+
+    uint16_t ad_ptr = AD_TABLE, ad_def = AD_DEFS;
 
     // force field
-    memcpy(&beebram[ADPTR_FFIELD],
+    memcpy(&beebram[ad_ptr], (uint8_t[]){ad_def & 0xFF, ad_def >> 8}, 2);
+    memcpy(&beebram[ad_def],
            (uint8_t[]){
                (2 << 4) | 0,                           // FRAMES (4) | YOYO (4)
                (15 << 4) | 15,                         // PERIOD_0 (4) | PERIOD_1 (4)
@@ -512,9 +519,12 @@ void initAnimdefs() {
                qForceField1 & 0xFF, qForceField1 >> 8, // PTR_QUAD (16)
            },
            (size_t)7);
+    ad_ptr += 2;
+    ad_def += 7;
 
     // dog_walk_up
-    memcpy(&beebram[ADPTR_DOGWALKU],
+    memcpy(&beebram[ad_ptr], (uint8_t[]){ad_def & 0xFF, ad_def >> 8}, 2);
+    memcpy(&beebram[ad_def],
            (uint8_t[]){
                (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
@@ -524,9 +534,12 @@ void initAnimdefs() {
                qDogWalkUF2 & 0xFF, qDogWalkUF2 >> 8, // PTR_QUAD (16)
            },
            (size_t)9);
+    ad_ptr += 2;
+    ad_def += 9;
 
     // dog_walk_down
-    memcpy(&beebram[ADPTR_DOGWALKD],
+    memcpy(&beebram[ad_ptr], (uint8_t[]){ad_def & 0xFF, ad_def >> 8}, 2);
+    memcpy(&beebram[ad_def],
            (uint8_t[]){
                (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
@@ -536,9 +549,12 @@ void initAnimdefs() {
                qDogWalkDF2 & 0xFF, qDogWalkDF2 >> 8, // PTR_QUAD (16)
            },
            (size_t)9);
+    ad_ptr += 2;
+    ad_def += 9;
 
     // dog_walk_left
-    memcpy(&beebram[ADPTR_DOGWALKL],
+    memcpy(&beebram[ad_ptr], (uint8_t[]){ad_def & 0xFF, ad_def >> 8}, 2);
+    memcpy(&beebram[ad_def],
            (uint8_t[]){
                (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
@@ -548,9 +564,12 @@ void initAnimdefs() {
                qDogWalkLF2 & 0xFF, qDogWalkLF2 >> 8, // PTR_QUAD (16)
            },
            (size_t)9);
+    ad_ptr += 2;
+    ad_def += 9;
 
     // dog_walk_right
-    memcpy(&beebram[ADPTR_DOGWALKR],
+    memcpy(&beebram[ad_ptr], (uint8_t[]){ad_def & 0xFF, ad_def >> 8}, 2);
+    memcpy(&beebram[ad_def],
            (uint8_t[]){
                (3 << 4) | 1,                         // FRAMES (4) | YOYO (4)
                (8 << 4) | 3,                         // PERIOD_0 (4) | PERIOD_1 (4)
@@ -560,6 +579,8 @@ void initAnimdefs() {
                qDogWalkRF2 & 0xFF, qDogWalkRF2 >> 8, // PTR_QUAD (16)
            },
            (size_t)9);
+    ad_ptr += 2;
+    ad_def += 9;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -574,8 +595,9 @@ void initPlayer() {
     beebram[PLAYER + ME_X_HI] = 0;
     beebram[PLAYER + ME_Y_LO] = 8;
     beebram[PLAYER + ME_Y_HI] = 0;
-    beebram[PLAYER + CE_PVIZDEF_LO] = ADPTR_DOGWALKR & 0xFF;
-    beebram[PLAYER + CE_PVIZDEF_HI] = ADPTR_DOGWALKR >> 8;
+    beebram[PLAYER + CE_PVIZBASE_LO] = aDogWalkU & 0xFF; // dog set starts at adogwalku
+    beebram[PLAYER + CE_PVIZBASE_HI] = aDogWalkU >> 8;
+    beebram[PLAYER + ME_ANIMOFF] = ANIMSET_WALKR;
 
     updateSpriteContainer(PLAYER);
 }

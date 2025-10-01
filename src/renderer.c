@@ -69,6 +69,7 @@ compdef:
             beebram[penstart + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
         }
     }
+    // mySDLRender();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -80,33 +81,35 @@ void renderStatics() {
     for (int i = 0; i < 10; i++) {
 
         // get the entity or quit loop early if sentinel
-        uint16_t pstatic = beebram[pstart] + (beebram[pstart + 1] << 8);
-        if (pstatic == 0xFFFF)
+        uint16_t pentity = beebram[pstart] + (beebram[pstart + 1] << 8);
+        if (pentity == 0xFFFF)
             break;
         pstart += 2;
 
         // skip entity if not marked for redraw, or disable redraw until future update
-        uint8_t redraw = (beebram[pstatic + CE_ROOMID6_REDRAW2] & 0b00000011);
+        uint8_t redraw = (beebram[pentity + CE_ROOMID6_REDRAW2] & 0b00000011);
         if (!redraw)
             continue;
         else
-            beebram[pstatic + CE_ROOMID6_REDRAW2] &= 0b11111100;
+            beebram[pentity + CE_ROOMID6_REDRAW2] &= 0b11111100;
 
-        uint8_t nquads = beebram[pstatic + SE_TYPE4_NQUADS4] & 0x0F;
+        uint8_t nquads = beebram[pentity + SE_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < nquads; q++) {
-            uint8_t qi = beebram[(pstatic + CE_CONTAINER_I) + (4 * q)]; // 4q because repeating section 4 fields long
-            uint8_t qj = beebram[(pstatic + CE_CONTAINER_J) + (4 * q)];
+            uint8_t qi = beebram[(pentity + CE_CONTAINER_I) + (4 * q)]; // 4q because repeating section 4 fields long
+            uint8_t qj = beebram[(pentity + CE_CONTAINER_J) + (4 * q)];
             uint16_t pvizdef =
-                beebram[(pstatic + CE_PVIZDEF_LO) + (4 * q)] | (beebram[(pstatic + CE_PVIZDEF_HI) + (4 * q)] << 8);
+                beebram[(pentity + CE_PVIZBASE_LO) + (4 * q)] | (beebram[(pentity + CE_PVIZBASE_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
-            if (pvizdef < ANIMDEFS) {
+            if (pvizdef < AD_TABLE) {
                 goto render;
             }
 
         animdef:
-            uint16_t animdef = pvizdef;
-            uint8_t current = beebram[pstatic + CE_FELAPSED5_FCURRENT3] & 0b00000111;
+            // dereference the table entry, dont add an animset because SE only has one animdef
+            uint16_t animdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
+
+            uint8_t current = beebram[pentity + CE_FELAPSED5_FCURRENT3] & 0b00000111;
 
             // get the current frame for rendering to offbuffer
             pvizdef = beebram[(animdef + AD_PFRAME_LO) + (2 * current)];
