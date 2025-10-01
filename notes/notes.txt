@@ -21,3 +21,20 @@ this requires animation sets to share a common order, but size can be variable.
 (eg PLAYER U 3 frames, D 3 frames ... ENEMY U 2 frames, D 2 frames ... )
 
 I AM GOING WITH OPTION #4 FOR NOW
+
+
+Layout Example
+
+-shared.h-
+ME_ANIMOFF_WALKU = 0,
+ME_ANIMOFF_WALKD = 2,
+ME_ANIMOFF_WALKL = 4,
+ME_ANIMOFF_WALKR = 6,
+
+ANIMBASE: Player = 0xnnnn
+ANIMBASE: Enemey = 0xnnnn
+etc
+
+to access:
+Player+ME_ANIMOFF_WALKU
+Enemy+ME_ANIMOFF_WALKU

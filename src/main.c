@@ -145,7 +145,7 @@ void update() {
 void render() {
     renderStatics();
     renderMovable(PLAYER); // because player isn't held in camera
-    renderMovables();      // non-player movables
+    // renderMovables();      // non-player movables
     mySDLRender();
 }
 
