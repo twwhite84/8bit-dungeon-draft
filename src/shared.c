@@ -38,6 +38,7 @@ uint16_t xy2ramloc(uint16_t x, uint16_t y) {
     return result;
 }
 
+// returns i (8) | j (8)
 uint16_t xy2ij(uint16_t x, uint16_t y) {
     uint16_t result = (x >> 3) | ((y >> 3) << 8);
     return result;

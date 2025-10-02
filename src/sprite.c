@@ -29,7 +29,7 @@ void bufferFGSprite(uint16_t pentity) {
 
     // if the vizdef is an animdef, dereference it to get to the quad
     if (pvizbase >= AD_TABLE && pvizbase < AD_DEFS) {
-        uint8_t animset = beebram[pentity + ME_ANIMOFF];
+        uint8_t animset = beebram[pentity + ME_ANIMSET];
         uint16_t ppanimdef = pvizbase + animset;
 
         uint16_t panimdef = beebram[ppanimdef] | (beebram[ppanimdef + 1] << 8);

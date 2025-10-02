@@ -65,7 +65,7 @@ void init() {
     uint8_t roomID = beebram[PLAYER + CE_ROOMID6_REDRAW2] >> 2;
 
     loadRoom(roomID);
-    renderCambuffer();
+    // renderCambuffer();
     renderStatics();
 }
 
