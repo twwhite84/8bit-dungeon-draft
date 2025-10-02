@@ -107,13 +107,13 @@ static const int tDogWalkMaskRF2_3 = TEXTURES + 8 * 77;
 
 // QUADS
 // these quads correspond to 0-31 tilemap ids (32 of these)
-static const int qTiled = QUADS_PLAIN + 8 * 0;
-static const int qMesh = QUADS_PLAIN + 8 * 1;
-static const int qTread = QUADS_PLAIN + 8 * 2;
-static const int qDiamond = QUADS_PLAIN + 8 * 3;
-static const int qDirt = QUADS_PLAIN + 8 * 4;
-static const int qSquare = QUADS_PLAIN + 8 * 5;
-static const int qCrate = QUADS_PLAIN + 8 * 6;
+static const int qTiled = QUADS_PLAIN + 2 * TID_FLOOR_TILED;
+static const int qMesh = QUADS_PLAIN + 2 * TID_FLOOR_MESH;
+static const int qTread = QUADS_PLAIN + 2 * TID_FLOOR_TREAD;
+static const int qDiamond = QUADS_PLAIN + 2 * TID_FLOOR_DIAMOND;
+static const int qDirt = QUADS_PLAIN + 2 * TID_FLOOR_DIRT;
+static const int qSquare = QUADS_PLAIN + 2 * TID_WALL_SQUARE;
+static const int qCrate = QUADS_PLAIN + 2 * TID_WALL_CRATE;
 
 // these quads correspond to 32-47 object textures (16 of these)
 static const int qDoor = QUADS_PLAIN + 8 * 32;
@@ -597,7 +597,7 @@ void initPlayer() {
     beebram[PLAYER + ME_Y_HI] = 0;
     beebram[PLAYER + CE_PVIZBASE_LO] = aDogWalkU & 0xFF; // dog set starts at adogwalku
     beebram[PLAYER + CE_PVIZBASE_HI] = aDogWalkU >> 8;
-    beebram[PLAYER + ME_ANIMOFF] = ANIMSET_WALKR;
+    beebram[PLAYER + ME_ANIMSET] = ANIMSET_WALKR;
 
     updateSpriteContainer(PLAYER);
 }

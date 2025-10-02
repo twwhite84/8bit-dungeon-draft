@@ -43,10 +43,11 @@ enum {
     ME_X_HI = 0x3,
     ME_Y_LO = 0x4,
     ME_Y_HI = 0x5,
-    ME_ANIMOFF = 0xA,
+    ME_ANIMSET = 0xA,
     ME_DX4_DY4 = 0xB,
     ME_HSHIFT4_VSHIFT4 = 0xC,
 
+    // ANIMATION SETS
     ANIMSET_WALKU = 0,
     ANIMSET_WALKD = 2,
     ANIMSET_WALKL = 4,
@@ -75,6 +76,15 @@ enum {
     CAM_PME0_HI = 0x05,
     CAM_PSE0_LO = 0x0C,
     CAM_PSE0_HI = 0x0D,
+
+    // TILE CODES (x4 in the cambuffer after upsizing)
+    TID_FLOOR_TILED = 4 * 0,
+    TID_FLOOR_MESH = 4 * 1,
+    TID_FLOOR_TREAD = 4 * 2,
+    TID_FLOOR_DIAMOND = 4 * 3,
+    TID_FLOOR_DIRT = 4 * 4,
+    TID_WALL_SQUARE = 4 * 5,
+    TID_WALL_CRATE = 4 * 6,
 
     // MISC CONSTANTS
     STORED_ROWS = 13,

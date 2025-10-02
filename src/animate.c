@@ -11,7 +11,7 @@ void animateEntity(uint16_t pentity) {
 
     uint8_t animset = 0;
     if (pentity >= PLAYER)
-        animset = beebram[pentity + ME_ANIMOFF];
+        animset = beebram[pentity + ME_ANIMSET];
 
     uint16_t panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
 
@@ -40,7 +40,7 @@ void animateEntity(uint16_t pentity) {
             panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
         }
 
-        beebram[pentity + ME_ANIMOFF] = animset;
+        beebram[pentity + ME_ANIMSET] = animset;
         beebram[pentity + ME_DX4_DY4] = 0;
     }
 
