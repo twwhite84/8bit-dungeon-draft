@@ -125,4 +125,6 @@ uint16_t xy2ramloc(uint16_t x, uint16_t y);
 
 uint16_t xy2ij(uint16_t x, uint16_t y);
 
+uint16_t ij2xy(uint8_t i, uint8_t j);
+
 #endif
