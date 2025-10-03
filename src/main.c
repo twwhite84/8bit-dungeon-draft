@@ -11,6 +11,7 @@
 typedef struct {
     bool loadRoom_0;
     bool loadroom_1;
+    bool player_moveRequested;
     bool player_moveLeft;
     bool player_moveRight;
     bool player_moveUp;
@@ -62,10 +63,12 @@ void init() {
     mySDLInitRenderer();
     init_ram();
 
+    inputFlags.player_moveRequested = false;
+
     uint8_t roomID = beebram[PLAYER + CE_ROOMID6_REDRAW2] >> 2;
 
     loadRoom(roomID);
-    // renderCambuffer();
+    renderCambuffer();
     renderStatics();
 }
 
@@ -80,14 +83,26 @@ bool input() {
     }
 
     const uint8_t *keystates = SDL_GetKeyboardState(NULL);
-    if (keystates[SDL_SCANCODE_UP])
+    if (keystates[SDL_SCANCODE_UP]) {
+        inputFlags.player_moveRequested = true;
         inputFlags.player_moveUp = true;
-    if (keystates[SDL_SCANCODE_DOWN])
+    }
+
+    if (keystates[SDL_SCANCODE_DOWN]) {
+        inputFlags.player_moveRequested = true;
         inputFlags.player_moveDown = true;
-    if (keystates[SDL_SCANCODE_LEFT])
+    }
+
+    if (keystates[SDL_SCANCODE_LEFT]) {
+        inputFlags.player_moveRequested = true;
         inputFlags.player_moveLeft = true;
-    if (keystates[SDL_SCANCODE_RIGHT])
+    }
+
+    if (keystates[SDL_SCANCODE_RIGHT]) {
+        inputFlags.player_moveRequested = true;
         inputFlags.player_moveRight = true;
+    }
+
     if (keystates[SDL_SCANCODE_1])
         inputFlags.loadRoom_0 = true;
     if (keystates[SDL_SCANCODE_2])
@@ -113,28 +128,35 @@ void update() {
         inputFlags.loadroom_1 = false;
     }
 
+    // if player requests movement, reset bearing to match request
+    if (inputFlags.player_moveRequested) {
+        beebram[PLAYER + ME_DIRX4_DIRY4] = 0;
+    }
+
     if (inputFlags.player_moveUp) {
-        movePlayer(PLRDIR_U);
-        animateEntity(PLAYER);
+        beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_NEGATIVE;
         inputFlags.player_moveUp = false;
     }
 
     if (inputFlags.player_moveDown) {
-        movePlayer(PLRDIR_D);
-        animateEntity(PLAYER);
+        beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_POSITIVE;
         inputFlags.player_moveDown = false;
     }
 
     if (inputFlags.player_moveLeft) {
-        movePlayer(PLRDIR_L);
-        animateEntity(PLAYER);
+        beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_NEGATIVE << 4);
         inputFlags.player_moveLeft = false;
     }
 
     if (inputFlags.player_moveRight) {
-        movePlayer(PLRDIR_R);
-        animateEntity(PLAYER);
+        beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_POSITIVE << 4);
         inputFlags.player_moveRight = false;
+    }
+
+    if (inputFlags.player_moveRequested) {
+        movePlayer();
+        animateEntity(PLAYER);
+        inputFlags.player_moveRequested = false;
     }
 
     animateStatics();

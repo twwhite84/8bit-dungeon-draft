@@ -44,7 +44,7 @@ enum {
     ME_Y_LO = 0x4,
     ME_Y_HI = 0x5,
     ME_ANIMSET = 0xA,
-    ME_DX4_DY4 = 0xB,
+    ME_DIRX4_DIRY4 = 0xB,
     ME_HSHIFT4_VSHIFT4 = 0xC,
 
     // ANIMATION SETS
@@ -94,17 +94,16 @@ enum {
     CAMERA_WIDTH = (8 * CAMERA_COLUMNS),
     CAMERA_HEIGHT = (8 * CAMERA_ROWS),
 
-    PLRDIR_U = 1,
-    PLRDIR_D = 2,
-    PLRDIR_L = 3,
-    PLRDIR_R = 4,
-
     SETYPE_DOORLOCKED = 0,
     SETYPE_PICKUP = 1,
 
     YOYO_OFF = 0,
     YOYO_FORWARD = 1,
-    YOYO_BACKWARD = 2
+    YOYO_BACKWARD = 2,
+
+    DIR_ZERO = 0,
+    DIR_POSITIVE = 1,
+    DIR_NEGATIVE = 2,
 };
 
 typedef struct {

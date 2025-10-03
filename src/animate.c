@@ -17,31 +17,30 @@ void animateEntity(uint16_t pentity) {
 
     // movables should have their animdef updated to match the current direction of travel
     if (pentity >= PLAYER) {
-        uint8_t dir_x = beebram[pentity + ME_DX4_DY4] >> 4;
-        uint8_t dir_y = beebram[pentity + ME_DX4_DY4] & 0x0F;
+        uint8_t dir_x = beebram[pentity + ME_DIRX4_DIRY4] >> 4;
+        uint8_t dir_y = beebram[pentity + ME_DIRX4_DIRY4] & 0x0F;
 
-        if (dir_y == PLRDIR_U && animset != ANIMSET_WALKU) {
+        if (dir_y == DIR_NEGATIVE && animset != ANIMSET_WALKU) {
             animset = ANIMSET_WALKU;
             panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
         }
 
-        if (dir_y == PLRDIR_D && animset != ANIMSET_WALKD) {
+        if (dir_y == DIR_POSITIVE && animset != ANIMSET_WALKD) {
             animset = ANIMSET_WALKD;
             panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
         }
 
-        if (dir_x == PLRDIR_L && animset != ANIMSET_WALKL) {
+        if (dir_x == DIR_NEGATIVE && animset != ANIMSET_WALKL) {
             animset = ANIMSET_WALKL;
             panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
         }
 
-        if (dir_x == PLRDIR_R && animset != ANIMSET_WALKR) {
+        if (dir_x == DIR_POSITIVE && animset != ANIMSET_WALKR) {
             animset = ANIMSET_WALKR;
             panimdef = beebram[pvizbase + animset] | (beebram[pvizbase + animset + 1] << 8);
         }
 
         beebram[pentity + ME_ANIMSET] = animset;
-        beebram[pentity + ME_DX4_DY4] = 0;
     }
 
     uint8_t elapsed = beebram[pentity + CE_FELAPSED5_FCURRENT3] >> 3;
