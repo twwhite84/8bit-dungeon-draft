@@ -598,6 +598,7 @@ void initPlayer() {
     beebram[PLAYER + CE_PVIZBASE_LO] = aDogWalkU & 0xFF; // dog set starts at adogwalku
     beebram[PLAYER + CE_PVIZBASE_HI] = aDogWalkU >> 8;
     beebram[PLAYER + ME_ANIMSET] = ANIMSET_WALKR;
+    beebram[PLAYER + ME_DIRX4_DIRY4] = 0;
 
     updateSpriteContainer(PLAYER);
 }

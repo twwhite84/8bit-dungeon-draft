@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void movePlayer(uint8_t dir);
+void movePlayer();
 
 #endif
