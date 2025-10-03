@@ -128,32 +128,29 @@ void update() {
         inputFlags.loadroom_1 = false;
     }
 
-    // if player requests movement, reset bearing to match request
     if (inputFlags.player_moveRequested) {
         beebram[PLAYER + ME_DIRX4_DIRY4] = 0;
-    }
 
-    if (inputFlags.player_moveUp) {
-        beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_NEGATIVE;
-        inputFlags.player_moveUp = false;
-    }
+        if (inputFlags.player_moveUp) {
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_NEGATIVE;
+            inputFlags.player_moveUp = false;
+        }
 
-    if (inputFlags.player_moveDown) {
-        beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_POSITIVE;
-        inputFlags.player_moveDown = false;
-    }
+        if (inputFlags.player_moveDown) {
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_POSITIVE;
+            inputFlags.player_moveDown = false;
+        }
 
-    if (inputFlags.player_moveLeft) {
-        beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_NEGATIVE << 4);
-        inputFlags.player_moveLeft = false;
-    }
+        if (inputFlags.player_moveLeft) {
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_NEGATIVE << 4);
+            inputFlags.player_moveLeft = false;
+        }
 
-    if (inputFlags.player_moveRight) {
-        beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_POSITIVE << 4);
-        inputFlags.player_moveRight = false;
-    }
+        if (inputFlags.player_moveRight) {
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_POSITIVE << 4);
+            inputFlags.player_moveRight = false;
+        }
 
-    if (inputFlags.player_moveRequested) {
         movePlayer();
         animateEntity(PLAYER);
         inputFlags.player_moveRequested = false;

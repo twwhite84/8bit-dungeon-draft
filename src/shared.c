@@ -43,3 +43,8 @@ uint16_t xy2ij(uint16_t x, uint16_t y) {
     uint16_t result = (x >> 3) | ((y >> 3) << 8);
     return result;
 }
+
+uint16_t ij2xy(uint8_t i, uint8_t j) {
+    uint16_t result = (i << 3) | ((j << 3) << 8);
+    return result;
+}
