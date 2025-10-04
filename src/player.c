@@ -97,26 +97,24 @@ void movePlayer() {
     uint8_t dir_x = beebram[PLAYER + ME_DIRX4_DIRY4] >> 4;
     uint8_t dir_y = beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F;
 
-    // get the current x,y
+    // get the current coordinates
     uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8);
     uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
+    uint8_t i0 = (y0 >> 3);
+    uint8_t j0 = (x0 >> 3);
 
-    // get the target x, y based on current bearing
+    // get the target coordinates based on current bearing
     uint16_t x1 = x0, y1 = y0;
     if (dir_x != DIR_ZERO)
         (dir_x == DIR_NEGATIVE) ? x1-- : x1++;
     if (dir_y != DIR_ZERO)
         (dir_y == DIR_NEGATIVE) ? y1-- : y1++;
 
-    // get player i,j (player TL cell)
-    uint8_t i0 = (xy2ij(x0, y0) >> 8);
-    uint8_t j0 = (xy2ij(x0, y0) & 0xFF);
-
     // get the sprite container for the target x,y
-    uint8_t i1 = (xy2ij(x1, y1) >> 8);
-    uint8_t j1 = (xy2ij(x1, y1) & 0xFF);
+    uint8_t i1 = (y1 >> 3);
+    uint8_t j1 = (x1 >> 3);
 
-    // check the contents of the target sprite container for wall tiles
+    // check the target sprite container for wall tiles and mark which side struck
     bool hit_h = false, hit_v = false;
     for (uint8_t i = i1; i < (i1 + 3); i++) {
         for (uint8_t j = j1; j < (j1 + 3); j++) {
@@ -125,40 +123,40 @@ void movePlayer() {
             // if tile at i,j is a wall
             if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
 
-                // get the x,y for that i,j
-                uint8_t x_wall = 8 * j;
-                uint8_t y_wall = 8 * i;
+                // origin is above or below a wall tile
+                if (i0 < i1 || i0 > i1) {
 
-                // get the delta between it and player's projected x,y
-                int dx = x1 - x_wall;
-                int dy = y1 - y_wall;
+                    // use of x,y here allows for some "fudge factor"
+                    uint8_t x_wall = 8 * j;
+                    int dx = x_wall - x1;
+                    fprintf(stderr, "dx: %d\n", dx);
 
-                // print the delta
-                fprintf(stderr, "dx: %d, dy: %d\n", dx, dy);
+                    // if that wall tile aligns with player x, block y axis
+                    if (dx >= -8 && dx < 16) {
+                        hit_v = true;
+                    }
 
-                // if dx is -16, have hit wall left
-                if (dx >= -16 && dx < 8) {
-                    hit_h = true;
-                    // goto update;
                 }
 
-                // if dx is 7, have hit wall right
+                else if (j0 < j1 || j0 > j1) {
 
-                // if dy is -16, have hit wall top
-                if (dy >= -16 && dy < 8) {
-                    hit_v = true;
-                    // goto update;
+                    // use of x,y here allows for some "fudge factor"
+                    uint8_t y_wall = 8 * i;
+                    int dy = y_wall - y1;
+                    fprintf(stderr, "dy: %d\n", dy);
+
+                    // if that wall tile aligns with player x, block y axis
+                    if (dy >= -8 && dy < 16) {
+                        hit_h = true;
+                    }
+
+                    // fprintf(stderr, "\nLEFT OF A WALL TILE");
                 }
-
-                // if dy is +7, have hit wall bottom
             }
         }
     }
+    fprintf(stderr, "\n");
 
-    // if no wall is hit, proceed to move the player
-    // save the new x,y
-
-update:
     if (!hit_h) {
         beebram[PLAYER + ME_X_LO] = x1 & 0xFF;
         beebram[PLAYER + ME_X_HI] = x1 >> 8;
