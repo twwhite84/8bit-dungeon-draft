@@ -52,20 +52,40 @@ checky:
             uint8_t i1 = y1 >> 3;
             uint8_t j1 = x1 >> 3;
 
-            // need to check j0 and j1 for i's below player
-            for (uint8_t i = i1 + 1; i < (i1 + 3); i++) {
-                for (uint8_t j = j1; j < (j1 + 2); j++) {
-                    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-                    if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
-                        y1 = y0;
-                        goto save;
-                    }
-                    if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
-                        y1 = y0;
-                        goto save;
+            // if going down, need to check j0 and j1 for i's below player
+            if (dir_y == DIR_POSITIVE) {
+                for (uint8_t i = i1 + 1; i < (i1 + 3); i++) {
+                    for (uint8_t j = j1; j < (j1 + 2); j++) {
+                        uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+                        if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
+                            y1 = y0;
+                            goto save;
+                        }
+                        if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
+                            y1 = y0;
+                            goto save;
+                        }
                     }
                 }
             }
+
+            // if going up, need to check for j0 and j1 for i's above player
+            if (dir_y == DIR_NEGATIVE) {
+                for (uint8_t i = i1; i < (i1 + 2); i++) {
+                    for (uint8_t j = j1; j < (j1 + 2); j++) {
+                        uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+                        if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
+                            y1 = y0;
+                            goto save;
+                        }
+                        if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
+                            y1 = y0;
+                            goto save;
+                        }
+                    }
+                }
+            }
+
         }
 
         // regular case
