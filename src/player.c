@@ -17,41 +17,84 @@ void movePlayer() {
 checkx:
     if (dir_x != DIR_ZERO) {
         (dir_x == DIR_NEGATIVE) ? x1-- : x1++; // potential update
+        uint8_t h1 = x1 & 0b111;
+
         uint8_t i1 = y1 >> 3;
         uint8_t j1 = x1 >> 3;
 
-        // compare the position of cells with wall tiles against player
         for (uint8_t i = i1; i < (i1 + 3); i++) {
             for (uint8_t j = j1; j < (j1 + 3); j++) {
                 uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
                 if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
 
-                    // we are going x, so need to find abs distance in y
-                    int dy = (8 * i) - y1;
-                    fprintf(stderr, "\ndy: %d", dy);
-                    if (dy < (-3) || dy > (16 + 8)) {
-                        x1 = x0;
-                        // goto checky;
-                    }
+                    if (h1 == 0)
+                        goto checky;
+                    x1 = x0; // cancel update
+                    goto checky;
+                }
+                if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
+                    if (h1 == 0)
+                        goto checky;
+                    x1 = x0; // cancel update
+                    goto checky;
                 }
             }
         }
     }
 
-    fprintf(stderr, "\n");
 checky:
     if (dir_y != DIR_ZERO) {
         (dir_y == DIR_NEGATIVE) ? y1-- : y1++; // potential update
-        goto save;
-        uint8_t i1 = y1 >> 3;
-        uint8_t j1 = x1 >> 3;
 
-        for (uint8_t i = i1; i < (i1 + 3); i++) {
-            for (uint8_t j = j1; j < (j1 + 3); j++) {
-                uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-                if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
-                    y1 = y0;
-                    goto save;
+        // hshift==0 is an edge case
+        uint8_t h1 = x1 & 0b111;
+        if (h1 == 0) {
+            uint8_t i1 = y1 >> 3;
+            uint8_t j1 = x1 >> 3;
+
+            // need to check j0 and j1 for i's below player
+            for (uint8_t i = i1 + 1; i < (i1 + 3); i++) {
+                for (uint8_t j = j1; j < (j1 + 2); j++) {
+                    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+                    if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
+                        y1 = y0;
+                        goto save;
+                    }
+                    if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
+                        y1 = y0;
+                        goto save;
+                    }
+                }
+            }
+        }
+
+        // regular case
+        else {
+            uint8_t i1 = y1 >> 3;
+            uint8_t j1 = x1 >> 3;
+
+            for (uint8_t i = i1; i < (i1 + 3); i++) {
+                for (uint8_t j = j1; j < (j1 + 3); j++) {
+                    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+                    if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
+                        // hack
+                        y1 = y0;
+                        goto save;
+
+                        // if (h1 != 7) {
+                        //     y1 = y0;
+                        //     goto save;
+                        // }
+                    }
+                    if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
+                        // hack
+                        y1 = y0;
+
+                        // if (h1 != 7) {
+                        //     y1 = y0;
+                        //     goto save;
+                        // }
+                    }
                 }
             }
         }
@@ -74,7 +117,7 @@ save:
 
 /*----------------------------------------------------------------------------*/
 
-void movePlayer2() {
+void _movePlayer() {
 
     // get current bearing
     uint8_t dir_x = beebram[PLAYER + ME_DIRX4_DIRY4] >> 4;
@@ -97,6 +140,10 @@ checkx:
                     x1 = x0; // cancel update
                     goto checky;
                 }
+                if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
+                    x1 = x0; // cancel update
+                    goto checky;
+                }
             }
         }
     }
@@ -111,6 +158,10 @@ checky:
             for (uint8_t j = j1; j < (j1 + 3); j++) {
                 uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
                 if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
+                    y1 = y0;
+                    goto save;
+                }
+                if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
                     y1 = y0;
                     goto save;
                 }
