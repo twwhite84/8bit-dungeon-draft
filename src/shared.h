@@ -33,8 +33,8 @@ enum {
     // COMMON ENTITY FIELDS
     CE_ROOMID6_REDRAW2 = 0x0,
     CE_FELAPSED5_FCURRENT3 = 0x1,
-    CE_CONTAINER_I = 0x6,
-    CE_CONTAINER_J = 0x7,
+    CE_I = 0x6,
+    CE_J = 0x7,
     CE_PVIZBASE_LO = 0x8,
     CE_PVIZBASE_HI = 0x9,
 

@@ -164,6 +164,7 @@ void update() {
         inputFlags.player_moveRun = false;
         movePlayer();
         animateEntity(PLAYER);
+        // checkStaticCollisions(PLAYER);
     }
 
     animateStatics();
@@ -172,8 +173,8 @@ void update() {
 /*----------------------------------------------------------------------------*/
 
 void render() {
-    renderStatics();
     renderMovable(PLAYER); // because player isn't held in camera
+    renderStatics();
     // renderMovables();      // non-player movables
     mySDLRender();
 }

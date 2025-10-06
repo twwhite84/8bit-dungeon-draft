@@ -15,8 +15,8 @@ void updateSpriteContainer(uint16_t movable) {
 
     // sprite container absolute i,j
     uint16_t i_j = xy2ij(x, y);
-    beebram[movable + CE_CONTAINER_I] = i_j >> 8;
-    beebram[movable + CE_CONTAINER_J] = i_j & 0xFF;
+    beebram[movable + CE_I] = i_j >> 8;
+    beebram[movable + CE_J] = i_j & 0xFF;
 }
 
 /*----------------------------------------------------------------------------*/
