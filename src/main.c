@@ -16,6 +16,7 @@ typedef struct {
     bool player_moveRight;
     bool player_moveUp;
     bool player_moveDown;
+    bool player_moveRun;
 } InputFlags;
 
 void init();
@@ -83,6 +84,12 @@ bool input() {
     }
 
     const uint8_t *keystates = SDL_GetKeyboardState(NULL);
+
+    // PLAYER MOVEMENT
+    if (keystates[SDL_SCANCODE_LSHIFT] || keystates[SDL_SCANCODE_RSHIFT]) {
+        inputFlags.player_moveRun = true;
+    }
+
     if (keystates[SDL_SCANCODE_UP]) {
         inputFlags.player_moveRequested = true;
         inputFlags.player_moveUp = true;
@@ -103,6 +110,7 @@ bool input() {
         inputFlags.player_moveRight = true;
     }
 
+    // MAP TEST
     if (keystates[SDL_SCANCODE_1])
         inputFlags.loadRoom_0 = true;
     if (keystates[SDL_SCANCODE_2])
@@ -130,30 +138,32 @@ void update() {
 
     if (inputFlags.player_moveRequested) {
         beebram[PLAYER + ME_DIRX4_DIRY4] = 0;
+        uint8_t mag = (inputFlags.player_moveRun) ? 1 : 0;
 
         if (inputFlags.player_moveUp) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_NEGATIVE;
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((mag << 2) | DIR_NEGATIVE);
             inputFlags.player_moveUp = false;
         }
 
         if (inputFlags.player_moveDown) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= DIR_POSITIVE;
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((mag << 2) | DIR_POSITIVE);
             inputFlags.player_moveDown = false;
         }
 
         if (inputFlags.player_moveLeft) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_NEGATIVE << 4);
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((mag << 6) | DIR_NEGATIVE << 4);
             inputFlags.player_moveLeft = false;
         }
 
         if (inputFlags.player_moveRight) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= (DIR_POSITIVE << 4);
+            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((mag << 6) | DIR_POSITIVE << 4);
             inputFlags.player_moveRight = false;
         }
 
+        inputFlags.player_moveRequested = false;
+        inputFlags.player_moveRun = false;
         movePlayer();
         animateEntity(PLAYER);
-        inputFlags.player_moveRequested = false;
     }
 
     animateStatics();
