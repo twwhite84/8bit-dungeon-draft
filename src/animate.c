@@ -17,8 +17,8 @@ void animateEntity(uint16_t pentity) {
 
     // movables should have their animdef updated to match the current direction of travel
     if (pentity >= PLAYER) {
-        uint8_t dir_x = beebram[pentity + ME_DIRX4_DIRY4] >> 4;
-        uint8_t dir_y = beebram[pentity + ME_DIRX4_DIRY4] & 0x0F;
+        uint8_t dir_x = (beebram[pentity + ME_DIRX4_DIRY4] >> 4) & 0b11;
+        uint8_t dir_y = (beebram[pentity + ME_DIRX4_DIRY4] & 0x0F) & 0b11;
 
         if (dir_y == DIR_NEGATIVE && animset != ANIMSET_WALKU) {
             animset = ANIMSET_WALKU;
