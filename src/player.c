@@ -17,9 +17,9 @@ void movePlayer() {
     uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8), y1 = y0;
 
     // if player is at a screen edge, abort movement
-    if (y1 < 1 && ydir == DIR_NEGATIVE)
+    if (y1 < 2 && ydir == DIR_NEGATIVE)
         ydir = DIR_ZERO;
-    if (y1 > (CAMERA_HEIGHT - 18) && ydir == DIR_POSITIVE)
+    if (y1 > (CAMERA_HEIGHT - 19) && ydir == DIR_POSITIVE)
         ydir = DIR_ZERO;
     if (x1 < 1 && xdir == DIR_NEGATIVE)
         xdir = DIR_ZERO;
@@ -55,7 +55,6 @@ void movePlayer() {
 
     movey:
         if (ydir != DIR_ZERO) {
-            // (ydir == DIR_NEGATIVE) ? y1-- : y1++; // potential movement
             y1 = (ydir == DIR_NEGATIVE) ? (y1 - 1 - yrun) : (y1 + 1 + yrun); // potential movement
             uint8_t i1 = y1 >> 3;
             uint8_t j1 = x1 >> 3;
