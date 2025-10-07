@@ -166,13 +166,6 @@ void renderMovables() {
 void renderCambuffer() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
-            // uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-            // uint16_t tileptr = getTileTextureAddr(tid);
-            // uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
-
-            // for (uint8_t s = 0; s < 8; s++) {
-            //     beebram[screenpos + s] = beebram[tileptr + s];
-            // }
             renderCambufferTile(i, j);
         }
     }
