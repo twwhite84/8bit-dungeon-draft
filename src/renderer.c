@@ -2,6 +2,9 @@
 #include "shared.h"
 #include "sprite.h"
 #include <stdbool.h>
+#include <stdio.h>
+
+void renderCambufferTile(uint8_t i, uint8_t j);
 
 /*----------------------------------------------------------------------------*/
 
@@ -87,11 +90,11 @@ void renderStatics() {
         pstart += 2;
 
         // skip entity if not marked for redraw, or disable redraw until future update
-        uint8_t redraw = (beebram[pentity + CE_ROOMID6_REDRAW2] & 0b00000011);
+        uint8_t redraw = (beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] & 0b1);
         if (!redraw)
             continue;
         else
-            beebram[pentity + CE_ROOMID6_REDRAW2] &= 0b11111100;
+            beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] &= 0b11111110;
 
         uint8_t nquads = beebram[pentity + SE_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < nquads; q++) {
@@ -127,7 +130,11 @@ void renderStatics() {
 
 // renders to framebuffer a movable if marked for redraw
 void renderMovable(uint16_t pmovable) {
-    uint8_t redraw = beebram[pmovable + CE_ROOMID6_REDRAW2] & 0b11;
+    uint8_t clean = (beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] & 0b10) >> 1;
+    if (clean)
+        renderCleanup(pmovable);
+
+    uint8_t redraw = beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] & 0b1;
     if (!redraw)
         return;
     // updateSpriteContainer(pmovable);
@@ -136,7 +143,7 @@ void renderMovable(uint16_t pmovable) {
     bufferBG(i, j, 3);
     bufferFGSprite(pmovable);
     renderOffbuffer(i, j, 3);
-    beebram[pmovable + CE_ROOMID6_REDRAW2] &= 0b11111100;
+    beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] &= 0b11111110;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -159,13 +166,14 @@ void renderMovables() {
 void renderCambuffer() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
-            uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-            uint16_t tileptr = getTileTextureAddr(tid);
-            uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
+            // uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+            // uint16_t tileptr = getTileTextureAddr(tid);
+            // uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
 
-            for (uint8_t s = 0; s < 8; s++) {
-                beebram[screenpos + s] = beebram[tileptr + s];
-            }
+            // for (uint8_t s = 0; s < 8; s++) {
+            //     beebram[screenpos + s] = beebram[tileptr + s];
+            // }
+            renderCambufferTile(i, j);
         }
     }
 }
@@ -186,5 +194,51 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
             penstart += 8;
         }
         penstart += 320 - (dim << 3);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+// streak removal when moving the sprite container
+// this mainly seems to affect the vertical rather than horizontal axis
+void renderCleanup(uint16_t pentity) {
+
+    uint8_t xdir = (beebram[pentity + ME_DIRX4_DIRY4] >> 4) & 0b11;
+    uint8_t ydir = (beebram[pentity + ME_DIRX4_DIRY4] & 0x0F) & 0b11;
+
+    uint8_t old_i = beebram[pentity + ME_OLDI];
+    uint8_t old_j = beebram[pentity + ME_OLDJ];
+
+    if (ydir == DIR_POSITIVE) {
+        renderCambufferTile(old_i, old_j + 0);
+        renderCambufferTile(old_i, old_j + 1);
+        renderCambufferTile(old_i, old_j + 2);
+    }
+
+    if (ydir == DIR_NEGATIVE) {
+        renderCambufferTile(old_i + 2, old_j + 0);
+        renderCambufferTile(old_i + 2, old_j + 1);
+        renderCambufferTile(old_i + 2, old_j + 2);
+    }
+
+    if (xdir != DIR_ZERO) {
+        renderCambufferTile(old_i + 0, old_j);
+        renderCambufferTile(old_i + 1, old_j);
+        renderCambufferTile(old_i + 2, old_j);
+    }
+
+    // lower cleanup flag
+    beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] &= 11111101;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void renderCambufferTile(uint8_t i, uint8_t j) {
+    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+    uint16_t tileptr = getTileTextureAddr(tid);
+    uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
+
+    for (uint8_t s = 0; s < 8; s++) {
+        beebram[screenpos + s] = beebram[tileptr + s];
     }
 }

@@ -2,21 +2,37 @@
 #include "renderer.h"
 #include "shared.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 void updateSpriteContainer(uint16_t movable) {
     uint16_t x = beebram[movable + ME_X_LO] | (beebram[movable + ME_X_HI] << 8);
     uint16_t y = beebram[movable + ME_Y_LO] | (beebram[movable + ME_Y_HI] << 8);
 
-    // sprite offsets within container
+    // shifts will always be updated on any move
     uint8_t hshift = x & 0b111;
     uint8_t vshift = y & 0b111;
     beebram[movable + ME_HSHIFT4_VSHIFT4] = (beebram[movable + ME_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
     beebram[movable + ME_HSHIFT4_VSHIFT4] = (beebram[movable + ME_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
-    // sprite container absolute i,j
-    uint16_t i_j = xy2ij(x, y);
-    beebram[movable + CE_I] = i_j >> 8;
-    beebram[movable + CE_J] = i_j & 0xFF;
+    uint8_t current_i = beebram[movable + CE_I];
+    uint8_t current_j = beebram[movable + CE_J];
+    uint8_t new_i = y >> 3;
+    uint8_t new_j = x >> 3;
+
+    // if sprite container moves
+    if (current_i != new_i || current_j != new_j) {
+
+        // save the old container position
+        beebram[movable + ME_OLDI] = current_i;
+        beebram[movable + ME_OLDJ] = current_j;
+
+        // write the new container position
+        beebram[movable + CE_I] = new_i;
+        beebram[movable + CE_J] = new_j;
+
+        // raise cleanup flag
+        beebram[movable + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b10;
+    }
 }
 
 /*----------------------------------------------------------------------------*/

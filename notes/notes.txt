@@ -1,5 +1,19 @@
 ---=== NOTES ===--- 
 
+07/10/2025
+
+When i move quickly (eg by 2+ pixels per frame) sometimes a trail gets left behind.
+I think this is because my character moves to a new sprite container without clearing the old one.
+Perhaps I need to implement an erase when my character is running. This essentially defeats
+the purpose of double buffering though.
+
+I already track the direction of travel. Perhaps I can implement only redrawing those
+background tiles prior to the sprite container update.
+When I perform the sprite container update, I could check for when the hshift
+or vshift wraps around and delete those cells related to the player direction.
+
+--------------------------------------------------------------------------------
+
 8:14 pm 30/09/2025
 
 Animation Problem

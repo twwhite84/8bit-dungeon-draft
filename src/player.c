@@ -6,6 +6,8 @@
 
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y);
 
+/*----------------------------------------------------------------------------*/
+
 // this is called when a request for movement is made
 void movePlayer() {
 
@@ -108,8 +110,7 @@ save:
     updateSpriteContainer(PLAYER);
 
     // raise the redraw flag to let renderer know movement has taken place
-    beebram[PLAYER + CE_ROOMID6_REDRAW2] &= 0b11111100;
-    beebram[PLAYER + CE_ROOMID6_REDRAW2] |= true;
+    beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -147,7 +148,7 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             if (intercept_count < 2)
                 continue;
 
-            beebram[pse + CE_ROOMID6_REDRAW2] |= 1;
+            beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
             uint16_t qx = beebram[pse + CE_J + (4 * q)] << 3;
             uint16_t qy = beebram[pse + CE_I + (4 * q)] << 3;
 
@@ -159,7 +160,7 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
                 intercept_count++;
 
             if (intercept_count == 2) {
-                // beebram[pse + CE_ROOMID6_REDRAW2] |= 1;
+                // beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
                 final_type = type;
             }
         }

@@ -31,7 +31,7 @@ enum {
     AD_PFRAME_HI = 0x4,
 
     // COMMON ENTITY FIELDS
-    CE_ROOMID6_REDRAW2 = 0x0,
+    CE_ROOMID6_CLEAN1_REDRAW1 = 0x0,
     CE_FELAPSED5_FCURRENT3 = 0x1,
     CE_I = 0x6,
     CE_J = 0x7,
@@ -46,6 +46,8 @@ enum {
     ME_ANIMSET = 0xA,
     ME_DIRX4_DIRY4 = 0xB,
     ME_HSHIFT4_VSHIFT4 = 0xC,
+    ME_OLDI = 0xD,
+    ME_OLDJ = 0xE,
 
     // ANIMATION SETS
     ANIMSET_WALKU = 0,
@@ -54,14 +56,14 @@ enum {
     ANIMSET_WALKR = 6,
 
     // PLAYER FIELDS
-    PLR_HP = 0xD,
-    PLR_MP = 0xE,
-    PLR_PINVA_LO = 0xF,
-    PLR_PINVA_HI = 0x10,
-    PLR_PINVB_LO = 0x11,
-    PLR_PINVB_HI = 0x12,
-    PLR_PINVC_LO = 0x13,
-    PLR_PINVC_HI = 0x14,
+    PLR_HP = 0xF,
+    PLR_MP = 0x10,
+    PLR_PINVA_LO = 0x11,
+    PLR_PINVA_HI = 0x12,
+    PLR_PINVB_LO = 0x13,
+    PLR_PINVB_HI = 0x14,
+    PLR_PINVC_LO = 0x15,
+    PLR_PINVC_HI = 0x16,
 
     // STATIC ENTITY FIELDS
     // I, J & VIZDEF REPEAT. APPLY DYNAMIC OFFSETTING WHEN USING
