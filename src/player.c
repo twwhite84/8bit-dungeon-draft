@@ -142,9 +142,9 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             uint8_t se_i = beebram[pse + CE_I + (4 * q)];
             uint8_t se_j = beebram[pse + CE_J + (4 * q)];
             uint8_t intercept_count = 0;
-            if (abs(se_i - movable_i) < 3)
-                intercept_count++;
-            if (abs(se_j - movable_j) < 3)
+            if (abs(se_i - movable_i) < 4) // 4 to check a slightly larger area
+                intercept_count++;         // than sprite container so that when player pulls away
+            if (abs(se_j - movable_j) < 4) // the redraw flag will still be raised
                 intercept_count++;
             if (intercept_count < 2)
                 continue; // no: skip to the next static quad, if any exists
