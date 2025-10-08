@@ -129,10 +129,6 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
         if (pse == 0xFFFF)
             break;
 
-        // i should first check if the entity is in my container
-        // if yes then mark for redraw and process further
-        // if no skip to next entity
-
         uint8_t type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
         uint8_t nquads = beebram[pse + SE_TYPE4_NQUADS4] & 0x0F;
 
@@ -141,26 +137,45 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             // does the movable's container overlap the static's quad(s)?
             uint8_t se_i = beebram[pse + CE_I + (4 * q)];
             uint8_t se_j = beebram[pse + CE_J + (4 * q)];
-            uint8_t intercept_count = 0;
-            if (abs(se_i - movable_i) < 4) // 4 to check a slightly larger area
-                intercept_count++;         // than sprite container so that when player pulls away
-            if (abs(se_j - movable_j) < 4) // the redraw flag will still be raised
-                intercept_count++;
-            if (intercept_count < 2)
+            uint8_t overlap_count = 0, redraw_count = 0;
+
+            uint8_t idelta = (se_i - movable_i);
+            uint8_t jdelta = (se_j - movable_j);
+            if (idelta >= 0x80)
+                idelta = (idelta ^ 0xFF) + 1;
+            if (jdelta >= 0x80)
+                jdelta = (jdelta ^ 0xFF) + 1;
+
+            // redraw is triggered by a wider boundary than collision
+            // this ensure statics are redrawn when pulling away
+            if (idelta < 4) {
+                redraw_count++;
+                if (idelta < 3)
+                    overlap_count++;
+            }
+            if (jdelta < 4) {
+                redraw_count++;
+                if (jdelta < 3)
+                    overlap_count++;
+            }
+
+            if (redraw_count == 2)
+                beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+            if (overlap_count < 2)
                 continue; // no: skip to the next static quad, if any exists
 
             // yes: mark the static for redraw and check for collision
-            beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+            // beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
             uint16_t qx = beebram[pse + CE_J + (4 * q)] << 3;
             uint16_t qy = beebram[pse + CE_I + (4 * q)] << 3;
 
-            intercept_count = 0;
+            overlap_count = 0;
             if (abs(mov_x - qx) < 16 && abs(mov_y - qy) < 16)
-                intercept_count++;
+                overlap_count++;
             if (abs((mov_x + 16) - (qx + 16)) < 16 && abs((mov_y + 16) - (qy + 16)) < 16)
-                intercept_count++;
+                overlap_count++;
 
-            if (intercept_count == 2) {
+            if (overlap_count == 2) {
                 final_type = type;
             }
         }
