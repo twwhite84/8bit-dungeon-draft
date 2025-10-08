@@ -137,7 +137,7 @@ void renderMovable(uint16_t pmovable) {
     uint8_t redraw = beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] & 0b1;
     if (!redraw)
         return;
-    // updateSpriteContainer(pmovable);
+
     uint8_t i = beebram[pmovable + CE_I];
     uint8_t j = beebram[pmovable + CE_J];
     bufferBG(i, j, 3);
@@ -186,7 +186,7 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
             offbase += 8;
             penstart += 8;
         }
-        penstart += 320 - (dim << 3);
+        penstart += CAMERA_WIDTH - (dim << 3);
     }
 }
 
@@ -202,19 +202,29 @@ void renderCleanup(uint16_t pentity) {
     uint8_t old_i = beebram[pentity + ME_OLDI];
     uint8_t old_j = beebram[pentity + ME_OLDJ];
 
-    if (ydir == DIR_POSITIVE) {
-        renderCambufferTile(old_i, old_j + 0);
-        renderCambufferTile(old_i, old_j + 1);
-        renderCambufferTile(old_i, old_j + 2);
-    }
-
+    // moving up, clear below
     if (ydir == DIR_NEGATIVE) {
         renderCambufferTile(old_i + 2, old_j + 0);
         renderCambufferTile(old_i + 2, old_j + 1);
         renderCambufferTile(old_i + 2, old_j + 2);
     }
 
-    if (xdir != DIR_ZERO) {
+    // moving down, clean above
+    if (ydir == DIR_POSITIVE) {
+        renderCambufferTile(old_i, old_j + 0);
+        renderCambufferTile(old_i, old_j + 1);
+        renderCambufferTile(old_i, old_j + 2);
+    }
+
+    // moving left, clear right
+    if (xdir = DIR_NEGATIVE) {
+        renderCambufferTile(old_i + 0, old_j + 2);
+        renderCambufferTile(old_i + 1, old_j + 2);
+        renderCambufferTile(old_i + 2, old_j + 2);
+    }
+
+    // moving right, clear left
+    if (xdir = DIR_POSITIVE) {
         renderCambufferTile(old_i + 0, old_j);
         renderCambufferTile(old_i + 1, old_j);
         renderCambufferTile(old_i + 2, old_j);
@@ -229,7 +239,7 @@ void renderCleanup(uint16_t pentity) {
 void renderCambufferTile(uint8_t i, uint8_t j) {
     uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
     uint16_t tileptr = getTileTextureAddr(tid);
-    uint16_t screenpos = SCREEN + (0x0140 * i) + (8 * j);
+    uint16_t screenpos = SCREEN + (CAMERA_WIDTH * i) + (8 * j);
 
     for (uint8_t s = 0; s < 8; s++) {
         beebram[screenpos + s] = beebram[tileptr + s];
