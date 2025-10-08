@@ -87,6 +87,7 @@ enum {
     TID_FLOOR_DIRT = 4 * 4,
     TID_WALL_SQUARE = 4 * 5,
     TID_WALL_CRATE = 4 * 6,
+    TID_WALLS = TID_WALL_SQUARE,
 
     // MISC CONSTANTS
     STORED_ROWS = 13,

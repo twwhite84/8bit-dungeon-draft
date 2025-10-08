@@ -13,9 +13,9 @@ void movePlayer() {
 
     // get current bearing
     uint8_t xdir = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) & 0b11;
-    uint8_t xrun = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) >> 2;
+    uint8_t xboost = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) >> 2;
     uint8_t ydir = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) & 0b11;
-    uint8_t yrun = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) >> 2;
+    uint8_t yboost = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) >> 2;
 
     // get the current coordinates
     uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8), x1 = x0;
@@ -35,24 +35,28 @@ void movePlayer() {
     {
     movex:
         if (xdir != DIR_ZERO) {
-            x1 = (xdir == DIR_NEGATIVE) ? (x1 - 1 - xrun) : (x1 + 1 + xrun); // potential movement
+            x1 = (xdir == DIR_NEGATIVE) ? (x1 - 1 - xboost) : (x1 + 1 + xboost); // potential target x
             uint8_t i1 = y1 >> 3;
             uint8_t j1 = x1 >> 3;
-            uint8_t ilimit = ((y1 & 0b111) == 0) ? 2 : 3;
+            uint8_t hshift1 = x1 & 0b111;
+            uint8_t vshift1 = y1 & 0b111;
 
+            // when target is flush with container top, dont check bottom container row
+            // this is the only case where a player can travel x through player-sized gaps
+            uint8_t ilimit = (vshift1 == 0) ? 2 : 3;
+
+            // check for presence of a wall tile in the 2x3 or 3x3 container space
             for (uint8_t i = i1; i < (i1 + ilimit); i++) {
                 for (uint8_t j = j1; j < (j1 + 3); j++) {
                     uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
 
-                    if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
-                        if ((x1 & 0b111) != 0) // if hshift not 0, an edge case
-                            x1 = x0;           // cancel movement
-                        goto movey;
-                    }
-                    if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
-                        if ((x1 & 0b111) != 0)
-                            x1 = x0; // cancel movement
-                        goto movey;
+                    if (tid >= TID_WALLS) {
+
+                        // stop x movement if wall present, unless moving to a grid-aligned position
+                        // (this exception allows subsequent y movement through player-wide gaps)
+                        if (hshift1 != 0) {
+                            x1 = x0;
+                        }
                     }
                 }
             }
@@ -60,26 +64,23 @@ void movePlayer() {
 
     movey:
         if (ydir != DIR_ZERO) {
-            y1 = (ydir == DIR_NEGATIVE) ? (y1 - 1 - yrun) : (y1 + 1 + yrun); // potential movement
+            y1 = (ydir == DIR_NEGATIVE) ? (y1 - 1 - yboost) : (y1 + 1 + yboost); // potential movement
             uint8_t i1 = y1 >> 3;
             uint8_t j1 = x1 >> 3;
-            uint8_t jlimit = ((x1 & 0b111) == 0) ? 2 : 3;
+            uint8_t hshift1 = x1 & 0b111;
+            uint8_t vshift1 = y1 & 0b111;
+            uint8_t jlimit = (hshift1 == 0) ? 2 : 3;
 
-            // GOING DOWN
             for (uint8_t i = i1; i < (i1 + 3); i++) {
                 for (uint8_t j = j1; j < (j1 + jlimit); j++) {
-
                     uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-                    if (tid >= TID_WALL_SQUARE && tid < TID_WALL_SQUARE + 4) {
-                        if ((y1 & 0b111) != 0) // if vshift not 0, an edge case
-                            y1 = y0;           // cancel movement
-                        goto check_se;
-                    }
-                    if (tid >= TID_WALL_CRATE && tid < TID_WALL_CRATE + 4) {
-                        uint8_t v1 = y1 & 0b111;
-                        if ((y1 & 0b111) != 0)
+                    if (tid >= TID_WALLS) {
+
+                        // stop y movement if wall present, unless moving to a grid-aligned position
+                        // (this exception allows subsequent x movement through player-height gaps)
+                        if (vshift1 != 0) {
                             y1 = y0;
-                        goto check_se;
+                        }
                     }
                 }
             }
@@ -118,7 +119,7 @@ save:
 // returns code for the type involved in the collision, or else -1
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y) {
 
-    uint8_t final_type = 0xFF; // no type
+    uint8_t static_type = 0xFF; // no type
     uint8_t movable_i = mov_y >> 3;
     uint8_t movable_j = mov_x >> 3;
 
@@ -137,7 +138,7 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             // does the movable's container overlap the static's quad(s)?
             uint8_t se_i = beebram[pse + CE_I + (4 * q)];
             uint8_t se_j = beebram[pse + CE_J + (4 * q)];
-            uint8_t overlap_count = 0, redraw_count = 0;
+            uint8_t collision_intercepts = 0, redraw_intercepts = 0;
 
             uint8_t idelta = (se_i - movable_i);
             uint8_t jdelta = (se_j - movable_j);
@@ -149,37 +150,36 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             // redraw is triggered by a wider boundary than collision
             // this ensure statics are redrawn when pulling away
             if (idelta < 4) {
-                redraw_count++;
+                redraw_intercepts++;
                 if (idelta < 3)
-                    overlap_count++;
+                    collision_intercepts++;
             }
             if (jdelta < 4) {
-                redraw_count++;
+                redraw_intercepts++;
                 if (jdelta < 3)
-                    overlap_count++;
+                    collision_intercepts++;
             }
 
-            if (redraw_count == 2)
+            if (redraw_intercepts == 2)
                 beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
-            if (overlap_count < 2)
+            if (collision_intercepts != 2)
                 continue; // no: skip to the next static quad, if any exists
 
             // yes: mark the static for redraw and check for collision
-            // beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
             uint16_t qx = beebram[pse + CE_J + (4 * q)] << 3;
             uint16_t qy = beebram[pse + CE_I + (4 * q)] << 3;
 
-            overlap_count = 0;
+            collision_intercepts = 0;
             if (abs(mov_x - qx) < 16 && abs(mov_y - qy) < 16)
-                overlap_count++;
+                collision_intercepts++;
             if (abs((mov_x + 16) - (qx + 16)) < 16 && abs((mov_y + 16) - (qy + 16)) < 16)
-                overlap_count++;
+                collision_intercepts++;
 
-            if (overlap_count == 2) {
-                final_type = type;
+            if (collision_intercepts == 2) {
+                static_type = type;
             }
         }
     }
 
-    return final_type;
+    return static_type;
 }
