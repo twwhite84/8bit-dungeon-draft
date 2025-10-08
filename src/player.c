@@ -42,7 +42,7 @@ void movePlayer() {
             uint8_t vshift1 = y1 & 0b111;
 
             // when target is flush with container top, dont check bottom container row
-            // this is the only case where a player can travel x through player-sized gaps
+            // this is the only case where a player can travel x through player-height gaps
             uint8_t ilimit = (vshift1 == 0) ? 2 : 3;
 
             // check for presence of a wall tile in the 2x3 or 3x3 container space
@@ -56,6 +56,7 @@ void movePlayer() {
                         // (this exception allows subsequent y movement through player-wide gaps)
                         if (hshift1 != 0) {
                             x1 = x0;
+                            goto movey;
                         }
                     }
                 }
@@ -64,7 +65,7 @@ void movePlayer() {
 
     movey:
         if (ydir != DIR_ZERO) {
-            y1 = (ydir == DIR_NEGATIVE) ? (y1 - 1 - yboost) : (y1 + 1 + yboost); // potential movement
+            y1 = (ydir == DIR_NEGATIVE) ? (y1 - 1 - yboost) : (y1 + 1 + yboost); // potential target y
             uint8_t i1 = y1 >> 3;
             uint8_t j1 = x1 >> 3;
             uint8_t hshift1 = x1 & 0b111;
@@ -80,6 +81,7 @@ void movePlayer() {
                         // (this exception allows subsequent x movement through player-height gaps)
                         if (vshift1 != 0) {
                             y1 = y0;
+                            goto check_se;
                         }
                     }
                 }
