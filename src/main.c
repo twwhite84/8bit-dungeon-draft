@@ -164,7 +164,6 @@ void update() {
         inputFlags.player_moveRun = false;
         movePlayer();
         animateEntity(PLAYER);
-        // checkStaticCollisions(PLAYER);
     }
 
     animateStatics();

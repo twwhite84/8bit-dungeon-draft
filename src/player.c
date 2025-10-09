@@ -2,7 +2,7 @@
 #include "shared.h"
 #include "sprite.h"
 #include <stdbool.h>
-#include <stdio.h>
+#include <stdlib.h>
 
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y);
 
@@ -45,21 +45,35 @@ void movePlayer() {
             // this is the only case where a player can travel x through player-height gaps
             uint8_t ilimit = (vshift1 == 0) ? 2 : 3;
 
-            // check for presence of a wall tile in the 2x3 or 3x3 container space
+            /* -------------------- WALLS CHECK --------------------*/
+            bool wall_present = false;
+
+            // check each tile in the 3x3 (or 2x3) container area
             for (uint8_t i = i1; i < (i1 + ilimit); i++) {
                 for (uint8_t j = j1; j < (j1 + 3); j++) {
                     uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-
                     if (tid >= TID_WALLS) {
-
                         // stop x movement if wall present, unless moving to a grid-aligned position
                         // (this exception allows subsequent y movement through player-wide gaps)
                         if (hshift1 != 0) {
                             x1 = x0;
-                            goto movey;
+                            wall_present = true;
+                            break;
                         }
                     }
                 }
+                if (wall_present)
+                    break;
+            }
+
+            /* -------------------- STATICS CHECK --------------------*/
+            uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
+            switch (collision_type) {
+            case 0xFF:
+                break;
+            case SETYPE_DOORLOCKED:
+                if (xdir != DIR_ZERO)
+                    x1 = x0;
             }
         }
 
@@ -72,6 +86,8 @@ void movePlayer() {
             uint8_t vshift1 = y1 & 0b111;
             uint8_t jlimit = (hshift1 == 0) ? 2 : 3;
 
+            /* -------------------- WALLS CHECK --------------------*/
+            bool wall_present = false;
             for (uint8_t i = i1; i < (i1 + 3); i++) {
                 for (uint8_t j = j1; j < (j1 + jlimit); j++) {
                     uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
@@ -81,25 +97,25 @@ void movePlayer() {
                         // (this exception allows subsequent x movement through player-height gaps)
                         if (vshift1 != 0) {
                             y1 = y0;
-                            goto check_se;
+                            wall_present = true;
+                            break;
                         }
                     }
                 }
+                if (wall_present)
+                    break;
+            }
+
+            /* -------------------- STATICS CHECK --------------------*/
+            uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
+            switch (collision_type) {
+            case 0xFF:
+                break;
+            case SETYPE_DOORLOCKED:
+                if (ydir != DIR_ZERO)
+                    y1 = y0;
             }
         }
-    }
-
-check_se:
-    uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
-    switch (collision_type) {
-    case 0xFF:
-        break;
-    case SETYPE_DOORLOCKED:
-        if (xdir != DIR_ZERO)
-            x1 = x0;
-        if (ydir != DIR_ZERO)
-            y1 = y0;
-        break;
     }
 
 save:
