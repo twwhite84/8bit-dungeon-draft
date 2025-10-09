@@ -107,6 +107,9 @@ enum {
     DIR_ZERO = 0,
     DIR_POSITIVE = 1,
     DIR_NEGATIVE = 2,
+
+    X_AXIS = 0,
+    Y_AXIS = 1,
 };
 
 typedef struct {

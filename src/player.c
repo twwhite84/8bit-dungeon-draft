@@ -2,20 +2,21 @@
 #include "shared.h"
 #include "sprite.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y);
+uint16_t moveAxis(uint16_t x0, uint16_t y0, uint8_t dir, uint8_t speed, uint8_t axis);
 
 /*----------------------------------------------------------------------------*/
 
-// this is called when a request for movement is made
 void movePlayer() {
 
     // get current bearing
     uint8_t xdir = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) & 0b11;
-    uint8_t xboost = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) >> 2;
+    uint8_t xspeed = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) >> 2;
     uint8_t ydir = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) & 0b11;
-    uint8_t yboost = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) >> 2;
+    uint8_t yspeed = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) >> 2;
 
     // get the current coordinates
     uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8), x1 = x0;
@@ -31,94 +32,14 @@ void movePlayer() {
     if (x1 > (CAMERA_WIDTH - 18) && xdir == DIR_POSITIVE)
         xdir = DIR_ZERO;
 
-    // don't move player if path blocked by a wall
-    {
-    movex:
-        if (xdir != DIR_ZERO) {
-            x1 = (xdir == DIR_NEGATIVE) ? (x1 - 1 - xboost) : (x1 + 1 + xboost); // potential target x
-            uint8_t i1 = y1 >> 3;
-            uint8_t j1 = x1 >> 3;
-            uint8_t hshift1 = x1 & 0b111;
-            uint8_t vshift1 = y1 & 0b111;
+    // check player path for walls or statics
+    if (xdir != DIR_ZERO)
+        x1 = moveAxis(x0, y0, xdir, xspeed, X_AXIS);
 
-            // when target is flush with container top, dont check bottom container row
-            // this is the only case where a player can travel x through player-height gaps
-            uint8_t ilimit = (vshift1 == 0) ? 2 : 3;
+    if (ydir != DIR_ZERO)
+        // note: passing x1 here helps avoid "sticky situations"
+        y1 = moveAxis(x1, y0, ydir, yspeed, Y_AXIS);
 
-            /* -------------------- WALLS CHECK --------------------*/
-            bool wall_present = false;
-
-            // check each tile in the 3x3 (or 2x3) container area
-            for (uint8_t i = i1; i < (i1 + ilimit); i++) {
-                for (uint8_t j = j1; j < (j1 + 3); j++) {
-                    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-                    if (tid >= TID_WALLS) {
-                        // stop x movement if wall present, unless moving to a grid-aligned position
-                        // (this exception allows subsequent y movement through player-wide gaps)
-                        if (hshift1 != 0) {
-                            x1 = x0;
-                            wall_present = true;
-                            break;
-                        }
-                    }
-                }
-                if (wall_present)
-                    break;
-            }
-
-            /* -------------------- STATICS CHECK --------------------*/
-            uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
-            switch (collision_type) {
-            case 0xFF:
-                break;
-            case SETYPE_DOORLOCKED:
-                if (xdir != DIR_ZERO)
-                    x1 = x0;
-            }
-        }
-
-    movey:
-        if (ydir != DIR_ZERO) {
-            y1 = (ydir == DIR_NEGATIVE) ? (y1 - 1 - yboost) : (y1 + 1 + yboost); // potential target y
-            uint8_t i1 = y1 >> 3;
-            uint8_t j1 = x1 >> 3;
-            uint8_t hshift1 = x1 & 0b111;
-            uint8_t vshift1 = y1 & 0b111;
-            uint8_t jlimit = (hshift1 == 0) ? 2 : 3;
-
-            /* -------------------- WALLS CHECK --------------------*/
-            bool wall_present = false;
-            for (uint8_t i = i1; i < (i1 + 3); i++) {
-                for (uint8_t j = j1; j < (j1 + jlimit); j++) {
-                    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
-                    if (tid >= TID_WALLS) {
-
-                        // stop y movement if wall present, unless moving to a grid-aligned position
-                        // (this exception allows subsequent x movement through player-height gaps)
-                        if (vshift1 != 0) {
-                            y1 = y0;
-                            wall_present = true;
-                            break;
-                        }
-                    }
-                }
-                if (wall_present)
-                    break;
-            }
-
-            /* -------------------- STATICS CHECK --------------------*/
-            uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
-            switch (collision_type) {
-            case 0xFF:
-                break;
-            case SETYPE_DOORLOCKED:
-                if (ydir != DIR_ZERO)
-                    y1 = y0;
-            }
-        }
-    }
-
-save:
     // save the updated coordinates
     beebram[PLAYER + ME_X_LO] = x1 & 0xFF;
     beebram[PLAYER + ME_X_HI] = x1 >> 8;
@@ -130,6 +51,86 @@ save:
 
     // raise the redraw flag to let renderer know movement has taken place
     beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+uint16_t moveAxis(uint16_t x0, uint16_t y0, uint8_t dir, uint8_t speed, uint8_t axis) {
+    uint16_t x1 = x0, y1 = y0;
+    if (axis == X_AXIS) {
+        x1 = (dir == DIR_NEGATIVE) ? (x1 - speed) : (x1 + speed);
+    } else {
+        y1 = (dir == DIR_NEGATIVE) ? (y1 - speed) : (y1 + speed);
+    }
+
+    uint8_t i1 = y1 >> 3;
+    uint8_t j1 = x1 >> 3;
+    uint8_t h1 = x1 & 0b111;
+    uint8_t v1 = y1 & 0b111;
+    uint8_t ilimit, jlimit;
+
+    if (axis == X_AXIS) {
+        ilimit = (v1 == 0) ? 2 : 3;
+        jlimit = 3;
+    }
+
+    else {
+        ilimit = 3;
+        jlimit = (h1 == 0) ? 2 : 3;
+    }
+
+    /* -------------------- WALLS CHECK --------------------*/
+    bool wall_present = false;
+
+    for (uint8_t i = i1; i < (i1 + ilimit); i++) {
+        for (uint8_t j = j1; j < (j1 + jlimit); j++) {
+            uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+            if (tid >= TID_WALLS) {
+                if (axis == X_AXIS) {
+                    if (h1 != 0) {
+                        x1 = x0;
+                        wall_present = true;
+                        break;
+                    }
+                }
+
+                else {
+                    if (v1 != 0) {
+                        y1 = y0;
+                        wall_present = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (wall_present)
+            break;
+    }
+
+    /* -------------------- STATICS CHECK --------------------*/
+    if (!wall_present) {
+        uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
+        switch (collision_type) {
+        case 0xFF:
+            break;
+        case SETYPE_DOORLOCKED:
+            if (axis == X_AXIS) {
+                if (dir != DIR_ZERO) {
+                    fprintf(stderr, "\nLOCKED DOOR on X-axis ");
+                    (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                    x1 = x0;
+                }
+            } else {
+                if (dir != DIR_ZERO) {
+                    fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
+                    (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                    y1 = y0;
+                }
+            }
+        }
+    }
+
+    return (axis == X_AXIS) ? x1 : y1;
 }
 
 /*----------------------------------------------------------------------------*/
