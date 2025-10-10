@@ -110,6 +110,10 @@ enum {
 
     X_AXIS = 0,
     Y_AXIS = 1,
+
+    OBSTACLE_NONE = 0xFF,
+    OBSTACLE_WALL = 0,
+    OBSTACLE_STATIC = 1,
 };
 
 typedef struct {

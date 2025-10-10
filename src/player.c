@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y);
-uint16_t moveAxis(uint16_t x0, uint16_t y0, uint8_t dir, uint8_t speed, uint8_t axis);
+uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t axis);
 
 /*----------------------------------------------------------------------------*/
 
@@ -19,26 +19,37 @@ void movePlayer() {
     uint8_t yspeed = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) >> 2;
 
     // get the current coordinates
-    uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8), x1 = x0;
-    uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8), y1 = y0;
+    uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8);
+    uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
 
     // if player is at a screen edge, abort movement
-    if (y1 < 2 && ydir == DIR_NEGATIVE)
+    if (y0 < 2 && ydir == DIR_NEGATIVE)
         ydir = DIR_ZERO;
-    if (y1 > (CAMERA_HEIGHT - 19) && ydir == DIR_POSITIVE)
+    if (y0 > (CAMERA_HEIGHT - 19) && ydir == DIR_POSITIVE)
         ydir = DIR_ZERO;
-    if (x1 < 1 && xdir == DIR_NEGATIVE)
+    if (x0 < 1 && xdir == DIR_NEGATIVE)
         xdir = DIR_ZERO;
-    if (x1 > (CAMERA_WIDTH - 18) && xdir == DIR_POSITIVE)
+    if (x0 > (CAMERA_WIDTH - 18) && xdir == DIR_POSITIVE)
         xdir = DIR_ZERO;
 
     // check player path for walls or statics
-    if (xdir != DIR_ZERO)
-        x1 = moveAxis(x0, y0, xdir, xspeed, X_AXIS);
+    uint16_t x1 = x0, y1 = y0;
+    if (xdir != DIR_ZERO) {
+        x1 += (xdir == DIR_NEGATIVE) ? -xspeed : xspeed; // x1 to check
+        uint8_t collision_type = checkAxis(x1, y0, xdir, xspeed, X_AXIS);
+        if (collision_type != OBSTACLE_NONE) {
+            x1 = x0;
+        }
+    }
 
-    if (ydir != DIR_ZERO)
-        // note: passing x1 here helps avoid "sticky situations"
-        y1 = moveAxis(x1, y0, ydir, yspeed, Y_AXIS);
+    if (ydir != DIR_ZERO) {
+        y1 += (ydir == DIR_NEGATIVE) ? -yspeed : yspeed; // y1 to check
+        // note: passing x1 here helps avoid some sticking when moving diagonally
+        uint8_t collision_type = checkAxis(x1, y1, ydir, yspeed, Y_AXIS);
+        if (collision_type != OBSTACLE_NONE) {
+            y1 = y0;
+        }
+    }
 
     // save the updated coordinates
     beebram[PLAYER + ME_X_LO] = x1 & 0xFF;
@@ -55,82 +66,64 @@ void movePlayer() {
 
 /*----------------------------------------------------------------------------*/
 
-uint16_t moveAxis(uint16_t x0, uint16_t y0, uint8_t dir, uint8_t speed, uint8_t axis) {
-    uint16_t x1 = x0, y1 = y0;
-    if (axis == X_AXIS) {
-        x1 = (dir == DIR_NEGATIVE) ? (x1 - speed) : (x1 + speed);
-    } else {
-        y1 = (dir == DIR_NEGATIVE) ? (y1 - speed) : (y1 + speed);
-    }
-
+// the reason for a separate dir and speed is i can't pack a negative value into 4 bits
+uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t axis) {
     uint8_t i1 = y1 >> 3;
     uint8_t j1 = x1 >> 3;
     uint8_t h1 = x1 & 0b111;
     uint8_t v1 = y1 & 0b111;
-    uint8_t ilimit, jlimit;
 
+    // we only need to check 2 rows/columns when shifts are at 0
+    uint8_t ilimit, jlimit;
     if (axis == X_AXIS) {
         ilimit = (v1 == 0) ? 2 : 3;
         jlimit = 3;
-    }
-
-    else {
+    } else {
         ilimit = 3;
         jlimit = (h1 == 0) ? 2 : 3;
     }
 
     /* -------------------- WALLS CHECK --------------------*/
-    bool wall_present = false;
-
     for (uint8_t i = i1; i < (i1 + ilimit); i++) {
         for (uint8_t j = j1; j < (j1 + jlimit); j++) {
             uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
             if (tid >= TID_WALLS) {
-                if (axis == X_AXIS) {
-                    if (h1 != 0) {
-                        x1 = x0;
-                        wall_present = true;
-                        break;
-                    }
+
+                // exception for h1/v1 == 0 to allow a movement to a grid-snapped location
+                // this permits subsequent movement on the other axis through tight gaps
+                if (axis == X_AXIS && h1 > 0) {
+                    return OBSTACLE_WALL;
                 }
 
-                else {
-                    if (v1 != 0) {
-                        y1 = y0;
-                        wall_present = true;
-                        break;
-                    }
+                else if (axis == Y_AXIS && v1 > 0) {
+                    return OBSTACLE_WALL;
                 }
             }
         }
-        if (wall_present)
-            break;
     }
 
     /* -------------------- STATICS CHECK --------------------*/
-    if (!wall_present) {
-        uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
-        switch (collision_type) {
-        case 0xFF:
-            break;
-        case SETYPE_DOORLOCKED:
-            if (axis == X_AXIS) {
-                if (dir != DIR_ZERO) {
-                    fprintf(stderr, "\nLOCKED DOOR on X-axis ");
-                    (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                    x1 = x0;
-                }
-            } else {
-                if (dir != DIR_ZERO) {
-                    fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
-                    (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                    y1 = y0;
-                }
+    uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
+    switch (collision_type) {
+    case 0xFF:
+        break;
+    case SETYPE_DOORLOCKED:
+        if (axis == X_AXIS) {
+            if (dir != DIR_ZERO) {
+                fprintf(stderr, "\nLOCKED DOOR on X-axis ");
+                (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
+            }
+        } else {
+            if (dir != DIR_ZERO) {
+                fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
+                (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
             }
         }
     }
 
-    return (axis == X_AXIS) ? x1 : y1;
+    return OBSTACLE_NONE;
 }
 
 /*----------------------------------------------------------------------------*/

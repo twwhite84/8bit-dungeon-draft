@@ -110,6 +110,16 @@ bool input() {
         inputFlags.player_moveRight = true;
     }
 
+    if (keystates[SDL_SCANCODE_UP] && keystates[SDL_SCANCODE_DOWN]) {
+        inputFlags.player_moveUp = false;
+        inputFlags.player_moveDown = false;
+    }
+
+    if (keystates[SDL_SCANCODE_LEFT] && keystates[SDL_SCANCODE_RIGHT]) {
+        inputFlags.player_moveLeft = false;
+        inputFlags.player_moveRight = false;
+    }
+
     // MAP TEST
     if (keystates[SDL_SCANCODE_1])
         inputFlags.loadRoom_0 = true;
