@@ -21,6 +21,7 @@ enum {
     TMAP_TABLE = 0x38F0,
     TMAP_DEFS = 0x3950,
     LITEMAPS = 0x4E00,
+    ROOMS = 0x5000,
     SCREEN = 0x5800,
 
     // ANIMDEF FIELDS
@@ -114,6 +115,11 @@ enum {
     OBSTACLE_NONE = 0xFF,
     OBSTACLE_WALL = 0,
     OBSTACLE_STATIC = 1,
+
+    ROOMEXIT_U = 0,
+    ROOMEXIT_D = 1,
+    ROOMEXIT_L = 2,
+    ROOMEXIT_R = 3,
 };
 
 typedef struct {

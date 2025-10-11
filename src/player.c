@@ -1,4 +1,6 @@
 #include "player.h"
+#include "camera.h"
+#include "renderer.h"
 #include "shared.h"
 #include "sprite.h"
 #include <stdbool.h>
@@ -23,14 +25,51 @@ void movePlayer() {
     uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
 
     // if player is at a screen edge, abort movement
-    if (y0 < 2 && ydir == DIR_NEGATIVE)
+    // current room code
+    uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
+    uint8_t exit_to = 0xFF, exit_dir = 0xFF;
+
+    if (y0 < 2 && ydir == DIR_NEGATIVE) { // up
+        exit_dir = ROOMEXIT_U;
+        exit_to = beebram[ROOMS + (current_room * 4) + exit_dir];
         ydir = DIR_ZERO;
-    if (y0 > (CAMERA_HEIGHT - 19) && ydir == DIR_POSITIVE)
+    }
+    if (y0 > (CAMERA_HEIGHT - 19) && ydir == DIR_POSITIVE) { // down
+        exit_dir = ROOMEXIT_D;
+        exit_to = beebram[ROOMS + (current_room * 4) + exit_dir];
         ydir = DIR_ZERO;
-    if (x0 < 1 && xdir == DIR_NEGATIVE)
+    }
+    if (x0 < 1 && xdir == DIR_NEGATIVE) // left
         xdir = DIR_ZERO;
-    if (x0 > (CAMERA_WIDTH - 18) && xdir == DIR_POSITIVE)
+    if (x0 > (CAMERA_WIDTH - 18) && xdir == DIR_POSITIVE) // right
         xdir = DIR_ZERO;
+
+    if (exit_to != 0xFF) {
+        // moving up means player I should be set to screen bottom
+        if (exit_dir == ROOMEXIT_U) {
+            beebram[PLAYER + ME_Y_LO] = (CAMERA_HEIGHT - 16 - 1) & 0xFF;
+            beebram[PLAYER + ME_Y_HI] = (CAMERA_HEIGHT - 16 - 1) >> 8;
+        }
+        if (exit_dir == ROOMEXIT_D) {
+            beebram[PLAYER + ME_Y_LO] = 0;
+            beebram[PLAYER + ME_Y_HI] = 0;
+        }
+        if (exit_dir == ROOMEXIT_L) {
+            beebram[PLAYER + ME_X_LO] = 0;
+            beebram[PLAYER + ME_X_HI] = 0;
+        }
+        if (exit_dir == ROOMEXIT_R) {
+            beebram[PLAYER + ME_X_LO] = (320 - 16) & 0xFF;
+            beebram[PLAYER + ME_X_HI] = (320 - 16) >> 8;
+        }
+
+        updateSpriteContainer(PLAYER);
+        beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b1;
+        loadRoom(exit_to);
+        renderCambuffer();
+        renderStatics();
+        return;
+    }
 
     // check player path for walls or statics
     uint16_t x1 = x0, y1 = y0;

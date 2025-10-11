@@ -11,6 +11,7 @@ static void initTilemaps();
 static void initStaticEnts();
 static void initAnimdefs();
 static void initPlayer();
+static void initRooms();
 
 /*------------------------------ MEMORY OFFSETS ------------------------------*/
 
@@ -185,6 +186,7 @@ void init_ram() {
     initStaticEnts();
     initPlayer();
     initTilemaps();
+    initRooms();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -601,4 +603,18 @@ void initPlayer() {
     beebram[PLAYER + ME_DIRX4_DIRY4] = 0;
 
     updateSpriteContainer(PLAYER);
+}
+
+/*----------------------------------------------------------------------------*/
+
+void initRooms() {
+    memset(&beebram[ROOMS], 0xFF, (size_t)0xC0);
+    uint16_t roomaddr = ROOMS;
+
+    // room 0 exits
+    beebram[roomaddr + ROOMEXIT_U] = 1;
+
+    // room 1 exits
+    roomaddr += 4;
+    beebram[roomaddr + ROOMEXIT_D] = 0;
 }
