@@ -105,7 +105,7 @@ uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t 
     /* -------------------- STATICS CHECK --------------------*/
     uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
     switch (collision_type) {
-    case 0xFF:
+    case OBSTACLE_NONE:
         break;
     case SETYPE_DOORLOCKED:
         if (axis == X_AXIS) {
@@ -131,7 +131,6 @@ uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t 
 // returns code for the type involved in the collision, or else -1
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y) {
 
-    uint8_t static_type = 0xFF; // no type
     uint8_t movable_i = mov_y >> 3;
     uint8_t movable_j = mov_x >> 3;
 
@@ -142,7 +141,7 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
         if (pse == 0xFFFF)
             break;
 
-        uint8_t type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
+        uint8_t static_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
         uint8_t nquads = beebram[pse + SE_TYPE4_NQUADS4] & 0x0F;
 
         for (uint8_t q = 0; q < nquads; q++) {
@@ -160,7 +159,7 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
                 jdelta = (jdelta ^ 0xFF) + 1;
 
             // redraw is triggered by a wider boundary than collision
-            // this ensure statics are redrawn when pulling away
+            // to ensure statics are redrawn when pulling away
             if (idelta < 4) {
                 redraw_intercepts++;
                 if (idelta < 3)
@@ -177,21 +176,19 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             if (collision_intercepts != 2)
                 continue; // no: skip to the next static quad, if any exists
 
-            // yes: mark the static for redraw and check for collision
+            // yes the sprite container overlaps, so check for collision
             uint16_t qx = beebram[pse + CE_J + (4 * q)] << 3;
             uint16_t qy = beebram[pse + CE_I + (4 * q)] << 3;
 
-            collision_intercepts = 0;
-            if (abs(mov_x - qx) < 16 && abs(mov_y - qy) < 16)
-                collision_intercepts++;
-            if (abs((mov_x + 16) - (qx + 16)) < 16 && abs((mov_y + 16) - (qy + 16)) < 16)
-                collision_intercepts++;
+            uint8_t xdelta = mov_x - qx;
+            xdelta = (xdelta >= 0x80) ? (xdelta ^ 0xFF) + 1 : xdelta;
+            uint8_t ydelta = mov_y - qy;
+            ydelta = (ydelta >= 0x80) ? (ydelta ^ 0xFF) + 1 : ydelta;
 
-            if (collision_intercepts == 2) {
-                static_type = type;
-            }
+            if (xdelta < 16 && ydelta < 16)
+                return static_type;
         }
     }
 
-    return static_type;
+    return OBSTACLE_NONE;
 }
