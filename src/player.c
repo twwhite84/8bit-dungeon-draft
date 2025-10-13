@@ -9,82 +9,107 @@
 
 uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y);
 uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t axis);
+uint8_t checkBorderExits(uint16_t x1, uint16_t y1);
+
+/*----------------------------------------------------------------------------*/
+
+uint8_t checkBorderExits(uint16_t x1, uint16_t y1) {
+
+    uint8_t margin = 2;
+    uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
+    // crossing at screen top
+    if (y1 < margin) {
+        return ROOMEXIT_U;
+    }
+    // crossing at screen bottom
+    if (y1 > (CAMERA_HEIGHT - 16 - margin)) {
+        return ROOMEXIT_D;
+    }
+    // crossing at screen left
+    if (x1 < margin) {
+        return ROOMEXIT_L;
+    }
+    // crossing at screen right
+    if (x1 > (CAMERA_WIDTH - 16 - margin)) {
+        return ROOMEXIT_R;
+    }
+    return ROOMEXIT_NONE;
+}
 
 /*----------------------------------------------------------------------------*/
 
 void movePlayer() {
 
     // get current bearing
-    uint8_t xdir = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) & 0b11;
-    uint8_t xspeed = (beebram[PLAYER + ME_DIRX4_DIRY4] >> 4) >> 2;
-    uint8_t ydir = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) & 0b11;
-    uint8_t yspeed = (beebram[PLAYER + ME_DIRX4_DIRY4] & 0x0F) >> 2;
+    uint8_t xmag = (beebram[PLAYER + ME_XMD4_YMD4] >> 4) >> 2;
+    uint8_t xdir = (beebram[PLAYER + ME_XMD4_YMD4] >> 4) & 0b11;
+    uint8_t ymag = (beebram[PLAYER + ME_XMD4_YMD4] & 0x0F) >> 2;
+    uint8_t ydir = (beebram[PLAYER + ME_XMD4_YMD4] & 0x0F) & 0b11;
 
     // get the current coordinates
     uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8);
     uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
 
-    // if player is at a screen edge, abort movement
-    // current room code
+    // get target coordinates
+    uint16_t x1 = x0;
+    uint16_t y1 = y0;
+    if (xmag > 0)
+        x1 += (xdir == DIR_LEFT) ? -xmag : xmag;
+    if (ymag > 0)
+        y1 += (ydir == DIR_UP) ? -ymag : ymag;
+
+    // check target for room crossings
     uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
-    uint8_t exit_to = 0xFF, exit_dir = 0xFF;
+    uint8_t exit_dir = checkBorderExits(x1, y1);
 
-    if (y0 < 2 && ydir == DIR_NEGATIVE) { // up
-        exit_dir = ROOMEXIT_U;
-        exit_to = beebram[ROOMS + (current_room * 4) + exit_dir];
-        ydir = DIR_ZERO;
-    }
-    if (y0 > (CAMERA_HEIGHT - 19) && ydir == DIR_POSITIVE) { // down
-        exit_dir = ROOMEXIT_D;
-        exit_to = beebram[ROOMS + (current_room * 4) + exit_dir];
-        ydir = DIR_ZERO;
-    }
-    if (x0 < 1 && xdir == DIR_NEGATIVE) // left
-        xdir = DIR_ZERO;
-    if (x0 > (CAMERA_WIDTH - 18) && xdir == DIR_POSITIVE) // right
-        xdir = DIR_ZERO;
+    if (exit_dir != ROOMEXIT_NONE) {
+        uint8_t exit_room = beebram[ROOMS + (current_room * 4) + exit_dir];
+        if (exit_room == 0xFF)
+            return;
 
-    if (exit_to != 0xFF) {
-        // moving up means player I should be set to screen bottom
+        // set new screen position
+        uint8_t margin = 2;
         if (exit_dir == ROOMEXIT_U) {
-            beebram[PLAYER + ME_Y_LO] = (CAMERA_HEIGHT - 16 - 1) & 0xFF;
-            beebram[PLAYER + ME_Y_HI] = (CAMERA_HEIGHT - 16 - 1) >> 8;
+            beebram[PLAYER + ME_Y_LO] = (CAMERA_HEIGHT - 16 - margin) & 0xFF;
+            beebram[PLAYER + ME_Y_HI] = (CAMERA_HEIGHT - 16 - margin) >> 8;
         }
         if (exit_dir == ROOMEXIT_D) {
-            beebram[PLAYER + ME_Y_LO] = 0;
+            beebram[PLAYER + ME_Y_LO] = margin;
             beebram[PLAYER + ME_Y_HI] = 0;
         }
         if (exit_dir == ROOMEXIT_L) {
-            beebram[PLAYER + ME_X_LO] = 0;
+            beebram[PLAYER + ME_X_LO] = margin;
             beebram[PLAYER + ME_X_HI] = 0;
         }
         if (exit_dir == ROOMEXIT_R) {
-            beebram[PLAYER + ME_X_LO] = (320 - 16) & 0xFF;
-            beebram[PLAYER + ME_X_HI] = (320 - 16) >> 8;
+            beebram[PLAYER + ME_X_LO] = (CAMERA_WIDTH - 16 - margin) & 0xFF;
+            beebram[PLAYER + ME_X_HI] = (CAMERA_WIDTH - 16 - margin) >> 8;
         }
 
         updateSpriteContainer(PLAYER);
         beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b1;
-        loadRoom(exit_to);
+        loadRoom(exit_room);
         renderCambuffer();
         renderStatics();
         return;
     }
 
     // check player path for walls or statics
-    uint16_t x1 = x0, y1 = y0;
-    if (xdir != DIR_ZERO) {
-        x1 += (xdir == DIR_NEGATIVE) ? -xspeed : xspeed; // x1 to check
-        uint8_t collision_type = checkAxis(x1, y0, xdir, xspeed, X_AXIS);
+    x1 = x0;
+    y1 = y0;
+
+    if (xmag > 0) {
+        x1 += (xdir == DIR_LEFT) ? -xmag : xmag; // x1 to check
+        uint8_t collision_type = checkAxis(x1, y0, xdir, xmag, X_AXIS);
         if (collision_type != OBSTACLE_NONE) {
             x1 = x0;
         }
     }
 
-    if (ydir != DIR_ZERO) {
-        y1 += (ydir == DIR_NEGATIVE) ? -yspeed : yspeed; // y1 to check
+    if (ymag > 0) {
+        y1 += (ydir == DIR_UP) ? -ymag : ymag; // y1 to check
         // note: passing x1 here helps avoid some sticking when moving diagonally
-        uint8_t collision_type = checkAxis(x1, y1, ydir, yspeed, Y_AXIS);
+        uint8_t collision_type = checkAxis(x1, y1, ydir, ymag, Y_AXIS);
         if (collision_type != OBSTACLE_NONE) {
             y1 = y0;
         }
@@ -148,17 +173,13 @@ uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t 
         break;
     case SETYPE_DOORLOCKED:
         if (axis == X_AXIS) {
-            if (dir != DIR_ZERO) {
-                fprintf(stderr, "\nLOCKED DOOR on X-axis ");
-                (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
-            }
+            fprintf(stderr, "\nLOCKED DOOR on X-axis ");
+            (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+            return OBSTACLE_WALL + SETYPE_DOORLOCKED;
         } else {
-            if (dir != DIR_ZERO) {
-                fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
-                (dir == DIR_NEGATIVE) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
-            }
+            fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
+            (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+            return OBSTACLE_WALL + SETYPE_DOORLOCKED;
         }
     }
 

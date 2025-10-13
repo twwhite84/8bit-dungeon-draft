@@ -147,26 +147,26 @@ void update() {
     }
 
     if (inputFlags.player_moveRequested) {
-        beebram[PLAYER + ME_DIRX4_DIRY4] = 0;
+        beebram[PLAYER + ME_XMD4_YMD4] = 0;
         uint8_t speed = (inputFlags.player_moveRun) ? 2 : 1;
 
         if (inputFlags.player_moveUp) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((speed << 2) | DIR_NEGATIVE);
+            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 2) | DIR_UP);
             inputFlags.player_moveUp = false;
         }
 
         if (inputFlags.player_moveDown) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((speed << 2) | DIR_POSITIVE);
+            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 2) | DIR_DOWN);
             inputFlags.player_moveDown = false;
         }
 
         if (inputFlags.player_moveLeft) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((speed << 6) | DIR_NEGATIVE << 4);
+            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 6) | DIR_LEFT << 4);
             inputFlags.player_moveLeft = false;
         }
 
         if (inputFlags.player_moveRight) {
-            beebram[PLAYER + ME_DIRX4_DIRY4] |= ((speed << 6) | DIR_POSITIVE << 4);
+            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 6) | DIR_RIGHT << 4);
             inputFlags.player_moveRight = false;
         }
 

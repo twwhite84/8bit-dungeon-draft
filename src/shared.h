@@ -45,7 +45,7 @@ enum {
     ME_Y_LO = 0x4,
     ME_Y_HI = 0x5,
     ME_ANIMSET = 0xA,
-    ME_DIRX4_DIRY4 = 0xB,
+    ME_XMD4_YMD4 = 0xB,
     ME_HSHIFT4_VSHIFT4 = 0xC,
     ME_OLDI = 0xD,
     ME_OLDJ = 0xE,
@@ -105,9 +105,10 @@ enum {
     YOYO_FORWARD = 1,
     YOYO_BACKWARD = 2,
 
-    DIR_ZERO = 0,
-    DIR_POSITIVE = 1,
-    DIR_NEGATIVE = 2,
+    DIR_UP = 0,
+    DIR_DOWN = 1,
+    DIR_LEFT = 2,
+    DIR_RIGHT = 3,
 
     X_AXIS = 0,
     Y_AXIS = 1,
@@ -120,6 +121,7 @@ enum {
     ROOMEXIT_D = 1,
     ROOMEXIT_L = 2,
     ROOMEXIT_R = 3,
+    ROOMEXIT_NONE = 0xFF,
 };
 
 typedef struct {

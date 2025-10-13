@@ -196,35 +196,35 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
 // this mainly seems to affect the vertical rather than horizontal axis
 void renderCleanup(uint16_t pentity) {
 
-    uint8_t xdir = (beebram[pentity + ME_DIRX4_DIRY4] >> 4) & 0b11;
-    uint8_t ydir = (beebram[pentity + ME_DIRX4_DIRY4] & 0x0F) & 0b11;
+    uint8_t xdir = (beebram[pentity + ME_XMD4_YMD4] >> 4) & 0b11;
+    uint8_t ydir = (beebram[pentity + ME_XMD4_YMD4] & 0x0F) & 0b11;
 
     uint8_t old_i = beebram[pentity + ME_OLDI];
     uint8_t old_j = beebram[pentity + ME_OLDJ];
 
     // moving up, clear below
-    if (ydir == DIR_NEGATIVE) {
+    if (ydir == DIR_UP) {
         renderCambufferTile(old_i + 2, old_j + 0);
         renderCambufferTile(old_i + 2, old_j + 1);
         renderCambufferTile(old_i + 2, old_j + 2);
     }
 
     // moving down, clean above
-    if (ydir == DIR_POSITIVE) {
+    if (ydir == DIR_DOWN) {
         renderCambufferTile(old_i, old_j + 0);
         renderCambufferTile(old_i, old_j + 1);
         renderCambufferTile(old_i, old_j + 2);
     }
 
     // moving left, clear right
-    if (xdir = DIR_NEGATIVE) {
+    if (xdir = DIR_LEFT) {
         renderCambufferTile(old_i + 0, old_j + 2);
         renderCambufferTile(old_i + 1, old_j + 2);
         renderCambufferTile(old_i + 2, old_j + 2);
     }
 
     // moving right, clear left
-    if (xdir = DIR_POSITIVE) {
+    if (xdir = DIR_RIGHT) {
         renderCambufferTile(old_i + 0, old_j);
         renderCambufferTile(old_i + 1, old_j);
         renderCambufferTile(old_i + 2, old_j);
