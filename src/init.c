@@ -608,13 +608,15 @@ void initPlayer() {
 /*----------------------------------------------------------------------------*/
 
 void initRooms() {
-    memset(&beebram[ROOMS], 0xFF, (size_t)0xC0);
-    uint16_t roomaddr = ROOMS;
+    memset(&beebram[ROOMS], BEEBNULL, (size_t)0xC0);
+    // uint16_t roomaddr = ROOMS;
+    uint8_t roomID;
 
     // room 0 exits
-    beebram[roomaddr + ROOMEXIT_U] = 1;
+    roomID = 0;
+    beebram[ROOMS + (4 * roomID) + DIR_UP] = 1;
 
     // room 1 exits
-    roomaddr += 4;
-    beebram[roomaddr + ROOMEXIT_D] = 0;
+    roomID = 1;
+    beebram[ROOMS + (4 * roomID) + DIR_DOWN] = 0;
 }

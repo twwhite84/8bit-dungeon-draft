@@ -30,7 +30,7 @@ void updateSpriteContainer(uint16_t movable) {
         beebram[movable + CE_I] = new_i;
         beebram[movable + CE_J] = new_j;
 
-        // raise cleanup flag
+        // raise cleanup flag for streak removal
         beebram[movable + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b10;
     }
 }

@@ -7,33 +7,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y);
+void checkStaticHits(uint16_t x1, uint16_t y1, uint16_t *static_hits_out);
 uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t axis);
-uint8_t checkBorderExits(uint16_t x1, uint16_t y1);
+uint8_t checkBorderCollision(uint16_t x1, uint16_t y1);
 
 /*----------------------------------------------------------------------------*/
 
-uint8_t checkBorderExits(uint16_t x1, uint16_t y1) {
-
-    uint8_t margin = 2;
+// returns which border has been touched, or beebnull if border not touched
+uint8_t checkBorderCollision(uint16_t x1, uint16_t y1) {
     uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
     // crossing at screen top
-    if (y1 < margin) {
-        return ROOMEXIT_U;
+    if (y1 == 0) {
+        return DIR_UP;
     }
     // crossing at screen bottom
-    if (y1 > (CAMERA_HEIGHT - 16 - margin)) {
-        return ROOMEXIT_D;
+    if (y1 == (CAMERA_HEIGHT - 16 - 1)) {
+        return DIR_DOWN;
     }
     // crossing at screen left
-    if (x1 < margin) {
-        return ROOMEXIT_L;
+    if (x1 == 0) {
+        return DIR_LEFT;
     }
     // crossing at screen right
-    if (x1 > (CAMERA_WIDTH - 16 - margin)) {
-        return ROOMEXIT_R;
+    if (x1 == (CAMERA_WIDTH - 16)) {
+        return DIR_RIGHT;
     }
-    return ROOMEXIT_NONE;
+    return BEEBNULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -53,35 +52,43 @@ void movePlayer() {
     // get target coordinates
     uint16_t x1 = x0;
     uint16_t y1 = y0;
-    if (xmag > 0)
+    if (xmag > 0) {
         x1 += (xdir == DIR_LEFT) ? -xmag : xmag;
-    if (ymag > 0)
+        if (x1 >= 0x8000) // too far left
+            x1 = 0;
+        if (x1 > (CAMERA_WIDTH - 16))
+            x1 = (CAMERA_WIDTH - 16);
+    }
+
+    if (ymag > 0) {
         y1 += (ydir == DIR_UP) ? -ymag : ymag;
+        if (y1 >= 0x8000)
+            y1 = 0;
+        if (y1 > (CAMERA_HEIGHT - 16 - 1)) // -1 to prevent sprite container
+            y1 = (CAMERA_HEIGHT - 16 - 1); //  updating beyond screen bottom
+    }
 
-    // check target for room crossings
+    // check target for border crossings
     uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
-    uint8_t exit_dir = checkBorderExits(x1, y1);
+    uint8_t border_collision = checkBorderCollision(x1, y1);
+    uint8_t exit_room =
+        (border_collision != BEEBNULL) ? beebram[ROOMS + (current_room * 4) + border_collision] : BEEBNULL;
 
-    if (exit_dir != ROOMEXIT_NONE) {
-        uint8_t exit_room = beebram[ROOMS + (current_room * 4) + exit_dir];
-        if (exit_room == 0xFF)
-            return;
-
-        // set new screen position
+    if (exit_room != BEEBNULL) {
         uint8_t margin = 2;
-        if (exit_dir == ROOMEXIT_U) {
+        if (border_collision == DIR_UP) {
             beebram[PLAYER + ME_Y_LO] = (CAMERA_HEIGHT - 16 - margin) & 0xFF;
             beebram[PLAYER + ME_Y_HI] = (CAMERA_HEIGHT - 16 - margin) >> 8;
         }
-        if (exit_dir == ROOMEXIT_D) {
+        if (border_collision == DIR_DOWN) {
             beebram[PLAYER + ME_Y_LO] = margin;
             beebram[PLAYER + ME_Y_HI] = 0;
         }
-        if (exit_dir == ROOMEXIT_L) {
+        if (border_collision == DIR_LEFT) {
             beebram[PLAYER + ME_X_LO] = margin;
             beebram[PLAYER + ME_X_HI] = 0;
         }
-        if (exit_dir == ROOMEXIT_R) {
+        if (border_collision == DIR_RIGHT) {
             beebram[PLAYER + ME_X_LO] = (CAMERA_WIDTH - 16 - margin) & 0xFF;
             beebram[PLAYER + ME_X_HI] = (CAMERA_WIDTH - 16 - margin) >> 8;
         }
@@ -89,27 +96,24 @@ void movePlayer() {
         updateSpriteContainer(PLAYER);
         beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b1;
         loadRoom(exit_room);
+
         renderCambuffer();
         renderStatics();
         return;
     }
 
     // check player path for walls or statics
-    x1 = x0;
-    y1 = y0;
-
+    uint8_t collision_type = OBSTACLE_NONE;
     if (xmag > 0) {
-        x1 += (xdir == DIR_LEFT) ? -xmag : xmag; // x1 to check
-        uint8_t collision_type = checkAxis(x1, y0, xdir, xmag, X_AXIS);
+        collision_type = checkAxis(x1, y0, xdir, xmag, X_AXIS);
         if (collision_type != OBSTACLE_NONE) {
             x1 = x0;
         }
     }
 
     if (ymag > 0) {
-        y1 += (ydir == DIR_UP) ? -ymag : ymag; // y1 to check
         // note: passing x1 here helps avoid some sticking when moving diagonally
-        uint8_t collision_type = checkAxis(x1, y1, ydir, ymag, Y_AXIS);
+        collision_type = checkAxis(x1, y1, ydir, ymag, Y_AXIS);
         if (collision_type != OBSTACLE_NONE) {
             y1 = y0;
         }
@@ -167,37 +171,57 @@ uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t 
     }
 
     /* -------------------- STATICS CHECK --------------------*/
-    uint8_t collision_type = checkStaticCollisions(PLAYER, x1, y1);
-    switch (collision_type) {
-    case OBSTACLE_NONE:
-        break;
-    case SETYPE_DOORLOCKED:
-        if (axis == X_AXIS) {
-            fprintf(stderr, "\nLOCKED DOOR on X-axis ");
-            (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-            return OBSTACLE_WALL + SETYPE_DOORLOCKED;
-        } else {
-            fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
-            (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-            return OBSTACLE_WALL + SETYPE_DOORLOCKED;
+    uint16_t static_hits[2] = {0xFFFF, 0xFFFF}; // handles up to 2
+    checkStaticHits(x1, y1, static_hits);
+    for (uint8_t i = 0; i < 2; i++) {
+        uint16_t pse = static_hits[i];
+        if (pse == 0xFFFF)
+            break;
+        uint8_t pse_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
+        switch (pse_type) {
+        case OBSTACLE_NONE:
+            break;
+        case SETYPE_DOORLOCKED:
+            if (axis == X_AXIS) {
+                fprintf(stderr, "\nLOCKED DOOR on X-axis ");
+                (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
+            } else {
+                fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
+                (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
+            }
+            break;
+        case SETYPE_PICKUP:
+            if (axis == X_AXIS) {
+                fprintf(stderr, "\nPICKUP on X-axis ");
+                (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                return OBSTACLE_WALL + SETYPE_PICKUP;
+            } else {
+                fprintf(stderr, "\nPICKUP on Y-axis ");
+                (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+                return OBSTACLE_WALL + SETYPE_PICKUP;
+            }
+            break;
         }
-    }
 
-    return OBSTACLE_NONE;
+        return OBSTACLE_NONE;
+    }
 }
 
 /*----------------------------------------------------------------------------*/
 
-// returns code for the type involved in the collision, or else -1
-uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y) {
+// returns code for the type involved in the closest collision, or else -1
+void checkStaticHits(uint16_t x1, uint16_t y1, uint16_t *static_hits_out) {
 
-    uint8_t movable_i = mov_y >> 3;
-    uint8_t movable_j = mov_x >> 3;
-
+    uint8_t i1 = y1 >> 3;
+    uint8_t j1 = x1 >> 3;
     uint16_t pse_base = CAMERA + CAM_PSE0_LO;
-    for (uint8_t idx = 0; idx < 20; idx += 2) {
+    uint8_t insert_idx = 0;
 
-        uint16_t pse = beebram[pse_base + idx] | (beebram[pse_base + idx + 1] << 8);
+    for (uint8_t static_index = 0; static_index < 20; static_index += 2) {
+
+        uint16_t pse = beebram[pse_base + static_index] | (beebram[pse_base + static_index + 1] << 8);
         if (pse == 0xFFFF)
             break;
 
@@ -211,8 +235,8 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             uint8_t se_j = beebram[pse + CE_J + (4 * q)];
             uint8_t collision_intercepts = 0, redraw_intercepts = 0;
 
-            uint8_t idelta = (se_i - movable_i);
-            uint8_t jdelta = (se_j - movable_j);
+            uint8_t idelta = (se_i - i1);
+            uint8_t jdelta = (se_j - j1);
             if (idelta >= 0x80)
                 idelta = (idelta ^ 0xFF) + 1;
             if (jdelta >= 0x80)
@@ -236,19 +260,18 @@ uint8_t checkStaticCollisions(uint16_t pmovable, uint16_t mov_x, uint16_t mov_y)
             if (collision_intercepts != 2)
                 continue; // no: skip to the next static quad, if any exists
 
-            // yes the sprite container overlaps, so check for collision
+            // yes the sprite container overlaps with static, so check for collision
             uint16_t qx = beebram[pse + CE_J + (4 * q)] << 3;
             uint16_t qy = beebram[pse + CE_I + (4 * q)] << 3;
 
-            uint8_t xdelta = mov_x - qx;
-            xdelta = (xdelta >= 0x80) ? (xdelta ^ 0xFF) + 1 : xdelta;
-            uint8_t ydelta = mov_y - qy;
-            ydelta = (ydelta >= 0x80) ? (ydelta ^ 0xFF) + 1 : ydelta;
+            uint8_t xdelta_current = x1 - qx;
+            xdelta_current = (xdelta_current >= 0x80) ? (xdelta_current ^ 0xFF) + 1 : xdelta_current;
+            uint8_t ydelta_current = y1 - qy;
+            ydelta_current = (ydelta_current >= 0x80) ? (ydelta_current ^ 0xFF) + 1 : ydelta_current;
 
-            if (xdelta < 16 && ydelta < 16)
-                return static_type;
+            if (xdelta_current < 16 && ydelta_current < 16) {
+                static_hits_out[insert_idx++] = pse;
+            }
         }
     }
-
-    return OBSTACLE_NONE;
 }

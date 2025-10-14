@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 void movePlayer();
-// void checkStaticCollisions(uint16_t pmovable);
+// void checkStaticHits(uint16_t pmovable);
 
 #endif

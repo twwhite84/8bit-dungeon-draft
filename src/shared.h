@@ -117,11 +117,7 @@ enum {
     OBSTACLE_WALL = 0,
     OBSTACLE_STATIC = 1,
 
-    ROOMEXIT_U = 0,
-    ROOMEXIT_D = 1,
-    ROOMEXIT_L = 2,
-    ROOMEXIT_R = 3,
-    ROOMEXIT_NONE = 0xFF,
+    BEEBNULL = 0x80,
 };
 
 typedef struct {
