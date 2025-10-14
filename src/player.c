@@ -79,29 +79,22 @@ void movePlayer() {
     if (exit_room != SENTINEL8) {
         uint8_t margin = 2;
         if (border_collision == DIR_UP) {
-            beebram[PLAYER + ME_Y_LO] = (CAMERA_HEIGHT - 16 - margin) & 0xFF;
-            beebram[PLAYER + ME_Y_HI] = (CAMERA_HEIGHT - 16 - margin) >> 8;
+            y1 = (CAMERA_HEIGHT - 16 - margin);
         }
         if (border_collision == DIR_DOWN) {
-            beebram[PLAYER + ME_Y_LO] = margin;
-            beebram[PLAYER + ME_Y_HI] = 0;
+            y1 = margin;
         }
         if (border_collision == DIR_LEFT) {
-            beebram[PLAYER + ME_X_LO] = margin;
-            beebram[PLAYER + ME_X_HI] = 0;
+            x1 = margin;
         }
         if (border_collision == DIR_RIGHT) {
-            beebram[PLAYER + ME_X_LO] = (CAMERA_WIDTH - 16 - margin) & 0xFF;
-            beebram[PLAYER + ME_X_HI] = (CAMERA_WIDTH - 16 - margin) >> 8;
+            x1 = (CAMERA_WIDTH - 16 - margin);
         }
 
-        updateSpriteContainer(PLAYER);
-        beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b1;
         loadRoom(exit_room);
-
         renderCambuffer();
         renderStatics();
-        return;
+        goto save;
     }
 
     // check player path for walls or statics
@@ -121,6 +114,7 @@ void movePlayer() {
         handleCollisions(y0, &y1, collisions);
     }
 
+save:
     // save the updated coordinates
     beebram[PLAYER + ME_X_LO] = x1 & 0xFF;
     beebram[PLAYER + ME_X_HI] = x1 >> 8;
