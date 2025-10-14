@@ -6,10 +6,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-void checkStaticHits(uint16_t x1, uint16_t y1, uint16_t *static_hits_out);
-uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t axis);
+void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions_out);
 uint8_t checkBorderCollision(uint16_t x1, uint16_t y1);
+// void handleCollision(uint16_t x0, uint16_t *x1, uint16_t y0, uint16_t *y1, uint8_t axis, uint8_t collision_type);
+void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions_out, uint8_t *insertion_index);
+void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions);
 
 /*----------------------------------------------------------------------------*/
 
@@ -32,7 +35,7 @@ uint8_t checkBorderCollision(uint16_t x1, uint16_t y1) {
     if (x1 == (CAMERA_WIDTH - 16)) {
         return DIR_RIGHT;
     }
-    return BEEBNULL;
+    return SENTINEL8;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -72,9 +75,9 @@ void movePlayer() {
     uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
     uint8_t border_collision = checkBorderCollision(x1, y1);
     uint8_t exit_room =
-        (border_collision != BEEBNULL) ? beebram[ROOMS + (current_room * 4) + border_collision] : BEEBNULL;
+        (border_collision != SENTINEL8) ? beebram[ROOMS + (current_room * 4) + border_collision] : SENTINEL8;
 
-    if (exit_room != BEEBNULL) {
+    if (exit_room != SENTINEL8) {
         uint8_t margin = 2;
         if (border_collision == DIR_UP) {
             beebram[PLAYER + ME_Y_LO] = (CAMERA_HEIGHT - 16 - margin) & 0xFF;
@@ -103,20 +106,25 @@ void movePlayer() {
     }
 
     // check player path for walls or statics
-    uint8_t collision_type = OBSTACLE_NONE;
     if (xmag > 0) {
-        collision_type = checkAxis(x1, y0, xdir, xmag, X_AXIS);
-        if (collision_type != OBSTACLE_NONE) {
-            x1 = x0;
-        }
+        // collision_type = checkAxis(x1, y0, xdir, xmag, X_AXIS);
+        // handleCollision(x0, &x1, y0, &y1, X_AXIS, collision_type);
+        uint16_t x_collisions[4] = {SENTINEL16, SENTINEL16, SENTINEL16, SENTINEL16};
+        checkAxis(x1, y0, xdir, x_collisions);
+        handleCollisions(x0, &x1, x_collisions);
+
+        printf("\nDONE X_AXIS");
     }
 
     if (ymag > 0) {
         // note: passing x1 here helps avoid some sticking when moving diagonally
-        collision_type = checkAxis(x1, y1, ydir, ymag, Y_AXIS);
-        if (collision_type != OBSTACLE_NONE) {
-            y1 = y0;
-        }
+        // collision_type = checkAxis(x1, y1, ydir, ymag, Y_AXIS);
+        // handleCollision(x0, &x1, y0, &y1, Y_AXIS, collision_type);
+        uint16_t y_collisions[4] = {SENTINEL16, SENTINEL16, SENTINEL16, SENTINEL16};
+        checkAxis(x1, y1, ydir, y_collisions);
+        handleCollisions(y0, &y1, y_collisions);
+        // fprintf(stderr, "\ny_collisions[0]: %d", y_collisions[0]);
+        // fprintf(stderr, "\ny_collisions[1]: %d", y_collisions[1]);
     }
 
     // save the updated coordinates
@@ -134,24 +142,65 @@ void movePlayer() {
 
 /*----------------------------------------------------------------------------*/
 
-// the reason for a separate dir and speed is i can't pack a negative value into 4 bits
-uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t axis) {
+void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
+    for (uint8_t i = 0; i < 4; i++) {
+        if (collisions[i] == SENTINEL16)
+            return;
+        if (collisions[i] == 0) { // wall
+            *p1 = p0;
+            fprintf(stderr, "\nCOLLIDES WITH WALL");
+        }
+        if (collisions[i] >= SE_TABLE && collisions[i] < PLAYER) {
+            uint8_t se_type = beebram[collisions[i] + SE_TYPE4_NQUADS4] >> 4;
+            fprintf(stderr, "\nCOLLIDES WITH %d", se_type);
+        }
+    }
+}
+
+// void handleCollision(uint16_t x0, uint16_t *x1, uint16_t y0, uint16_t *y1, uint8_t axis, uint8_t collision_type) {
+//     if (collision_type == OBSTACLE_WALL) {
+//         if (axis == X_AXIS)
+//             *x1 = x0;
+//         else
+//             *y1 = y0;
+//     }
+//     if (collision_type >= OBSTACLE_STATIC) {
+//         uint8_t se_type = collision_type - OBSTACLE_STATIC;
+//         if (se_type == SETYPE_DOORLOCKED) {
+//             if (axis == X_AXIS)
+//                 *x1 = x0;
+//             else
+//                 *y1 = y0;
+//         }
+//         if (se_type == SETYPE_PICKUP) {
+//         }
+//     }
+// }
+
+/*----------------------------------------------------------------------------*/
+
+void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions_out) {
+    uint8_t insertion_index = 0;
+
+    /* -------------------- WALLS CHECK --------------------*/
+
     uint8_t i1 = y1 >> 3;
     uint8_t j1 = x1 >> 3;
     uint8_t h1 = x1 & 0b111;
     uint8_t v1 = y1 & 0b111;
+    bool wall_x = false, wall_y = false; // helps prevent redundant checks
 
     // we only need to check 2 rows/columns when shifts are at 0
     uint8_t ilimit, jlimit;
-    if (axis == X_AXIS) {
-        ilimit = (v1 == 0) ? 2 : 3;
-        jlimit = 3;
-    } else {
+    if (dir == DIR_UP || dir == DIR_DOWN) {
         ilimit = 3;
         jlimit = (h1 == 0) ? 2 : 3;
     }
+    if (dir == DIR_LEFT || dir == DIR_RIGHT) {
+        ilimit = (v1 == 0) ? 2 : 3;
+        jlimit = 3;
+    }
 
-    /* -------------------- WALLS CHECK --------------------*/
     for (uint8_t i = i1; i < (i1 + ilimit); i++) {
         for (uint8_t j = j1; j < (j1 + jlimit); j++) {
             uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
@@ -159,65 +208,70 @@ uint8_t checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t speed, uint8_t 
 
                 // exception for h1/v1 == 0 to allow a movement to a grid-snapped location
                 // this permits subsequent movement on the other axis through tight gaps
-                if (axis == X_AXIS && h1 > 0) {
-                    return OBSTACLE_WALL;
+                if (dir == DIR_UP || dir == DIR_DOWN) {
+                    if (!wall_y && v1 > 0) {
+                        wall_y = true;
+                        collisions_out[insertion_index++] = 0;
+                    }
                 }
 
-                else if (axis == Y_AXIS && v1 > 0) {
-                    return OBSTACLE_WALL;
+                if (dir == DIR_LEFT || dir == DIR_RIGHT) {
+                    if (!wall_x && h1 > 0) {
+                        wall_x = true;
+                        collisions_out[insertion_index++] = 0;
+                    }
                 }
             }
         }
     }
 
     /* -------------------- STATICS CHECK --------------------*/
-    uint16_t static_hits[2] = {0xFFFF, 0xFFFF}; // handles up to 2
-    checkStaticHits(x1, y1, static_hits);
-    for (uint8_t i = 0; i < 2; i++) {
-        uint16_t pse = static_hits[i];
-        if (pse == 0xFFFF)
-            break;
-        uint8_t pse_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
-        switch (pse_type) {
-        case OBSTACLE_NONE:
-            break;
-        case SETYPE_DOORLOCKED:
-            if (axis == X_AXIS) {
-                fprintf(stderr, "\nLOCKED DOOR on X-axis ");
-                (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
-            } else {
-                fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
-                (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                return OBSTACLE_WALL + SETYPE_DOORLOCKED;
-            }
-            break;
-        case SETYPE_PICKUP:
-            if (axis == X_AXIS) {
-                fprintf(stderr, "\nPICKUP on X-axis ");
-                (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                return OBSTACLE_WALL + SETYPE_PICKUP;
-            } else {
-                fprintf(stderr, "\nPICKUP on Y-axis ");
-                (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
-                return OBSTACLE_WALL + SETYPE_PICKUP;
-            }
-            break;
-        }
+    checkStaticCollisions(x1, y1, collisions_out, &insertion_index);
 
-        return OBSTACLE_NONE;
-    }
+    // for (uint8_t i = 0; i < 2; i++) {
+    //     uint16_t pse = static_hits[i];
+    //     if (pse == 0xFFFF)
+    //         break;
+    //     uint8_t pse_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
+    //     switch (pse_type) {
+    //     case OBSTACLE_NONE:
+    //         break;
+    //     case SETYPE_DOORLOCKED:
+    //         if (axis == X_AXIS) {
+    //             fprintf(stderr, "\nLOCKED DOOR on X-axis ");
+    //             (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+    //             return OBSTACLE_WALL + SETYPE_DOORLOCKED;
+    //         } else {
+    //             fprintf(stderr, "\nLOCKED DOOR on Y-axis ");
+    //             (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+    //             return OBSTACLE_WALL + SETYPE_DOORLOCKED;
+    //         }
+    //         break;
+    //     case SETYPE_PICKUP:
+    //         if (axis == X_AXIS) {
+    //             fprintf(stderr, "\nPICKUP on X-axis ");
+    //             (dir == DIR_LEFT) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+    //             return OBSTACLE_WALL + SETYPE_PICKUP;
+    //         } else {
+    //             fprintf(stderr, "\nPICKUP on Y-axis ");
+    //             (dir == DIR_UP) ? fprintf(stderr, " -") : fprintf(stderr, " +");
+    //             return OBSTACLE_WALL + SETYPE_PICKUP;
+    //         }
+    //         break;
+    //     }
+
+    //     return OBSTACLE_NONE;
+    // }
 }
 
 /*----------------------------------------------------------------------------*/
 
 // returns code for the type involved in the closest collision, or else -1
-void checkStaticHits(uint16_t x1, uint16_t y1, uint16_t *static_hits_out) {
+void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions_out, uint8_t *insertion_index) {
 
     uint8_t i1 = y1 >> 3;
     uint8_t j1 = x1 >> 3;
     uint16_t pse_base = CAMERA + CAM_PSE0_LO;
-    uint8_t insert_idx = 0;
 
     for (uint8_t static_index = 0; static_index < 20; static_index += 2) {
 
@@ -270,7 +324,8 @@ void checkStaticHits(uint16_t x1, uint16_t y1, uint16_t *static_hits_out) {
             ydelta_current = (ydelta_current >= 0x80) ? (ydelta_current ^ 0xFF) + 1 : ydelta_current;
 
             if (xdelta_current < 16 && ydelta_current < 16) {
-                static_hits_out[insert_idx++] = pse;
+                collisions_out[(*insertion_index)++] =
+                    pse; // need the () otherwise you increment the pointer not the value
             }
         }
     }

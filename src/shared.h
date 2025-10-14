@@ -113,11 +113,8 @@ enum {
     X_AXIS = 0,
     Y_AXIS = 1,
 
-    OBSTACLE_NONE = 0xFF,
-    OBSTACLE_WALL = 0,
-    OBSTACLE_STATIC = 1,
-
-    BEEBNULL = 0x80,
+    SENTINEL8 = 0x80,
+    SENTINEL16 = 0x8000
 };
 
 typedef struct {

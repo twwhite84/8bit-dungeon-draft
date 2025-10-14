@@ -608,7 +608,7 @@ void initPlayer() {
 /*----------------------------------------------------------------------------*/
 
 void initRooms() {
-    memset(&beebram[ROOMS], BEEBNULL, (size_t)0xC0);
+    memset(&beebram[ROOMS], SENTINEL8, (size_t)0xC0);
     // uint16_t roomaddr = ROOMS;
     uint8_t roomID;
 
