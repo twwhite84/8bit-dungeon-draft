@@ -183,9 +183,13 @@ void render() {
         beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BG;
     }
 
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_STATICS) != 0) {
-        renderStatics();
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_STATICS;
+    // redrawing movables before statics means that if a sprite
+    // container erases part of a static on overlap, the static
+    // will then be redrawn again over the overlap. this is due
+    // to checkStaticCollisions() raising static redraw flags
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_PLAYER) != 0) {
+        renderMovable(PLAYER);
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_PLAYER;
     }
 
     if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_MOVABLES) != 0) {
@@ -193,9 +197,9 @@ void render() {
         beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_MOVABLES;
     }
 
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_PLAYER) != 0) {
-        renderMovable(PLAYER);
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_PLAYER;
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_STATICS) != 0) {
+        renderStatics();
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_STATICS;
     }
 
     mySDLRender();

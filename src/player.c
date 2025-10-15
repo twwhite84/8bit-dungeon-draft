@@ -92,8 +92,6 @@ void movePlayer() {
         }
 
         loadRoom(exit_room);
-        renderBackground();
-        renderStatics();
         goto save;
     }
 
@@ -125,7 +123,6 @@ save:
     updateSpriteContainer(PLAYER);
 
     // raise the redraw flag to let renderer know movement has taken place
-    // beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
     beebram[CAMERA + CAM_REDRAW] |= REDRAW_PLAYER;
 }
 
@@ -271,8 +268,10 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
                     collision_intercepts++;
             }
 
-            if (redraw_intercepts == 2)
+            if (redraw_intercepts == 2) {
                 beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+                beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
+            }
             if (collision_intercepts != 2)
                 continue; // no: skip to the next static quad, if any exists
 
