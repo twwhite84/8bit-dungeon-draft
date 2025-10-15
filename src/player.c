@@ -92,7 +92,7 @@ void movePlayer() {
         }
 
         loadRoom(exit_room);
-        renderCambuffer();
+        renderBackground();
         renderStatics();
         goto save;
     }
@@ -125,7 +125,8 @@ save:
     updateSpriteContainer(PLAYER);
 
     // raise the redraw flag to let renderer know movement has taken place
-    beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
+    // beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
+    beebram[CAMERA + CAM_REDRAW] |= REDRAW_PLAYER;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -155,23 +156,19 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
                 beebram[PLAYER + PLR_PINVA_LO] = collisions[i] & 0xFF;
                 beebram[PLAYER + PLR_PINVA_HI] = collisions[i] >> 8;
 
-                // remove the static from the room
+                // set static roomID to not be in any room
                 beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = SENTINEL8;
-                // for (uint8_t i = CAM_PSE0_LO; i < (CAM_PSE0_LO + 20); i += 2) {
-                //     uint16_t pse = beebram[CAMERA + i] | (beebram[CAMERA + i + 1] << 8);
-                //     if (beebram[pse] == collisions[i]) {
-                //         fprintf(stderr, "PING");
-                //     }
-                // }
 
-                // reload the level data
-                loadRoom(beebram[CAMERA + CAM_ROOMID]);
+                // refresh the statics for the room
+                loadStatics(beebram[CAMERA + CAM_ROOMID]);
 
                 // re-render the background
-                renderCambuffer();
+                beebram[CAMERA + CAM_REDRAW] |= REDRAW_BG;
+                // renderBackground();
 
                 // re-render the statics
-                renderStatics();
+                beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
+                // renderStatics();
             }
         }
     }

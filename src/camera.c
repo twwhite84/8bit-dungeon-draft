@@ -6,13 +6,25 @@
 #include <string.h>
 
 void loadRoom(uint8_t roomID) {
+
+    // clear the camera
     memset(&beebram[CAMERA], 0, (size_t)(OFFBUFFER - CAMERA));
     memset(&beebram[CAMERA + CAM_PME0_LO], 0xFF, (size_t)(CAMBUFFER - CAMERA - CAM_PME0_LO));
+
     beebram[CAMERA + CAM_ROOMID] = roomID;
 
-    // inflate the stored map into the cambuffer
+    // inflate the compressed tilemap into the cambuffer
     inflateMap(roomID);
+    beebram[CAMERA + CAM_REDRAW] |= REDRAW_BG;
 
+    // load the statics for the room into the camera
+    loadStatics(roomID);
+    beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void loadStatics(uint8_t roomID) {
     // find subset of static entities for this room and copy their pointers into the camera
     uint8_t entities_copied = 0;
     uint16_t se_ptr_table = SE_TABLE;

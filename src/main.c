@@ -64,13 +64,11 @@ void init() {
     mySDLInitRenderer();
     init_ram();
 
-    inputFlags.player_moveRequested = false;
-
     uint8_t roomID = beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] >> 2;
-
     loadRoom(roomID);
-    renderCambuffer();
-    renderStatics();
+
+    inputFlags.player_moveRequested = false;
+    beebram[CAMERA + CAM_REDRAW] |= REDRAW_PLAYER;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -134,15 +132,11 @@ bool input() {
 void update() {
     if (inputFlags.loadRoom_0) {
         loadRoom(0);
-        renderCambuffer();
-        renderStatics();
         inputFlags.loadRoom_0 = false;
     }
 
     if (inputFlags.loadroom_1) {
         loadRoom(1);
-        renderCambuffer();
-        renderStatics();
         inputFlags.loadroom_1 = false;
     }
 
@@ -182,9 +176,28 @@ void update() {
 /*----------------------------------------------------------------------------*/
 
 void render() {
-    renderMovable(PLAYER); // because player isn't held in camera
-    renderStatics();
-    // renderMovables();      // non-player movables
+    // REDRAW FIELD: .... | player | movables | statics | bg
+
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_BG) != 0) {
+        renderBackground();
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BG;
+    }
+
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_STATICS) != 0) {
+        renderStatics();
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_STATICS;
+    }
+
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_MOVABLES) != 0) {
+        renderMovables();
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_MOVABLES;
+    }
+
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_PLAYER) != 0) {
+        renderMovable(PLAYER);
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_PLAYER;
+    }
+
     mySDLRender();
 }
 

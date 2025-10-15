@@ -4,5 +4,6 @@
 #include <stdint.h>
 
 void loadRoom(uint8_t roomID);
+void loadStatics(uint8_t roomID);
 
 #endif

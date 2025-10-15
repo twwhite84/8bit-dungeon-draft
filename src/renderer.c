@@ -134,10 +134,6 @@ void renderMovable(uint16_t pmovable) {
     if (clean)
         renderCleanup(pmovable);
 
-    uint8_t redraw = beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] & 0b1;
-    if (!redraw)
-        return;
-
     uint8_t i = beebram[pmovable + CE_I];
     uint8_t j = beebram[pmovable + CE_J];
     bufferBG(i, j, 3);
@@ -156,14 +152,15 @@ void renderMovables() {
         if (pmovable == 0xFFFF)
             break;
         pstart += 2;
-        renderMovable(pmovable);
+        if ((beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] & 0b1) != 0)
+            renderMovable(pmovable);
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-// renders the entire cambuffer to framebuffer (iow: the background tilemap)
-void renderCambuffer() {
+// renders the entire cambuffer (ie background tilemap) to the framebuffer
+void renderBackground() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
             renderCambufferTile(i, j);

@@ -7,7 +7,7 @@ void animateEntity(uint16_t pentity) {
     // vizbase refers to an animdef table entry
     uint16_t pvizbase = beebram[pentity + CE_PVIZBASE_LO] | (beebram[pentity + CE_PVIZBASE_HI] << 8);
     if (pvizbase < AD_TABLE)
-        return;
+        return; // if not an animated item
 
     uint8_t animset = 0;
     if (pentity >= PLAYER)
@@ -107,8 +107,17 @@ void animateEntity(uint16_t pentity) {
         beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
         beebram[pentity + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
-        // raise redraw flag so that renderStatics() draws it
+        // raise redraw flags on the entity and the camera for its kind
         beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+
+        // this check is possibily redundant as movePlayer already raises the flag
+        // and there isn't animation without movement (at the moment)
+        if (pentity >= SE_DEFS && pentity < PLAYER) {
+            beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
+        }
+        if (pentity >= PLAYER && pentity < MOVENTS) {
+            beebram[CAMERA + CAM_REDRAW] |= REDRAW_PLAYER;
+        }
     }
 }
 

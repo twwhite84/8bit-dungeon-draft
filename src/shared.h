@@ -73,12 +73,13 @@ enum {
 
     // CAMERA FIELDS
     CAM_ROOMID = 0x00,
-    CAM_PLITEMAP_LO = 0x01,
-    CAM_PLITEMAP_HI = 0x02,
-    CAM_PME0_LO = 0x04,
-    CAM_PME0_HI = 0x05,
-    CAM_PSE0_LO = 0x0C,
-    CAM_PSE0_HI = 0x0D,
+    CAM_REDRAW = 0x01, // XXXX | player | movables | statics | bg
+    CAM_PLITEMAP_LO = 0x02,
+    CAM_PLITEMAP_HI = 0x03,
+    CAM_PSE0_LO = 0x04,
+    CAM_PSE0_HI = 0x05,
+    CAM_PME0_LO = 0x18,
+    CAM_PME0_HI = 0x19,
 
     // TILE CODES (x4 in the cambuffer after upsizing)
     TID_FLOOR_TILED = 4 * 0,
@@ -114,7 +115,12 @@ enum {
     Y_AXIS = 1,
 
     SENTINEL8 = 0x80,
-    SENTINEL16 = 0x8000
+    SENTINEL16 = 0x8000,
+
+    REDRAW_BG = 0b1,
+    REDRAW_STATICS = 0b10,
+    REDRAW_MOVABLES = 0b100,
+    REDRAW_PLAYER = 0b1000,
 };
 
 typedef struct {
