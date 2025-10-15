@@ -141,7 +141,7 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
             *p1 = p0;
             return; // not sure if i want this here
         }
-        if (collisions[i] >= SE_TABLE && collisions[i] < PLAYER) {
+        if (collisions[i] >= SE_DEFS && collisions[i] < PLAYER) {
             uint8_t se_type = beebram[collisions[i] + SE_TYPE4_NQUADS4] >> 4;
 
             if (se_type == SETYPE_DOORLOCKED) {
@@ -150,6 +150,28 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
             }
             if (se_type == SETYPE_PICKUP) {
                 fprintf(stderr, "\nPICKUP");
+
+                // copy the pickup into player inventory
+                beebram[PLAYER + PLR_PINVA_LO] = collisions[i] & 0xFF;
+                beebram[PLAYER + PLR_PINVA_HI] = collisions[i] >> 8;
+
+                // remove the static from the room
+                beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = SENTINEL8;
+                // for (uint8_t i = CAM_PSE0_LO; i < (CAM_PSE0_LO + 20); i += 2) {
+                //     uint16_t pse = beebram[CAMERA + i] | (beebram[CAMERA + i + 1] << 8);
+                //     if (beebram[pse] == collisions[i]) {
+                //         fprintf(stderr, "PING");
+                //     }
+                // }
+
+                // reload the level data
+                loadRoom(beebram[CAMERA + CAM_ROOMID]);
+
+                // re-render the background
+                renderCambuffer();
+
+                // re-render the statics
+                renderStatics();
             }
         }
     }
