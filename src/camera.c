@@ -15,7 +15,7 @@ void loadRoom(uint8_t roomID) {
 
     // inflate the compressed tilemap into the cambuffer
     inflateMap(roomID);
-    beebram[CAMERA + CAM_REDRAW] |= REDRAW_BG;
+    beebram[CAMERA + CAM_REDRAW] |= REDRAW_BGFULL;
 
     // load the statics for the room into the camera
     loadStatics(roomID);

@@ -178,9 +178,9 @@ void update() {
 void render() {
     // REDRAW FIELD: .... | player | movables | statics | bg
 
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_BG) != 0) {
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_BGFULL) != 0) {
         renderBackground();
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BG;
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BGFULL;
     }
 
     // redrawing movables before statics means that if a sprite

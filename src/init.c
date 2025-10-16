@@ -458,7 +458,7 @@ void initStaticEnts() {
     se_ptr += 2;
     se_def += 14;
 
-    // map00: ball pickup
+    // map00: key pickup
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){

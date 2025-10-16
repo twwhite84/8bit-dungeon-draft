@@ -149,23 +149,23 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
             if (se_type == SETYPE_PICKUP) {
                 fprintf(stderr, "\nPICKUP");
 
-                // copy the pickup into player inventory
+                // player inventory update
                 beebram[PLAYER + PLR_PINVA_LO] = collisions[i] & 0xFF;
                 beebram[PLAYER + PLR_PINVA_HI] = collisions[i] >> 8;
 
-                // set static roomID to not be in any room
+                // background redrawn over the item's tile/quad
+                uint8_t sei = beebram[collisions[i] + CE_I];
+                uint8_t sej = beebram[collisions[i] + CE_J];
+                renderCambufferTile(sei, sej);
+                renderCambufferTile(sei, sej + 1);
+                renderCambufferTile(sei + 1, sej);
+                renderCambufferTile(sei + 1, sej + 1);
+
+                // the item's roomID being changed to a not-in-any-room value
                 beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = SENTINEL8;
 
-                // refresh the statics for the room
+                // the roombuffer being refreshed with a call to loadStatics()
                 loadStatics(beebram[CAMERA + CAM_ROOMID]);
-
-                // re-render the background
-                beebram[CAMERA + CAM_REDRAW] |= REDRAW_BG;
-                // renderBackground();
-
-                // re-render the statics
-                beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
-                // renderStatics();
             }
         }
     }
