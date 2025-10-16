@@ -5,7 +5,7 @@ C draft base for an 8-bit overhead Zelda-inspired game. I'm designing this to be
 ![Screenshot](notes/screenshot.png)
 
 
-## DEVDIARY NOTES & STUFF
+## DEVDIARY NOTES
 
 ### 16/10/2025
 ### Collision Handling: Static Items
