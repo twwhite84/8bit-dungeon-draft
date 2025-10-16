@@ -153,6 +153,8 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
                 beebram[PLAYER + PLR_PINVA_LO] = collisions[i] & 0xFF;
                 beebram[PLAYER + PLR_PINVA_HI] = collisions[i] >> 8;
 
+                // put the
+
                 // background redrawn over the item's tile/quad
                 uint8_t sei = beebram[collisions[i] + CE_I];
                 uint8_t sej = beebram[collisions[i] + CE_J];
@@ -162,10 +164,10 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
                 renderCambufferTile(sei + 1, sej + 1);
 
                 // the item's roomID being changed to a not-in-any-room value
-                beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = SENTINEL8;
+                beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = (0xFF << 2);
 
                 // the roombuffer being refreshed with a call to loadStatics()
-                loadStatics(beebram[CAMERA + CAM_ROOMID]);
+                // loadStatics(beebram[CAMERA + CAM_ROOMID]);
             }
         }
     }
@@ -237,6 +239,10 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
         uint16_t pse = beebram[pse_base + static_index] | (beebram[pse_base + static_index + 1] << 8);
         if (pse == 0xFFFF)
             break;
+
+        // i add this check because when an item is picked up, its room code will be set to not-in-room
+        if ((beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] >> 2) != beebram[CAMERA + CAM_ROOMID])
+            continue;
 
         uint8_t static_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
         uint8_t nquads = beebram[pse + SE_TYPE4_NQUADS4] & 0x0F;

@@ -131,6 +131,8 @@ void animateStatics() {
         pstart += 2;
         if (pstatic == 0xFFFF)
             break;
+        if ((beebram[pstatic + CE_ROOMID6_CLEAN1_REDRAW1] >> 2) != beebram[CAMERA + CAM_ROOMID])
+            continue;
         animateEntity(pstatic);
     }
 }
