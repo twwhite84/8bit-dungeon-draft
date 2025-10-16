@@ -18,7 +18,7 @@ enum {
     CAMERA = 0x3460,
     CAMBUFFER = 0x3480,
     PURGEBUFFER = 0x3890,
-    OFFBUFFER = 0x3892,
+    OFFBUFFER = 0x3894,
     TMAP_TABLE = 0x38F0,
     TMAP_DEFS = 0x3950,
     LITEMAPS = 0x4E00,
@@ -122,6 +122,7 @@ enum {
     REDRAW_STATICS = 0b10,
     REDRAW_MOVABLES = 0b100,
     REDRAW_PLAYER = 0b1000,
+    REDRAW_BGPURGE = 0b10000,
 };
 
 typedef struct {

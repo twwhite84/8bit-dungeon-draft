@@ -170,6 +170,15 @@ void update() {
         animateEntity(PLAYER);
     }
 
+    // process the purge buffer
+    if (beebram[PURGEBUFFER] != 0xFF) {
+        uint16_t pentity = beebram[PURGEBUFFER + 0] | (beebram[PURGEBUFFER + 1] << 8);
+        // the item's roomID being changed to a not-in-any-room value
+        beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] = (uint8_t)(0xFF << 2);
+
+        beebram[CAMERA + CAM_REDRAW] |= REDRAW_BGPURGE;
+    }
+
     animateStatics();
 }
 
@@ -181,6 +190,11 @@ void render() {
     if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_BGFULL) != 0) {
         renderBackground();
         beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BGFULL;
+    }
+
+    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_BGPURGE) != 0) {
+        renderPurge();
+        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BGPURGE;
     }
 
     // redrawing movables before statics means that if a sprite

@@ -183,6 +183,7 @@ static const uint16_t aDogWalkR = AD_TABLE + 2 * 4;
 
 void init_ram() {
     memset(beebram, 0, sizeof(beebram));
+    memset(&beebram[PURGEBUFFER], 0xFF, 4);
     initLUT();
     initTextures();
     initQuads();

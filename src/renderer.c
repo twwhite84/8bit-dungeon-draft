@@ -3,6 +3,7 @@
 #include "sprite.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 void renderCambufferTile(uint8_t i, uint8_t j);
 
@@ -241,4 +242,18 @@ void renderCambufferTile(uint8_t i, uint8_t j) {
     for (uint8_t s = 0; s < 8; s++) {
         beebram[screenpos + s] = beebram[tileptr + s];
     }
+}
+
+void renderPurge() {
+    // background redrawn over the item's tile/quad
+    uint16_t pentity = beebram[PURGEBUFFER] | (beebram[PURGEBUFFER + 1] << 8);
+    uint8_t sei = beebram[pentity + CE_I];
+    uint8_t sej = beebram[pentity + CE_J];
+    renderCambufferTile(sei, sej);
+    renderCambufferTile(sei, sej + 1);
+    renderCambufferTile(sei + 1, sej);
+    renderCambufferTile(sei + 1, sej + 1);
+
+    // clear the purge buffer
+    memset(&beebram[PURGEBUFFER], 0xFF, 4);
 }
