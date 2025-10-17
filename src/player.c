@@ -12,6 +12,7 @@ void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions);
 uint8_t checkBorderCollision(uint16_t x1, uint16_t y1);
 void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8_t *insertion_index);
 void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions);
+void handlePickup(uint16_t pentity);
 
 /*----------------------------------------------------------------------------*/
 
@@ -148,23 +149,39 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
             }
             if (se_type == SEC_TYPE_PICKUP) {
                 fprintf(stderr, "\nPICKUP");
-
-                // change the item's room code to null
-                beebram[collisions[i] + CEF_ROOMID6_REDRAW2] = 0b11111100;
-
-                // copy item to the player inventory
-                beebram[PLAYER + PLRF_PINVA_LO] = collisions[i] & 0xFF;
-                beebram[PLAYER + PLRF_PINVA_HI] = collisions[i] >> 8;
-
-                // copy item to erase slot (allows multiquad statics to be cleared)
-                beebram[CAMERA + CAMF_PERASE_LO] = collisions[i] & 0xFF;
-                beebram[CAMERA + CAMF_PERASE_HI] = collisions[i] >> 8;
-
-                // reload statics but don't mark all for redraw, we're just dropping the item
-                loadStatics(beebram[CAMERA + CAMF_ROOMID], false);
+                handlePickup(collisions[i]);
             }
         }
     }
+}
+
+/*----------------------------------------------------------------------------*/
+
+void handlePickup(uint16_t pentity) {
+    // find a free inventory slot, or bail
+    uint16_t free_slot = PLAYER + PLRF_PINVA_LO;
+    if (beebram[free_slot] != SENTINEL8) // A in use
+        free_slot += 2;
+    if (beebram[free_slot] != SENTINEL8) // B in use
+        free_slot += 2;
+    if (beebram[free_slot] != SENTINEL8) {
+        fprintf(stderr, "\nINVENTORY FULL");
+        return;
+    }
+
+    // change the item's room code to null
+    beebram[pentity + CEF_ROOMID6_REDRAW2] = 0b11111100;
+
+    // copy item to the player inventory
+    beebram[free_slot] = pentity & 0xFF;
+    beebram[free_slot + 1] = pentity >> 8;
+
+    // copy item to erase slot (allows multiquad statics to be cleared)
+    beebram[CAMERA + CAMF_PERASE_LO] = pentity & 0xFF;
+    beebram[CAMERA + CAMF_PERASE_HI] = pentity >> 8;
+
+    // reload statics but don't mark all for redraw, we're just dropping the item
+    loadStatics(beebram[CAMERA + CAMF_ROOMID], false);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -637,6 +637,12 @@ void initPlayer() {
     beebram[PLAYER + CEF_PVIZBASE_HI] = aDogWalkU >> 8;
     beebram[PLAYER + MEF_ANIMSET] = ADC_SET_WALKR;
     beebram[PLAYER + MEF_XMD4_YMD4] = 0;
+    beebram[PLAYER + PLRF_PINVA_LO] = SENTINEL8;
+    beebram[PLAYER + PLRF_PINVA_HI] = SENTINEL8;
+    beebram[PLAYER + PLRF_PINVB_LO] = SENTINEL8;
+    beebram[PLAYER + PLRF_PINVB_HI] = SENTINEL8;
+    beebram[PLAYER + PLRF_PINVC_LO] = SENTINEL8;
+    beebram[PLAYER + PLRF_PINVC_HI] = SENTINEL8;
 
     updateSpriteContainer(PLAYER);
 }
