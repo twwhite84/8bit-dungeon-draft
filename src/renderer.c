@@ -81,7 +81,7 @@ compdef:
 // renders to framebuffer all statics held in camera that are marked for redraw
 void renderStatics() {
 
-    uint16_t pstart = CAMERA + CAM_PSE0_LO;
+    uint16_t pstart = CAMERA + CAMF_PSE0_LO;
     for (int i = 0; i < 10; i++) {
 
         // get the entity or quit loop early if sentinel
@@ -97,7 +97,7 @@ void renderStatics() {
         else
             beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] &= 0b11111110;
 
-        uint8_t nquads = beebram[pentity + SE_TYPE4_NQUADS4] & 0x0F;
+        uint8_t nquads = beebram[pentity + SEF_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < nquads; q++) {
             uint8_t qi = beebram[(pentity + CE_I) + (4 * q)]; // 4q because repeating section 4 fields long
             uint8_t qj = beebram[(pentity + CE_J) + (4 * q)];
@@ -116,8 +116,8 @@ void renderStatics() {
             uint8_t current = beebram[pentity + CE_FELAPSED5_FCURRENT3] & 0b00000111;
 
             // get the current frame for rendering to offbuffer
-            pvizdef = beebram[(animdef + AD_PFRAME_LO) + (2 * current)];
-            pvizdef |= (beebram[(animdef + AD_PFRAME_HI) + (2 * current)] << 8);
+            pvizdef = beebram[(animdef + ADF_PFRAME_LO) + (2 * current)];
+            pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
 
         render:
             bufferBG(qi, qj, 2);
@@ -147,7 +147,7 @@ void renderMovable(uint16_t pmovable) {
 
 // renders to framebuffer all movables held in camera that are marked for redraw
 void renderMovables() {
-    uint16_t pstart = CAMERA + CAM_PME0_LO;
+    uint16_t pstart = CAMERA + CAMF_PME0_LO;
     for (uint8_t i = 0; i < 4; i++) {
         uint16_t pmovable = beebram[pstart] | (beebram[pstart + 1] << 8);
         if (pmovable == SENTINEL16)
@@ -184,7 +184,7 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
             offbase += 8;
             penstart += 8;
         }
-        penstart += CAMERA_WIDTH - (dim << 3);
+        penstart += CAMC_WIDTH - (dim << 3);
     }
 }
 
@@ -194,11 +194,11 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
 // this mainly seems to affect the vertical rather than horizontal axis
 void renderCleanup(uint16_t pentity) {
 
-    uint8_t xdir = (beebram[pentity + ME_XMD4_YMD4] >> 4) & 0b11;
-    uint8_t ydir = (beebram[pentity + ME_XMD4_YMD4] & 0x0F) & 0b11;
+    uint8_t xdir = (beebram[pentity + MEF_XMD4_YMD4] >> 4) & 0b11;
+    uint8_t ydir = (beebram[pentity + MEF_XMD4_YMD4] & 0x0F) & 0b11;
 
-    uint8_t old_i = beebram[pentity + ME_OLDI];
-    uint8_t old_j = beebram[pentity + ME_OLDJ];
+    uint8_t old_i = beebram[pentity + MEF_OLDI];
+    uint8_t old_j = beebram[pentity + MEF_OLDJ];
 
     // moving up, clear below
     if (ydir == DIR_UP) {
@@ -237,7 +237,7 @@ void renderCleanup(uint16_t pentity) {
 void renderCambufferTile(uint8_t i, uint8_t j) {
     uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
     uint16_t tileptr = getTileTextureAddr(tid);
-    uint16_t screenpos = SCREEN + (CAMERA_WIDTH * i) + (8 * j);
+    uint16_t screenpos = SCREEN + (CAMC_WIDTH * i) + (8 * j);
 
     for (uint8_t s = 0; s < 8; s++) {
         beebram[screenpos + s] = beebram[tileptr + s];
@@ -246,7 +246,7 @@ void renderCambufferTile(uint8_t i, uint8_t j) {
 
 void renderEraseSlot() {
     // background redrawn over the item's tile/quad
-    uint16_t pentity = beebram[CAMERA + CAM_PERASE_LO] | (beebram[CAMERA + CAM_PERASE_HI] << 8);
+    uint16_t pentity = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
     uint8_t sei = beebram[pentity + CE_I];
     uint8_t sej = beebram[pentity + CE_J];
     renderCambufferTile(sei, sej);
@@ -255,6 +255,6 @@ void renderEraseSlot() {
     renderCambufferTile(sei + 1, sej + 1);
 
     // clear the erase slot
-    beebram[CAMERA + CAM_PERASE_LO] = SENTINEL8;
-    beebram[CAMERA + CAM_PERASE_HI] = SENTINEL8;
+    beebram[CAMERA + CAMF_PERASE_LO] = SENTINEL8;
+    beebram[CAMERA + CAMF_PERASE_HI] = SENTINEL8;
 }

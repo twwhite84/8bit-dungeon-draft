@@ -10,28 +10,28 @@ void loadRoom(uint8_t roomID) {
     // clear the camera
     memset(&beebram[CAMERA], SENTINEL8, (size_t)(CAMBUFFER - CAMERA));
 
-    beebram[CAMERA + CAM_ROOMID] = roomID;
+    beebram[CAMERA + CAMF_ROOMID] = roomID;
 
     // inflate the compressed tilemap into the cambuffer
     inflateMap(roomID);
-    beebram[CAMERA + CAM_REDRAW] |= REDRAW_BACKGROUND;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_BACKGROUND;
 
     // load the statics for the room into the camera
     loadStatics(roomID, true);
-    beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void loadStatics(uint8_t roomID, bool redraw_all) {
-    memset(&beebram[CAMERA + CAM_PSE0_LO], SENTINEL8, (size_t)(CAMCON_SEMAX << 1));
+    memset(&beebram[CAMERA + CAMF_PSE0_LO], SENTINEL8, (size_t)(CAMC_SEMAX << 1));
 
     // find subset of statics for this room and copy their pointers into the camera
     uint16_t ptable = SE_TABLE;
-    uint16_t pcam = (CAMERA + CAM_PSE0_LO);
+    uint16_t pcam = (CAMERA + CAMF_PSE0_LO);
 
     // walk all statics and copy those with matching roomID
-    for (uint8_t i = 0; i < SECON_SEMAX; i++) {
+    for (uint8_t i = 0; i < SEC_SEMAX; i++) {
         uint16_t pse = beebram[ptable] | (beebram[ptable + 1] << 8);
 
         if (pse == SENTINEL16)

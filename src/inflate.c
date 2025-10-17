@@ -141,7 +141,7 @@ static void inflate(uint16_t src, uint16_t dest) {
     }
 
     // hack fix for when last value doesn't get filled in, seems to work
-    while (outidx < (STORED_ROWS * STORED_COLUMNS) && mode == TILEMAP_RLE) {
+    while (outidx < (_CAMC_STORED_ROWS * _CAMC_STORED_COLUMNS) && mode == TILEMAP_RLE) {
         upsize(outidx++, a, dest);
     }
 }
@@ -149,12 +149,12 @@ static void inflate(uint16_t src, uint16_t dest) {
 /*----------------------------------------------------------------------------*/
 
 static void upsize(uint16_t inidx, uint8_t inval, uint16_t base_addr) {
-    FloorResults fr = floordiv(inidx, STORED_COLUMNS);
+    FloorResults fr = floordiv(inidx, _CAMC_STORED_COLUMNS);
     uint8_t inrow = fr.q, incol = fr.r;
 
-    uint16_t outidx_a = (inrow * (4 * STORED_COLUMNS)) + (2 * incol);
+    uint16_t outidx_a = (inrow * (4 * _CAMC_STORED_COLUMNS)) + (2 * incol);
     uint16_t outidx_b = outidx_a + 1;
-    uint16_t outidx_c = outidx_a + 2 * STORED_COLUMNS;
+    uint16_t outidx_c = outidx_a + 2 * _CAMC_STORED_COLUMNS;
     uint16_t outidx_d = outidx_c + 1;
 
     // data to write: output[output_idx_n]=4*inval+n

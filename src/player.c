@@ -17,13 +17,13 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions);
 
 // returns which border has been touched, or beebnull if border not touched
 uint8_t checkBorderCollision(uint16_t x1, uint16_t y1) {
-    uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
+    uint8_t current_room = beebram[CAMERA + CAMF_ROOMID];
     // crossing at screen top
     if (y1 == 0) {
         return DIR_UP;
     }
     // crossing at screen bottom
-    if (y1 == (CAMERA_HEIGHT - 16 - 1)) {
+    if (y1 == (CAMC_HEIGHT - 16 - 1)) {
         return DIR_DOWN;
     }
     // crossing at screen left
@@ -31,7 +31,7 @@ uint8_t checkBorderCollision(uint16_t x1, uint16_t y1) {
         return DIR_LEFT;
     }
     // crossing at screen right
-    if (x1 == (CAMERA_WIDTH - 16)) {
+    if (x1 == (CAMC_WIDTH - 16)) {
         return DIR_RIGHT;
     }
     return SENTINEL8;
@@ -42,14 +42,14 @@ uint8_t checkBorderCollision(uint16_t x1, uint16_t y1) {
 void movePlayer() {
 
     // get current bearing
-    uint8_t xmag = (beebram[PLAYER + ME_XMD4_YMD4] >> 4) >> 2;
-    uint8_t xdir = (beebram[PLAYER + ME_XMD4_YMD4] >> 4) & 0b11;
-    uint8_t ymag = (beebram[PLAYER + ME_XMD4_YMD4] & 0x0F) >> 2;
-    uint8_t ydir = (beebram[PLAYER + ME_XMD4_YMD4] & 0x0F) & 0b11;
+    uint8_t xmag = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) >> 2;
+    uint8_t xdir = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) & 0b11;
+    uint8_t ymag = (beebram[PLAYER + MEF_XMD4_YMD4] & 0x0F) >> 2;
+    uint8_t ydir = (beebram[PLAYER + MEF_XMD4_YMD4] & 0x0F) & 0b11;
 
     // get the current coordinates
-    uint16_t x0 = beebram[PLAYER + ME_X_LO] | (beebram[PLAYER + ME_X_HI] << 8);
-    uint16_t y0 = beebram[PLAYER + ME_Y_LO] | (beebram[PLAYER + ME_Y_HI] << 8);
+    uint16_t x0 = beebram[PLAYER + MEF_X_LO] | (beebram[PLAYER + MEF_X_HI] << 8);
+    uint16_t y0 = beebram[PLAYER + MEF_Y_LO] | (beebram[PLAYER + MEF_Y_HI] << 8);
 
     // get target coordinates
     uint16_t x1 = x0;
@@ -58,20 +58,20 @@ void movePlayer() {
         x1 += (xdir == DIR_LEFT) ? -xmag : xmag;
         if (x1 >= 0x8000) // too far left
             x1 = 0;
-        if (x1 > (CAMERA_WIDTH - 16))
-            x1 = (CAMERA_WIDTH - 16);
+        if (x1 > (CAMC_WIDTH - 16))
+            x1 = (CAMC_WIDTH - 16);
     }
 
     if (ymag > 0) {
         y1 += (ydir == DIR_UP) ? -ymag : ymag;
         if (y1 >= 0x8000)
             y1 = 0;
-        if (y1 > (CAMERA_HEIGHT - 16 - 1)) // -1 to prevent sprite container
-            y1 = (CAMERA_HEIGHT - 16 - 1); //  updating beyond screen bottom
+        if (y1 > (CAMC_HEIGHT - 16 - 1)) // -1 to prevent sprite container
+            y1 = (CAMC_HEIGHT - 16 - 1); //  updating beyond screen bottom
     }
 
     // check target for border crossings
-    uint8_t current_room = beebram[CAMERA + CAM_ROOMID];
+    uint8_t current_room = beebram[CAMERA + CAMF_ROOMID];
     uint8_t border_collision = checkBorderCollision(x1, y1);
     uint8_t exit_room =
         (border_collision != SENTINEL8) ? beebram[ROOMS + (current_room * 4) + border_collision] : SENTINEL8;
@@ -79,7 +79,7 @@ void movePlayer() {
     if (exit_room != SENTINEL8) {
         uint8_t margin = 2;
         if (border_collision == DIR_UP) {
-            y1 = (CAMERA_HEIGHT - 16 - margin);
+            y1 = (CAMC_HEIGHT - 16 - margin);
         }
         if (border_collision == DIR_DOWN) {
             y1 = margin;
@@ -88,7 +88,7 @@ void movePlayer() {
             x1 = margin;
         }
         if (border_collision == DIR_RIGHT) {
-            x1 = (CAMERA_WIDTH - 16 - margin);
+            x1 = (CAMC_WIDTH - 16 - margin);
         }
 
         loadRoom(exit_room);
@@ -114,16 +114,16 @@ void movePlayer() {
 
 save:
     // save the updated coordinates
-    beebram[PLAYER + ME_X_LO] = x1 & 0xFF;
-    beebram[PLAYER + ME_X_HI] = x1 >> 8;
-    beebram[PLAYER + ME_Y_LO] = y1 & 0xFF;
-    beebram[PLAYER + ME_Y_HI] = y1 >> 8;
+    beebram[PLAYER + MEF_X_LO] = x1 & 0xFF;
+    beebram[PLAYER + MEF_X_HI] = x1 >> 8;
+    beebram[PLAYER + MEF_Y_LO] = y1 & 0xFF;
+    beebram[PLAYER + MEF_Y_HI] = y1 >> 8;
 
     // update the sprite container with its new coordinates
     updateSpriteContainer(PLAYER);
 
     // raise the redraw flag to let renderer know movement has taken place
-    beebram[CAMERA + CAM_REDRAW] |= REDRAW_PLAYER;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_PLAYER;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -140,28 +140,28 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
             return; // not sure if i want this here
         }
         if (collisions[i] >= SE_DEFS && collisions[i] < PLAYER) {
-            uint8_t se_type = beebram[collisions[i] + SE_TYPE4_NQUADS4] >> 4;
+            uint8_t se_type = beebram[collisions[i] + SEF_TYPE4_NQUADS4] >> 4;
 
-            if (se_type == SETYPE_DOORLOCKED) {
+            if (se_type == SEC_TYPE_DOORLOCKED) {
                 fprintf(stderr, "\nLOCKED DOOR");
                 *p1 = p0;
             }
-            if (se_type == SETYPE_PICKUP) {
+            if (se_type == SEC_TYPE_PICKUP) {
                 fprintf(stderr, "\nPICKUP");
 
                 // change the item's room code to null
                 beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = 0b11111100;
 
                 // copy item to the player inventory
-                beebram[PLAYER + PLR_PINVA_LO] = collisions[i] & 0xFF;
-                beebram[PLAYER + PLR_PINVA_HI] = collisions[i] >> 8;
+                beebram[PLAYER + PLRF_PINVA_LO] = collisions[i] & 0xFF;
+                beebram[PLAYER + PLRF_PINVA_HI] = collisions[i] >> 8;
 
                 // copy item to erase slot (allows multiquad statics to be cleared)
-                beebram[CAMERA + CAM_PERASE_LO] = collisions[i] & 0xFF;
-                beebram[CAMERA + CAM_PERASE_HI] = collisions[i] >> 8;
+                beebram[CAMERA + CAMF_PERASE_LO] = collisions[i] & 0xFF;
+                beebram[CAMERA + CAMF_PERASE_HI] = collisions[i] >> 8;
 
                 // reload statics but don't mark all for redraw, we're just dropping the item
-                loadStatics(beebram[CAMERA + CAM_ROOMID], false);
+                loadStatics(beebram[CAMERA + CAMF_ROOMID], false);
             }
         }
     }
@@ -226,7 +226,7 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
 
     uint8_t i1 = y1 >> 3;
     uint8_t j1 = x1 >> 3;
-    uint16_t pse_base = CAMERA + CAM_PSE0_LO;
+    uint16_t pse_base = CAMERA + CAMF_PSE0_LO;
 
     for (uint8_t static_index = 0; static_index < 20; static_index += 2) {
 
@@ -234,8 +234,8 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
         if (pse == SENTINEL16)
             break;
 
-        uint8_t static_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
-        uint8_t nquads = beebram[pse + SE_TYPE4_NQUADS4] & 0x0F;
+        uint8_t static_type = beebram[pse + SEF_TYPE4_NQUADS4] >> 4;
+        uint8_t nquads = beebram[pse + SEF_TYPE4_NQUADS4] & 0x0F;
 
         for (uint8_t q = 0; q < nquads; q++) {
 
@@ -266,7 +266,7 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
 
             if (redraw_intercepts == 2) {
                 beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
-                beebram[CAMERA + CAM_REDRAW] |= REDRAW_STATICS;
+                beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
             }
             if (collision_intercepts != 2)
                 continue; // no: skip to the next static quad, if any exists

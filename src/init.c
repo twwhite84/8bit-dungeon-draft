@@ -191,8 +191,8 @@ void init_ram() {
     initPlayer();
     initTilemaps();
     initRooms();
-    beebram[CAMERA + CAM_PERASE_LO] = SENTINEL8;
-    beebram[CAMERA + CAM_PERASE_HI] = SENTINEL8;
+    beebram[CAMERA + CAMF_PERASE_LO] = SENTINEL8;
+    beebram[CAMERA + CAMF_PERASE_HI] = SENTINEL8;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -449,7 +449,7 @@ void initStaticEnts() {
            (uint8_t[]){
                (0 << 2) | 0,                        // ROOMID (6) | REDRAW (2)
                (0 << 3) | 0,                        // FELAPSED (5) | FCURRENT (3)
-               (SETYPE_DOORLOCKED << 4) | 2,        // TYPE (4) | NQUADS (4)
+               (SEC_TYPE_DOORLOCKED << 4) | 2,      // TYPE (4) | NQUADS (4)
                0, 0, 0,                             // DATA (24)
                4, 26,                               // I (8), J (8)
                qDoor & 0xFF, qDoor >> 8,            // PVIZDEF (16)
@@ -464,12 +464,12 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 2) | 0,             // ROOMID (6) | REDRAW (2)
-               (0 << 3) | 0,             // FELAPSED (5) | FCURRENT (3)
-               (SETYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
-               0, 0, 0,                  // DATA (24)
-               10, 8,                    // I (8), J (8)
-               qKey & 0xFF, qKey >> 8    // PVIZDEF (16)
+               (0 << 2) | 0,               // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,               // FELAPSED (5) | FCURRENT (3)
+               (SEC_TYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
+               0, 0, 0,                    // DATA (24)
+               10, 8,                      // I (8), J (8)
+               qKey & 0xFF, qKey >> 8      // PVIZDEF (16)
            },
            (size_t)10);
     se_ptr += 2;
@@ -479,9 +479,9 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 2) | 0,                 // ROOMID (6) | REDRAW (2)
-               (0 << 3) | 0,                 // FELAPSED (5) | FCURRENT (3)
-               (SETYPE_DOORLOCKED << 4) | 3, // TYPE (4) | NQUADS (4)
+               (0 << 2) | 0,                   // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,                   // FELAPSED (5) | FCURRENT (3)
+               (SEC_TYPE_DOORLOCKED << 4) | 3, // TYPE (4) | NQUADS (4)
                0,
                0,
                0, // DATA (24)
@@ -506,9 +506,9 @@ void initStaticEnts() {
     memcpy(&beebram[se_ptr], (uint8_t[]){se_def & 0xFF, se_def >> 8}, 2);
     memcpy(&beebram[se_def],
            (uint8_t[]){
-               (0 << 2) | 0,             // ROOMID (6) | REDRAW (2)
-               (0 << 3) | 0,             // FELAPSED (5) | FCURRENT (3)
-               (SETYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
+               (0 << 2) | 0,               // ROOMID (6) | REDRAW (2)
+               (0 << 3) | 0,               // FELAPSED (5) | FCURRENT (3)
+               (SEC_TYPE_PICKUP << 4) | 1, // TYPE (4) | NQUADS (4)
                0,
                0,
                0, // DATA (24)
@@ -629,14 +629,14 @@ void initPlayer() {
 
     beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= (0 << 2); // room 0
     beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
-    beebram[PLAYER + ME_X_LO] = 8;
-    beebram[PLAYER + ME_X_HI] = 0;
-    beebram[PLAYER + ME_Y_LO] = 8;
-    beebram[PLAYER + ME_Y_HI] = 0;
+    beebram[PLAYER + MEF_X_LO] = 8;
+    beebram[PLAYER + MEF_X_HI] = 0;
+    beebram[PLAYER + MEF_Y_LO] = 8;
+    beebram[PLAYER + MEF_Y_HI] = 0;
     beebram[PLAYER + CE_PVIZBASE_LO] = aDogWalkU & 0xFF; // dog set starts at adogwalku
     beebram[PLAYER + CE_PVIZBASE_HI] = aDogWalkU >> 8;
-    beebram[PLAYER + ME_ANIMSET] = ANIMSET_WALKR;
-    beebram[PLAYER + ME_XMD4_YMD4] = 0;
+    beebram[PLAYER + MEF_ANIMSET] = ADC_SET_WALKR;
+    beebram[PLAYER + MEF_XMD4_YMD4] = 0;
 
     updateSpriteContainer(PLAYER);
 }

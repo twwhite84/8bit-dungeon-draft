@@ -68,7 +68,7 @@ void init() {
     loadRoom(roomID);
 
     inputFlags.player_moveRequested = false;
-    beebram[CAMERA + CAM_REDRAW] |= REDRAW_PLAYER;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_PLAYER;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -141,26 +141,26 @@ void update() {
     }
 
     if (inputFlags.player_moveRequested) {
-        beebram[PLAYER + ME_XMD4_YMD4] = 0;
+        beebram[PLAYER + MEF_XMD4_YMD4] = 0;
         uint8_t speed = (inputFlags.player_moveRun) ? 2 : 1;
 
         if (inputFlags.player_moveUp) {
-            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 2) | DIR_UP);
+            beebram[PLAYER + MEF_XMD4_YMD4] |= ((speed << 2) | DIR_UP);
             inputFlags.player_moveUp = false;
         }
 
         if (inputFlags.player_moveDown) {
-            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 2) | DIR_DOWN);
+            beebram[PLAYER + MEF_XMD4_YMD4] |= ((speed << 2) | DIR_DOWN);
             inputFlags.player_moveDown = false;
         }
 
         if (inputFlags.player_moveLeft) {
-            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 6) | DIR_LEFT << 4);
+            beebram[PLAYER + MEF_XMD4_YMD4] |= ((speed << 6) | DIR_LEFT << 4);
             inputFlags.player_moveLeft = false;
         }
 
         if (inputFlags.player_moveRight) {
-            beebram[PLAYER + ME_XMD4_YMD4] |= ((speed << 6) | DIR_RIGHT << 4);
+            beebram[PLAYER + MEF_XMD4_YMD4] |= ((speed << 6) | DIR_RIGHT << 4);
             inputFlags.player_moveRight = false;
         }
 
@@ -179,32 +179,32 @@ void render() {
     // REDRAW FIELD: .... | player | movables | statics | bg
 
     // process erase slot
-    if (beebram[CAMERA + CAM_PERASE_LO] != SENTINEL8) {
+    if (beebram[CAMERA + CAMF_PERASE_LO] != SENTINEL8) {
         renderEraseSlot();
     }
 
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_BACKGROUND) != 0) {
+    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_BACKGROUND) != 0) {
         renderBackground();
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_BACKGROUND;
+        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_BACKGROUND;
     }
 
     // redrawing movables before statics means that if a sprite
     // container erases part of a static on overlap, the static
     // will then be redrawn again over the overlap. this is due
     // to checkStaticCollisions() raising static redraw flags
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_PLAYER) != 0) {
+    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_PLAYER) != 0) {
         renderMovable(PLAYER);
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_PLAYER;
+        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_PLAYER;
     }
 
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_MOVABLES) != 0) {
+    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_MOVABLES) != 0) {
         renderMovables();
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_MOVABLES;
+        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_MOVABLES;
     }
 
-    if ((beebram[CAMERA + CAM_REDRAW] & REDRAW_STATICS) != 0) {
+    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_STATICS) != 0) {
         renderStatics();
-        beebram[CAMERA + CAM_REDRAW] &= ~REDRAW_STATICS;
+        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_STATICS;
     }
 
     mySDLRender();

@@ -5,14 +5,14 @@
 #include <stdio.h>
 
 void updateSpriteContainer(uint16_t movable) {
-    uint16_t x = beebram[movable + ME_X_LO] | (beebram[movable + ME_X_HI] << 8);
-    uint16_t y = beebram[movable + ME_Y_LO] | (beebram[movable + ME_Y_HI] << 8);
+    uint16_t x = beebram[movable + MEF_X_LO] | (beebram[movable + MEF_X_HI] << 8);
+    uint16_t y = beebram[movable + MEF_Y_LO] | (beebram[movable + MEF_Y_HI] << 8);
 
     // shifts will always be updated on any move
     uint8_t hshift = x & 0b111;
     uint8_t vshift = y & 0b111;
-    beebram[movable + ME_HSHIFT4_VSHIFT4] = (beebram[movable + ME_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
-    beebram[movable + ME_HSHIFT4_VSHIFT4] = (beebram[movable + ME_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
+    beebram[movable + MEF_HSHIFT4_VSHIFT4] = (beebram[movable + MEF_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
+    beebram[movable + MEF_HSHIFT4_VSHIFT4] = (beebram[movable + MEF_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
     uint8_t current_i = beebram[movable + CE_I];
     uint8_t current_j = beebram[movable + CE_J];
@@ -23,8 +23,8 @@ void updateSpriteContainer(uint16_t movable) {
     if (current_i != new_i || current_j != new_j) {
 
         // save the old container position
-        beebram[movable + ME_OLDI] = current_i;
-        beebram[movable + ME_OLDJ] = current_j;
+        beebram[movable + MEF_OLDI] = current_i;
+        beebram[movable + MEF_OLDJ] = current_j;
 
         // write the new container position
         beebram[movable + CE_I] = new_i;
@@ -45,20 +45,20 @@ void bufferFGSprite(uint16_t pentity) {
 
     // if the vizdef is an animdef, dereference it to get to the quad
     if (pvizbase >= AD_TABLE && pvizbase < AD_DEFS) {
-        uint8_t animset = beebram[pentity + ME_ANIMSET];
+        uint8_t animset = beebram[pentity + MEF_ANIMSET];
         uint16_t ppanimdef = pvizbase + animset;
 
         uint16_t panimdef = beebram[ppanimdef] | (beebram[ppanimdef + 1] << 8);
 
         uint8_t frame_offset = (beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111) << 1; // *2 because 2 byte pointer
         pquad =
-            beebram[panimdef + AD_PFRAME_LO + frame_offset] | (beebram[panimdef + AD_PFRAME_HI + frame_offset] << 8);
+            beebram[panimdef + ADF_PFRAME_LO + frame_offset] | (beebram[panimdef + ADF_PFRAME_HI + frame_offset] << 8);
     }
 
     // get the shifts
-    uint8_t rshift = beebram[pentity + ME_HSHIFT4_VSHIFT4] >> 4;
+    uint8_t rshift = beebram[pentity + MEF_HSHIFT4_VSHIFT4] >> 4;
     uint8_t lshift = 8 - rshift;
-    uint8_t dshift = beebram[pentity + ME_HSHIFT4_VSHIFT4] & 0x0F;
+    uint8_t dshift = beebram[pentity + MEF_HSHIFT4_VSHIFT4] & 0x0F;
     uint8_t ushift = 8 - dshift;
 
     // position each sprite tile in the container by its shifts
