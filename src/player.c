@@ -170,7 +170,7 @@ void handlePickup(uint16_t pentity) {
     }
 
     // change the item's room code to null
-    beebram[pentity + CEF_ROOMID6_REDRAW2] = 0b11111100;
+    beebram[pentity + CEF_ROOMID6_REDRAW2] = (SENTINEL8 << 2);
 
     // copy item to the player inventory
     beebram[free_slot] = pentity & 0xFF;
@@ -182,6 +182,34 @@ void handlePickup(uint16_t pentity) {
 
     // reload statics but don't mark all for redraw, we're just dropping the item
     loadStatics(beebram[CAMERA + CAMF_ROOMID], false);
+}
+
+/*----------------------------------------------------------------------------*/
+
+void handleDrop(uint8_t drop_slot) {
+    // get the item
+    uint16_t pentity =
+        beebram[PLAYER + PLRF_PINVA_LO + (drop_slot << 1)] | (beebram[PLAYER + PLRF_PINVA_HI + (drop_slot << 1)]) << 8;
+
+    // delete item pointer from player inventory
+    beebram[PLAYER + PLRF_PINVA_LO + (drop_slot << 1)] = SENTINEL8;
+    beebram[PLAYER + PLRF_PINVA_HI + (drop_slot << 1)] = SENTINEL8;
+
+    // change the room code on the item to match the current room
+    uint8_t current_room = beebram[CAMERA + CAMF_ROOMID];
+    beebram[pentity + CEF_ROOMID6_REDRAW2] &= 0b11;
+    beebram[pentity + CEF_ROOMID6_REDRAW2] |= (current_room << 2);
+
+    // change the (I,J) on the item to the current player (I,J)
+    beebram[pentity + CEF_I] = beebram[(PLAYER + CEF_I)];
+    beebram[pentity + CEF_J] = beebram[(PLAYER + CEF_J)];
+
+    // reload the room items; the roombuffer will now contain the item
+    loadStatics(current_room, false);
+
+    // raise the redraw flag on the item and the REDRAW_STATICS flag on the camera.
+    beebram[pentity + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
 }
 
 /*----------------------------------------------------------------------------*/

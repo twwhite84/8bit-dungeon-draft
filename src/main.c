@@ -18,6 +18,9 @@ typedef struct {
     bool player_moveUp;
     bool player_moveDown;
     bool player_moveRun;
+    bool player_dropA;
+    bool player_dropB;
+    bool player_dropC;
 } InputFlags;
 
 void init();
@@ -118,6 +121,17 @@ bool input() {
         inputFlags.player_moveRight = false;
     }
 
+    // PLAYER INVENTORY
+    if (keystates[SDL_SCANCODE_A]) {
+        inputFlags.player_dropA = true;
+    }
+    if (keystates[SDL_SCANCODE_B]) {
+        inputFlags.player_dropA = true;
+    }
+    if (keystates[SDL_SCANCODE_C]) {
+        inputFlags.player_dropA = true;
+    }
+
     // MAP TEST
     if (keystates[SDL_SCANCODE_1])
         inputFlags.loadRoom_0 = true;
@@ -138,6 +152,19 @@ void update() {
     if (inputFlags.loadroom_1) {
         loadRoom(1);
         inputFlags.loadroom_1 = false;
+    }
+
+    if (inputFlags.player_dropA) {
+        handleDrop(0);
+        inputFlags.player_dropA = false;
+    }
+    if (inputFlags.player_dropB) {
+        handleDrop(1);
+        inputFlags.player_dropB = false;
+    }
+    if (inputFlags.player_dropC) {
+        handleDrop(2);
+        inputFlags.player_dropC = false;
     }
 
     if (inputFlags.player_moveRequested) {
