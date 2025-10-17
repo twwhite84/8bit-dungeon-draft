@@ -627,8 +627,8 @@ void initAnimdefs() {
 void initPlayer() {
     memset(&beebram[PLAYER], 0, (size_t)32);
 
-    beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= (0 << 2); // room 0
-    beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] |= true;
+    beebram[PLAYER + CEF_ROOMID6_REDRAW2] = 0; // room 0
+    beebram[PLAYER + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
     beebram[PLAYER + MEF_X_LO] = 8;
     beebram[PLAYER + MEF_X_HI] = 0;
     beebram[PLAYER + MEF_Y_LO] = 8;

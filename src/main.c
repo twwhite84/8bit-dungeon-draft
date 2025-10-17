@@ -64,7 +64,7 @@ void init() {
     mySDLInitRenderer();
     init_ram();
 
-    uint8_t roomID = beebram[PLAYER + CE_ROOMID6_CLEAN1_REDRAW1] >> 2;
+    uint8_t roomID = beebram[PLAYER + CEF_ROOMID6_REDRAW2] >> 2;
     loadRoom(roomID);
 
     inputFlags.player_moveRequested = false;

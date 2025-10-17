@@ -108,7 +108,7 @@ void animateEntity(uint16_t pentity) {
         beebram[pentity + CEF_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
         // raise redraw flags on the entity and the camera for its kind
-        beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+        beebram[pentity + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
 
         // this check is possibily redundant as movePlayer already raises the flag
         // and there isn't animation without movement (at the moment)

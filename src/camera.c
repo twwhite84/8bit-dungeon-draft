@@ -39,7 +39,7 @@ void loadStatics(uint8_t roomID, bool redraw_all) {
 
         ptable += 2;
 
-        uint8_t se_roomID = (beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1]) >> 2;
+        uint8_t se_roomID = (beebram[pse + CEF_ROOMID6_REDRAW2]) >> 2;
         if (se_roomID == roomID) {
 
             // add the static entity to the camera
@@ -49,7 +49,7 @@ void loadStatics(uint8_t roomID, bool redraw_all) {
 
             // make sure this entity is marked for redraw
             if (redraw_all)
-                beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+                beebram[pse + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
         }
     }
 }

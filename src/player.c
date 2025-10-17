@@ -150,7 +150,7 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
                 fprintf(stderr, "\nPICKUP");
 
                 // change the item's room code to null
-                beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = 0b11111100;
+                beebram[collisions[i] + CEF_ROOMID6_REDRAW2] = 0b11111100;
 
                 // copy item to the player inventory
                 beebram[PLAYER + PLRF_PINVA_LO] = collisions[i] & 0xFF;
@@ -265,7 +265,7 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
             }
 
             if (redraw_intercepts == 2) {
-                beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
+                beebram[pse + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
                 beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
             }
             if (collision_intercepts != 2)
