@@ -21,7 +21,8 @@ Disconsidered options:
 - A: remove from roombuffer and re-sort. 
     con: requires new code and more ram.
 - B: leave item in the roombuffer with null room, then implement code to skip nulls.
-    con: zombie items left consuming camera slots.
+    - con: zombie items left consuming camera slots.
+    - con: need to check room ids more often to skip zombie items
 
 DROP:
 - delete item pointer from player inventory

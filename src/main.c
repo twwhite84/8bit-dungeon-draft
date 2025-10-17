@@ -179,7 +179,7 @@ void render() {
     // REDRAW FIELD: .... | player | movables | statics | bg
 
     // process erase slot
-    if (beebram[CAMERA + CAM_PERASE_LO] != 0xFF) {
+    if (beebram[CAMERA + CAM_PERASE_LO] != SENTINEL8) {
         renderEraseSlot();
     }
 

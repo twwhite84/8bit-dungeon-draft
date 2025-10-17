@@ -8,8 +8,7 @@
 void loadRoom(uint8_t roomID) {
 
     // clear the camera
-    memset(&beebram[CAMERA], 0, (size_t)(PURGEBUFFER - CAMERA));
-    memset(&beebram[CAMERA + CAM_PSE0_LO], 0xFF, (size_t)(CAMBUFFER - CAMERA - CAM_PSE0_LO));
+    memset(&beebram[CAMERA], SENTINEL8, (size_t)(CAMBUFFER - CAMERA));
 
     beebram[CAMERA + CAM_ROOMID] = roomID;
 
@@ -25,38 +24,32 @@ void loadRoom(uint8_t roomID) {
 /*----------------------------------------------------------------------------*/
 
 void loadStatics(uint8_t roomID, bool redraw_all) {
-    memset(&beebram[CAMERA + CAM_PSE0_LO], 0xFF, (size_t)((CAMERA + CAM_PERASE_LO) - CAMERA - CAM_PSE0_LO));
+    memset(&beebram[CAMERA + CAM_PSE0_LO], SENTINEL8, (size_t)(CAMCON_SEMAX << 1));
 
-    // find subset of static entities for this room and copy their pointers into the camera
-    uint8_t entities_copied = 0;
-    uint16_t se_ptr_table = SE_TABLE;
-    uint16_t se_ptr_camera = (CAMERA + CAM_PSE0_LO);
+    // find subset of statics for this room and copy their pointers into the camera
+    uint16_t ptable = SE_TABLE;
+    uint16_t pcam = (CAMERA + CAM_PSE0_LO);
 
-    // walk all static entities and copy those with matching roomID
-    while (true) {
-        uint16_t se_addr = beebram[se_ptr_table] | (beebram[se_ptr_table + 1] << 8);
+    // walk all statics and copy those with matching roomID
+    for (uint8_t i = 0; i < SECON_SEMAX; i++) {
+        uint16_t pse = beebram[ptable] | (beebram[ptable + 1] << 8);
 
-        // 0xFFFF is sentinel, means no more pointers in the table
-        if (se_addr == 0xFFFF)
+        if (pse == SENTINEL16)
             break;
 
-        se_ptr_table += 2;
+        ptable += 2;
 
-        uint8_t se_roomID = (beebram[se_addr + CE_ROOMID6_CLEAN1_REDRAW1]) >> 2;
+        uint8_t se_roomID = (beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1]) >> 2;
         if (se_roomID == roomID) {
 
             // add the static entity to the camera
-            beebram[se_ptr_camera] = se_addr & 0xFF;   // lo
-            beebram[se_ptr_camera + 1] = se_addr >> 8; // hi
-            se_ptr_camera += 2;
+            beebram[pcam] = pse & 0xFF;   // lo
+            beebram[pcam + 1] = pse >> 8; // hi
+            pcam += 2;
 
             // make sure this entity is marked for redraw
             if (redraw_all)
-                beebram[se_addr + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
-
-            entities_copied++;
-            if (entities_copied >= 10)
-                break;
+                beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;
         }
     }
 }

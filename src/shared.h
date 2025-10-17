@@ -17,8 +17,7 @@ enum {
     MOVENTS = 0x3360,
     CAMERA = 0x3460,
     CAMBUFFER = 0x3480,
-    PURGEBUFFER = 0x3890,
-    OFFBUFFER = 0x3894,
+    OFFBUFFER = 0x3890,
     TMAP_TABLE = 0x38F0,
     TMAP_DEFS = 0x3950,
     LITEMAPS = 0x4E00,
@@ -67,12 +66,13 @@ enum {
     PLR_PINVC_LO = 0x15,
     PLR_PINVC_HI = 0x16,
 
-    // STATIC ENTITY FIELDS
+    // STATIC ENTITY FIELDS & CONSTANTS
     // I, J & VIZDEF REPEAT. APPLY DYNAMIC OFFSETTING WHEN USING
     SE_TYPE4_NQUADS4 = 0x2,
     SE_DATA24 = 0x3,
+    SECON_SEMAX = 48,
 
-    // CAMERA FIELDS
+    // CAMERA FIELDS & CONSTANTS
     CAM_ROOMID = 0x00,
     CAM_REDRAW = 0x01, // XXXX | player | movables | statics | bg
     CAM_PLITEMAP_LO = 0x02,
@@ -83,6 +83,8 @@ enum {
     CAM_PME0_HI = 0x19,
     CAM_PERASE_LO = 0x1E,
     CAM_PERASE_HI = 0x1F,
+    CAMCON_SEMAX = 10,
+    CAMCON_MEMAX = 3,
 
     // TILE CODES (x4 in the cambuffer after upsizing)
     TID_FLOOR_TILED = 4 * 0,
@@ -117,8 +119,8 @@ enum {
     X_AXIS = 0,
     Y_AXIS = 1,
 
-    SENTINEL8 = 0x80,
-    SENTINEL16 = 0x8000,
+    SENTINEL8 = 0xFF,
+    SENTINEL16 = 0xFFFF,
 
     REDRAW_BACKGROUND = 0b1,
     REDRAW_STATICS = 0b10,

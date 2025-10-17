@@ -191,8 +191,8 @@ void init_ram() {
     initPlayer();
     initTilemaps();
     initRooms();
-    beebram[CAMERA + CAM_PERASE_LO] = 0xFF;
-    beebram[CAMERA + CAM_PERASE_HI] = 0xFF;
+    beebram[CAMERA + CAM_PERASE_LO] = SENTINEL8;
+    beebram[CAMERA + CAM_PERASE_HI] = SENTINEL8;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -438,7 +438,7 @@ static void initTilemaps() {
 
 void initStaticEnts() {
     // 0xFFFF will specify null pointers where no entity has been assigned
-    memset(&beebram[SE_TABLE], 0xFF, (size_t)(SE_DEFS - SE_TABLE));
+    memset(&beebram[SE_TABLE], SENTINEL8, (size_t)(SE_DEFS - SE_TABLE));
 
     // (I,J) is 26x40 here, not 13x20
     uint16_t se_ptr = SE_TABLE, se_def = SE_TABLE + 0x60;
@@ -528,7 +528,7 @@ void initStaticEnts() {
 
 void initAnimdefs() {
     // 0xFFFF will specify null pointers where no entity has been assigned
-    memset(&beebram[AD_TABLE], 0xFF, (size_t)(AD_DEFS - AD_TABLE));
+    memset(&beebram[AD_TABLE], SENTINEL8, (size_t)(AD_DEFS - AD_TABLE));
 
     uint16_t ad_ptr = AD_TABLE, ad_def = AD_DEFS;
 

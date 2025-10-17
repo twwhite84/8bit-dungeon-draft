@@ -231,12 +231,8 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
     for (uint8_t static_index = 0; static_index < 20; static_index += 2) {
 
         uint16_t pse = beebram[pse_base + static_index] | (beebram[pse_base + static_index + 1] << 8);
-        if (pse == 0xFFFF)
+        if (pse == SENTINEL16)
             break;
-
-        // i add this check because when an item is picked up, its room code will be set to not-in-room
-        if ((beebram[pse + CE_ROOMID6_CLEAN1_REDRAW1] >> 2) != beebram[CAMERA + CAM_ROOMID])
-            continue;
 
         uint8_t static_type = beebram[pse + SE_TYPE4_NQUADS4] >> 4;
         uint8_t nquads = beebram[pse + SE_TYPE4_NQUADS4] & 0x0F;
