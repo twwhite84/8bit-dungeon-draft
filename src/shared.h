@@ -81,6 +81,8 @@ enum {
     CAM_PSE0_HI = 0x05,
     CAM_PME0_LO = 0x18,
     CAM_PME0_HI = 0x19,
+    CAM_PERASE_LO = 0x1E,
+    CAM_PERASE_HI = 0x1F,
 
     // TILE CODES (x4 in the cambuffer after upsizing)
     TID_FLOOR_TILED = 4 * 0,
@@ -118,11 +120,10 @@ enum {
     SENTINEL8 = 0x80,
     SENTINEL16 = 0x8000,
 
-    REDRAW_BGFULL = 0b1,
+    REDRAW_BACKGROUND = 0b1,
     REDRAW_STATICS = 0b10,
     REDRAW_MOVABLES = 0b100,
     REDRAW_PLAYER = 0b1000,
-    REDRAW_BGPURGE = 0b10000,
 };
 
 typedef struct {

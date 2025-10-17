@@ -12,6 +12,6 @@ void renderMovable(uint16_t pmovable);
 void renderMovables();
 void renderStatics();
 void renderCleanup(uint16_t pentity);
-void renderPurge();
+void renderEraseSlot();
 
 #endif

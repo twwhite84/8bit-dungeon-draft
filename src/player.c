@@ -149,22 +149,19 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
             if (se_type == SETYPE_PICKUP) {
                 fprintf(stderr, "\nPICKUP");
 
-                // player inventory update
+                // change the item's room code to null
+                beebram[collisions[i] + CE_ROOMID6_CLEAN1_REDRAW1] = 0b11111100;
+
+                // copy item to the player inventory
                 beebram[PLAYER + PLR_PINVA_LO] = collisions[i] & 0xFF;
                 beebram[PLAYER + PLR_PINVA_HI] = collisions[i] >> 8;
 
-                // put the pickup in the purge buffer
-                if (beebram[PURGEBUFFER] == 0xFF) {
-                    beebram[PURGEBUFFER + 0] = (collisions[i] & 0xFF);
-                    beebram[PURGEBUFFER + 1] = (collisions[i] >> 8);
-                } else {
-                    beebram[PURGEBUFFER + 2] = (collisions[i] & 0xFF);
-                    beebram[PURGEBUFFER + 3] = (collisions[i] >> 8);
-                }
+                // copy item to erase slot (allows multiquad statics to be cleared)
+                beebram[CAMERA + CAM_PERASE_LO] = collisions[i] & 0xFF;
+                beebram[CAMERA + CAM_PERASE_HI] = collisions[i] >> 8;
 
-                // the roombuffer being refreshed with a call to loadStatics()
-                // not needed if you check roomcodes on other functions
-                // loadStatics(beebram[CAMERA + CAM_ROOMID]);
+                // reload statics but don't mark all for redraw, we're just dropping the item
+                loadStatics(beebram[CAMERA + CAM_ROOMID], false);
             }
         }
     }
