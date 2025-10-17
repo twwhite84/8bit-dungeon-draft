@@ -1,5 +1,35 @@
 ---=== NOTES ===--- 
 
+17/10/2025
+
+Suppose I want to pick up an item in one room and drop it in another.
+
+First modify the loadStatics() function to take a flag indicating whether to 
+mark all items for redraw.
+
+PICK UP:
+- copy item pointer to the player inventory
+- copy item pointer to the erase slot (allows multiquad statics to be cleared)
+- change the item's room code to null
+- loadStatics(redraw_all=false); the null room code will cause it to be excluded
+    and render_all false skips unnecessarily raising redraw flag on all items.
+
+Don't need a camera erase flag. There will typically only be one item to check,
+so just do the erase on each frame checking if the slot is populated.
+
+Disconsidered options:
+- A: remove from roombuffer and re-sort. 
+    con: requires new code and more ram.
+- B: leave item in the roombuffer with null room, then implement code to skip nulls.
+    con: zombie items left consuming camera slots.
+
+DROP:
+- delete item pointer from player inventory
+- change the room code on the item to match the current room
+- raise the redraw flag on the item and the REDRAW_STATICS flag on the camera.
+    this will redraw all statics marked for redraw.
+- reload the room items; the roombuffer will now contain the item
+
 --------------------------------------------------------------------------------
 
 16/10/2025
