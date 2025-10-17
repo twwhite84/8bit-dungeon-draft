@@ -17,7 +17,7 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
             uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
-            bufferTile(penstart, texture, 0xFFFF);
+            bufferTile(penstart, texture, SENTINEL16);
             penstart += 8;
         }
     }
@@ -27,7 +27,7 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
 
 void bufferFGQuad(uint16_t pquad) {
     uint16_t penstart = OFFBUFFER;
-    uint16_t mask = 0xFFFF, texture = 0;
+    uint16_t mask = SENTINEL16, texture = 0;
 
     for (uint8_t tile = 0; tile < 4; tile++) {
         texture = beebram[pquad + 2 * tile] + (beebram[pquad + 2 * tile + 1] << 8);
@@ -44,7 +44,7 @@ void bufferFGQuad(uint16_t pquad) {
 
 // renders to offbuffer one tile with optional masking
 void bufferTile(uint16_t penstart, uint16_t texture, uint16_t mask) {
-    if (mask != 0xFFFF)
+    if (mask != SENTINEL16)
         goto compdef;
 
 plaindef:
@@ -86,7 +86,7 @@ void renderStatics() {
 
         // get the entity or quit loop early if sentinel
         uint16_t pentity = beebram[pstart] + (beebram[pstart + 1] << 8);
-        if (pentity == 0xFFFF)
+        if (pentity == SENTINEL16)
             break;
         pstart += 2;
 
@@ -150,7 +150,7 @@ void renderMovables() {
     uint16_t pstart = CAMERA + CAM_PME0_LO;
     for (uint8_t i = 0; i < 4; i++) {
         uint16_t pmovable = beebram[pstart] | (beebram[pstart + 1] << 8);
-        if (pmovable == 0xFFFF)
+        if (pmovable == SENTINEL16)
             break;
         pstart += 2;
         if ((beebram[pmovable + CE_ROOMID6_CLEAN1_REDRAW1] & 0b1) != 0)
@@ -255,7 +255,6 @@ void renderEraseSlot() {
     renderCambufferTile(sei + 1, sej + 1);
 
     // clear the erase slot
-    // memset(&beebram[CAMERA+CAM_PERASE_LO], 0xFF, 4);
-    beebram[CAMERA + CAM_PERASE_LO] = 0xFF;
-    beebram[CAMERA + CAM_PERASE_HI] = 0xFF;
+    beebram[CAMERA + CAM_PERASE_LO] = SENTINEL8;
+    beebram[CAMERA + CAM_PERASE_HI] = SENTINEL8;
 }
