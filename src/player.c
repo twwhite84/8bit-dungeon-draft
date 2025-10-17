@@ -240,8 +240,8 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
         for (uint8_t q = 0; q < nquads; q++) {
 
             // does the movable's container overlap the static's quad(s)?
-            uint8_t se_i = beebram[pse + CE_I + (4 * q)];
-            uint8_t se_j = beebram[pse + CE_J + (4 * q)];
+            uint8_t se_i = beebram[pse + CEF_I + (4 * q)];
+            uint8_t se_j = beebram[pse + CEF_J + (4 * q)];
             uint8_t collision_intercepts = 0, redraw_intercepts = 0;
 
             uint8_t idelta = (se_i - i1);
@@ -272,8 +272,8 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
                 continue; // no: skip to the next static quad, if any exists
 
             // yes the sprite container overlaps with static, so check for collision
-            uint16_t qx = beebram[pse + CE_J + (4 * q)] << 3;
-            uint16_t qy = beebram[pse + CE_I + (4 * q)] << 3;
+            uint16_t qx = beebram[pse + CEF_J + (4 * q)] << 3;
+            uint16_t qy = beebram[pse + CEF_I + (4 * q)] << 3;
 
             uint8_t xdelta_current = x1 - qx;
             xdelta_current = (xdelta_current >= 0x80) ? (xdelta_current ^ 0xFF) + 1 : xdelta_current;

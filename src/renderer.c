@@ -99,10 +99,10 @@ void renderStatics() {
 
         uint8_t nquads = beebram[pentity + SEF_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < nquads; q++) {
-            uint8_t qi = beebram[(pentity + CE_I) + (4 * q)]; // 4q because repeating section 4 fields long
-            uint8_t qj = beebram[(pentity + CE_J) + (4 * q)];
+            uint8_t qi = beebram[(pentity + CEF_I) + (4 * q)]; // 4q because repeating section 4 fields long
+            uint8_t qj = beebram[(pentity + CEF_J) + (4 * q)];
             uint16_t pvizdef =
-                beebram[(pentity + CE_PVIZBASE_LO) + (4 * q)] | (beebram[(pentity + CE_PVIZBASE_HI) + (4 * q)] << 8);
+                beebram[(pentity + CEF_PVIZBASE_LO) + (4 * q)] | (beebram[(pentity + CEF_PVIZBASE_HI) + (4 * q)] << 8);
 
             // if not animated, jump ahead to directly rendering the quad
             if (pvizdef < AD_TABLE) {
@@ -113,7 +113,7 @@ void renderStatics() {
             // dereference the table entry, dont add an animset because SE only has one animdef
             uint16_t animdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
 
-            uint8_t current = beebram[pentity + CE_FELAPSED5_FCURRENT3] & 0b00000111;
+            uint8_t current = beebram[pentity + CEF_FELAPSED5_FCURRENT3] & 0b00000111;
 
             // get the current frame for rendering to offbuffer
             pvizdef = beebram[(animdef + ADF_PFRAME_LO) + (2 * current)];
@@ -135,8 +135,8 @@ void renderMovable(uint16_t pmovable) {
     if (clean)
         renderCleanup(pmovable);
 
-    uint8_t i = beebram[pmovable + CE_I];
-    uint8_t j = beebram[pmovable + CE_J];
+    uint8_t i = beebram[pmovable + CEF_I];
+    uint8_t j = beebram[pmovable + CEF_J];
     bufferBG(i, j, 3);
     bufferFGSprite(pmovable);
     renderOffbuffer(i, j, 3);
@@ -247,8 +247,8 @@ void renderCambufferTile(uint8_t i, uint8_t j) {
 void renderEraseSlot() {
     // background redrawn over the item's tile/quad
     uint16_t pentity = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
-    uint8_t sei = beebram[pentity + CE_I];
-    uint8_t sej = beebram[pentity + CE_J];
+    uint8_t sei = beebram[pentity + CEF_I];
+    uint8_t sej = beebram[pentity + CEF_J];
     renderCambufferTile(sei, sej);
     renderCambufferTile(sei, sej + 1);
     renderCambufferTile(sei + 1, sej);

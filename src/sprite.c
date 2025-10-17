@@ -14,8 +14,8 @@ void updateSpriteContainer(uint16_t movable) {
     beebram[movable + MEF_HSHIFT4_VSHIFT4] = (beebram[movable + MEF_HSHIFT4_VSHIFT4] & 0x0F) | (hshift << 4);
     beebram[movable + MEF_HSHIFT4_VSHIFT4] = (beebram[movable + MEF_HSHIFT4_VSHIFT4] & 0xF0) | vshift;
 
-    uint8_t current_i = beebram[movable + CE_I];
-    uint8_t current_j = beebram[movable + CE_J];
+    uint8_t current_i = beebram[movable + CEF_I];
+    uint8_t current_j = beebram[movable + CEF_J];
     uint8_t new_i = y >> 3;
     uint8_t new_j = x >> 3;
 
@@ -27,8 +27,8 @@ void updateSpriteContainer(uint16_t movable) {
         beebram[movable + MEF_OLDJ] = current_j;
 
         // write the new container position
-        beebram[movable + CE_I] = new_i;
-        beebram[movable + CE_J] = new_j;
+        beebram[movable + CEF_I] = new_i;
+        beebram[movable + CEF_J] = new_j;
 
         // raise cleanup flag for streak removal
         beebram[movable + CE_ROOMID6_CLEAN1_REDRAW1] |= 0b10;
@@ -40,7 +40,7 @@ void updateSpriteContainer(uint16_t movable) {
 void bufferFGSprite(uint16_t pentity) {
 
     // get the quad, either directly or via an animdef
-    uint16_t pvizbase = beebram[pentity + CE_PVIZBASE_LO] | (beebram[pentity + CE_PVIZBASE_HI] << 8);
+    uint16_t pvizbase = beebram[pentity + CEF_PVIZBASE_LO] | (beebram[pentity + CEF_PVIZBASE_HI] << 8);
     uint16_t pquad = pvizbase;
 
     // if the vizdef is an animdef, dereference it to get to the quad
@@ -50,7 +50,7 @@ void bufferFGSprite(uint16_t pentity) {
 
         uint16_t panimdef = beebram[ppanimdef] | (beebram[ppanimdef + 1] << 8);
 
-        uint8_t frame_offset = (beebram[PLAYER + CE_FELAPSED5_FCURRENT3] & 0b111) << 1; // *2 because 2 byte pointer
+        uint8_t frame_offset = (beebram[PLAYER + CEF_FELAPSED5_FCURRENT3] & 0b111) << 1; // *2 because 2 byte pointer
         pquad =
             beebram[panimdef + ADF_PFRAME_LO + frame_offset] | (beebram[panimdef + ADF_PFRAME_HI + frame_offset] << 8);
     }

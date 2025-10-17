@@ -633,8 +633,8 @@ void initPlayer() {
     beebram[PLAYER + MEF_X_HI] = 0;
     beebram[PLAYER + MEF_Y_LO] = 8;
     beebram[PLAYER + MEF_Y_HI] = 0;
-    beebram[PLAYER + CE_PVIZBASE_LO] = aDogWalkU & 0xFF; // dog set starts at adogwalku
-    beebram[PLAYER + CE_PVIZBASE_HI] = aDogWalkU >> 8;
+    beebram[PLAYER + CEF_PVIZBASE_LO] = aDogWalkU & 0xFF; // dog set starts at adogwalku
+    beebram[PLAYER + CEF_PVIZBASE_HI] = aDogWalkU >> 8;
     beebram[PLAYER + MEF_ANIMSET] = ADC_SET_WALKR;
     beebram[PLAYER + MEF_XMD4_YMD4] = 0;
 

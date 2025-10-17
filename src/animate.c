@@ -5,7 +5,7 @@
 void animateEntity(uint16_t pentity) {
 
     // vizbase refers to an animdef table entry
-    uint16_t pvizbase = beebram[pentity + CE_PVIZBASE_LO] | (beebram[pentity + CE_PVIZBASE_HI] << 8);
+    uint16_t pvizbase = beebram[pentity + CEF_PVIZBASE_LO] | (beebram[pentity + CEF_PVIZBASE_HI] << 8);
     if (pvizbase < AD_TABLE)
         return; // if not an animated item
 
@@ -43,16 +43,16 @@ void animateEntity(uint16_t pentity) {
         beebram[pentity + MEF_ANIMSET] = animset;
     }
 
-    uint8_t elapsed = beebram[pentity + CE_FELAPSED5_FCURRENT3] >> 3;
-    uint8_t current = beebram[pentity + CE_FELAPSED5_FCURRENT3] & 0b111;
+    uint8_t elapsed = beebram[pentity + CEF_FELAPSED5_FCURRENT3] >> 3;
+    uint8_t current = beebram[pentity + CEF_FELAPSED5_FCURRENT3] & 0b111;
     uint8_t frames = beebram[panimdef + ADF_FRAMES4_YOYO4] >> 4;
     uint8_t yoyo = beebram[panimdef + ADF_FRAMES4_YOYO4] & 0x0F;
     uint8_t period;
 
     // update the elapsed frame count
     elapsed++;
-    beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
-    beebram[pentity + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+    beebram[pentity + CEF_FELAPSED5_FCURRENT3] &= 0b00000111;
+    beebram[pentity + CEF_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
     // fetch the period for the current frame index
     switch (current) {
@@ -95,8 +95,8 @@ void animateEntity(uint16_t pentity) {
         }
 
         // save current
-        beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b11111000;
-        beebram[pentity + CE_FELAPSED5_FCURRENT3] |= current;
+        beebram[pentity + CEF_FELAPSED5_FCURRENT3] &= 0b11111000;
+        beebram[pentity + CEF_FELAPSED5_FCURRENT3] |= current;
 
         // save yoyo
         beebram[panimdef + ADF_FRAMES4_YOYO4] &= 0xF0;
@@ -104,8 +104,8 @@ void animateEntity(uint16_t pentity) {
 
         // write elapsed frames
         elapsed = 0;
-        beebram[pentity + CE_FELAPSED5_FCURRENT3] &= 0b00000111;
-        beebram[pentity + CE_FELAPSED5_FCURRENT3] |= (elapsed << 3);
+        beebram[pentity + CEF_FELAPSED5_FCURRENT3] &= 0b00000111;
+        beebram[pentity + CEF_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
         // raise redraw flags on the entity and the camera for its kind
         beebram[pentity + CE_ROOMID6_CLEAN1_REDRAW1] |= 1;

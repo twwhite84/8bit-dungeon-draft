@@ -37,11 +37,11 @@ enum {
 
     // COMMON ENTITY FIELDS
     CE_ROOMID6_CLEAN1_REDRAW1 = 0x0,
-    CE_FELAPSED5_FCURRENT3 = 0x1,
-    CE_I = 0x6,
-    CE_J = 0x7,
-    CE_PVIZBASE_LO = 0x8,
-    CE_PVIZBASE_HI = 0x9,
+    CEF_FELAPSED5_FCURRENT3 = 0x1,
+    CEF_I = 0x6,
+    CEF_J = 0x7,
+    CEF_PVIZBASE_LO = 0x8,
+    CEF_PVIZBASE_HI = 0x9,
 
     // COMMON ME FIELDS
     MEF_X_LO = 0x2,
