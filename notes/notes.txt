@@ -1,5 +1,34 @@
 ---=== NOTES ===--- 
 
+18/10/2025
+
+Problem: when sprite is drawn, its sprite container doesn't contain any statics 
+in proximity.
+- If I render my statics after the player, the player gets obscured by 
+background and static.
+- If I render my player before my statics, the player container overwrites 
+statics with bg when in proximity, eg walls.
+
+I will need to triple composite in situations where a player and static overlap.
+The redraw player camera flag is raised on player movement and animation cycles.
+When player is moved, proximity check with static is performed.
+I could potentially pass the static pointer as an argument to the function for
+player rendering, and so only triple composite on that case.
+
+I could repurpose the clean flag on the static to signify that the static will
+have its rendering deferred to the player rendering function so that it is
+composited. Con: when rendering player I will need to rescan all statics for
+those which have been marked as deferred. Pro: I can more easily handle multi
+static overlap.
+
+A may more efficient way may be to just set aside an additional couple of bytes
+next to the erase buffer that the call to render player checks in order to do
+any triple compositing necessary. At this point I effectively have two kinds of
+statics: triple-composited if overlapped with player, and double-composited if
+not.
+
+--------------------------------------------------------------------------------
+
 17/10/2025
 
 Suppose I want to pick up an item in one room and drop it in another.
