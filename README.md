@@ -7,6 +7,12 @@ C draft base for an 8-bit overhead Zelda-inspired game. I'm designing this to be
 
 ## DEVDIARY NOTES
 
+### 23/10/2025
+### Using Dictionary to Render
+
+I have decided to change my approach to rendering. I will have a single fixed sized 2x2 offscreen buffer, and I will render my statics and sprites piecemeal. Statics are always aligned to a 16x16 grid anyway. But I will be using a dictionary where those grid cells will serve as keys. Each key will hold a static and up to 2 movable items. The movable items are stored with offsets for the sprite container as that moves on an 8x8 basis. During the update phase the dictionary will track what needs to be rendered at which cells. This way I can avoid having to statically allocate a large amount of ram, at the expense of some amount of dictionary traversal. I may be able to improve performance here with a hashing function, but for now I have simply implemented linear search for when keys are inserted. (During rendering no linear search is necessary.)
+
+
 ### 18/10/2025
 ### Rendering Order Issue
 
