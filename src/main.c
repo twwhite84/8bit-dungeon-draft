@@ -205,7 +205,7 @@ void update() {
 void render() {
     // REDRAW FIELD: .... | player | movables | statics | bg
 
-    // process erase slot
+    // process erase slot (used to delete a static from screen)
     if (beebram[CAMERA + CAMF_PERASE_LO] != SENTINEL8) {
         renderEraseSlot();
     }
@@ -215,23 +215,14 @@ void render() {
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_BACKGROUND;
     }
 
-    // redrawing movables before statics means that if a sprite
-    // container erases part of a static on overlap, the static
-    // will then be redrawn again over the overlap. this is due
-    // to checkStaticCollisions() raising static redraw flags
-    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_PLAYER) != 0) {
-        renderMovable(PLAYER);
-        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_PLAYER;
-    }
-
-    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_MOVABLES) != 0) {
-        renderMovables();
-        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_MOVABLES;
-    }
-
     if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_STATICS) != 0) {
         renderStatics();
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_STATICS;
+    }
+
+    if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_PLAYER) != 0) {
+        renderPlayer(PLAYER);
+        beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_PLAYER;
     }
 
     mySDLRender();

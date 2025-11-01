@@ -37,7 +37,7 @@ void updateSpriteContainer(uint16_t movable) {
 
 /*----------------------------------------------------------------------------*/
 
-void bufferFGSprite(uint16_t pentity) {
+void bufferFGSprite(uint16_t pentity, uint16_t buffer) {
 
     // get the quad, either directly or via an animdef
     uint16_t pvizbase = beebram[pentity + CEF_PVIZBASE_LO] | (beebram[pentity + CEF_PVIZBASE_HI] << 8);
@@ -65,7 +65,7 @@ void bufferFGSprite(uint16_t pentity) {
     uint8_t thops[4] = {0, 8, 24, 32}; // +8, +16, +8 ... 1, 2, 1
 
     for (uint8_t tile = 0; tile < 4; tile++) {
-        uint16_t penstart = OFFBUFFER + dshift + thops[tile];
+        uint16_t penstart = buffer + dshift + thops[tile];
         uint16_t ptexture = beebram[pquad + (tile << 1)] | (beebram[pquad + (tile << 1) + 1] << 8);
         uint16_t pmask = beebram[pquad + (tile << 1) + 8] | (beebram[pquad + (tile << 1) + 9] << 8);
 

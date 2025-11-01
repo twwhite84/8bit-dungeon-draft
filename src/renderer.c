@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void renderCambufferTile(uint8_t i, uint8_t j);
+void renderBGBufferTile(uint8_t i, uint8_t j);
 
 /*----------------------------------------------------------------------------*/
 
@@ -122,7 +122,7 @@ void renderStatics() {
         render:
             bufferBG(qi, qj, 2);
             bufferFGQuad(pvizdef);
-            renderOffbuffer(qi, qj, 2);
+            renderOffbuffer(qi, qj, 2, OFFBUFFER);
         }
     }
 }
@@ -130,17 +130,44 @@ void renderStatics() {
 /*----------------------------------------------------------------------------*/
 
 // renders to framebuffer a movable if marked for redraw
-void renderMovable(uint16_t pmovable) {
-    uint8_t clean = (beebram[pmovable + CEF_ROOMID6_REDRAW2] & CEC_CLEAN);
-    if (clean == CEC_CLEAN)
-        renderCleanup(pmovable);
+void renderPlayer() {
+    uint8_t i = beebram[PLAYER + CEF_I];
+    uint8_t j = beebram[PLAYER + CEF_J];
 
-    uint8_t i = beebram[pmovable + CEF_I];
-    uint8_t j = beebram[pmovable + CEF_J];
-    bufferBG(i, j, 3);
-    bufferFGSprite(pmovable);
-    renderOffbuffer(i, j, 3);
-    beebram[pmovable + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
+    uint8_t clean = (beebram[PLAYER + CEF_ROOMID6_REDRAW2] & CEC_CLEAN);
+
+    // if the clean flag is up, it means sprite container has moved
+    if (clean == CEC_CLEAN) {
+        renderCleanup(PLAYER);
+
+        // copy 3x3 from screen to playerbuffer
+        uint16_t penread = SCREEN + (i * 0x140) + (j * 8);
+        uint16_t penwrite = PLAYERBUFFER;
+        for (uint8_t row = 0; row < 3; row++) {
+            for (uint8_t col = 0; col < 3; col++) {
+                for (uint8_t s = 0; s < 8; s++) {
+                    beebram[penwrite + s] = beebram[penread + s];
+                }
+                penread += 8;
+                penwrite += 8;
+            }
+            penread += 0x140 - 24;
+        }
+    }
+
+    // bufferBG(i, j, 3);
+
+    // copy the playerbuffer into the offbuffer
+    uint16_t penread = PLAYERBUFFER;
+    uint16_t penwrite = OFFBUFFER;
+    for (uint8_t s = 0; s < (8 * 9); s++) {
+        beebram[penwrite + s] = beebram[penread + s];
+    }
+
+    // bufferFGSprite(PLAYER, OFFBUFFER);
+    renderOffbuffer(i, j, 3, OFFBUFFER);
+
+    beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -154,7 +181,7 @@ void renderMovables() {
             break;
         pstart += 2;
         if ((beebram[pmovable + CEF_ROOMID6_REDRAW2] & CEC_REDRAW) == CEC_REDRAW)
-            renderMovable(pmovable);
+            renderPlayer(pmovable);
     }
 }
 
@@ -164,7 +191,7 @@ void renderMovables() {
 void renderBackground() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
-            renderCambufferTile(i, j);
+            renderBGBufferTile(i, j);
         }
     }
 }
@@ -172,9 +199,9 @@ void renderBackground() {
 /*----------------------------------------------------------------------------*/
 
 // renders square portion of the offbuffer to screen at absolute i,j
-void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
+void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim, uint16_t buffer) {
     uint16_t penstart = SCREEN + i * 0x140 + j * 8;
-    uint16_t offbase = OFFBUFFER;
+    uint16_t offbase = buffer;
 
     for (uint8_t rel_i = 0; rel_i < dim; rel_i++) {
         for (uint8_t rel_j = 0; rel_j < dim; rel_j++) {
@@ -202,30 +229,30 @@ void renderCleanup(uint16_t pentity) {
 
     // moving up, clear below
     if (ydir == DIR_UP) {
-        renderCambufferTile(old_i + 2, old_j + 0);
-        renderCambufferTile(old_i + 2, old_j + 1);
-        renderCambufferTile(old_i + 2, old_j + 2);
+        renderBGBufferTile(old_i + 2, old_j + 0);
+        renderBGBufferTile(old_i + 2, old_j + 1);
+        renderBGBufferTile(old_i + 2, old_j + 2);
     }
 
     // moving down, clean above
     if (ydir == DIR_DOWN) {
-        renderCambufferTile(old_i, old_j + 0);
-        renderCambufferTile(old_i, old_j + 1);
-        renderCambufferTile(old_i, old_j + 2);
+        renderBGBufferTile(old_i, old_j + 0);
+        renderBGBufferTile(old_i, old_j + 1);
+        renderBGBufferTile(old_i, old_j + 2);
     }
 
     // moving left, clear right
     if (xdir = DIR_LEFT) {
-        renderCambufferTile(old_i + 0, old_j + 2);
-        renderCambufferTile(old_i + 1, old_j + 2);
-        renderCambufferTile(old_i + 2, old_j + 2);
+        renderBGBufferTile(old_i + 0, old_j + 2);
+        renderBGBufferTile(old_i + 1, old_j + 2);
+        renderBGBufferTile(old_i + 2, old_j + 2);
     }
 
     // moving right, clear left
     if (xdir = DIR_RIGHT) {
-        renderCambufferTile(old_i + 0, old_j);
-        renderCambufferTile(old_i + 1, old_j);
-        renderCambufferTile(old_i + 2, old_j);
+        renderBGBufferTile(old_i + 0, old_j);
+        renderBGBufferTile(old_i + 1, old_j);
+        renderBGBufferTile(old_i + 2, old_j);
     }
 
     // lower cleanup flag
@@ -234,7 +261,7 @@ void renderCleanup(uint16_t pentity) {
 
 /*----------------------------------------------------------------------------*/
 
-void renderCambufferTile(uint8_t i, uint8_t j) {
+void renderBGBufferTile(uint8_t i, uint8_t j) {
     uint8_t tid = beebram[BGBUFFER + 40 * i + j];
     uint16_t tileptr = getTileTextureAddr(tid);
     uint16_t screenpos = SCREEN + (CAMC_WIDTH * i) + (8 * j);
@@ -249,10 +276,10 @@ void renderEraseSlot() {
     uint16_t pentity = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
     uint8_t sei = beebram[pentity + CEF_I];
     uint8_t sej = beebram[pentity + CEF_J];
-    renderCambufferTile(sei, sej);
-    renderCambufferTile(sei, sej + 1);
-    renderCambufferTile(sei + 1, sej);
-    renderCambufferTile(sei + 1, sej + 1);
+    renderBGBufferTile(sei, sej);
+    renderBGBufferTile(sei, sej + 1);
+    renderBGBufferTile(sei + 1, sej);
+    renderBGBufferTile(sei + 1, sej + 1);
 
     // clear the erase slot
     beebram[CAMERA + CAMF_PERASE_LO] = SENTINEL8;
