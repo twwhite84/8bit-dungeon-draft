@@ -15,7 +15,7 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
 
     for (int rel_i = 0; rel_i < dim; rel_i++) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
-            uint8_t tileID = beebram[CAMBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
+            uint8_t tileID = beebram[BGBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
             bufferTile(penstart, texture, SENTINEL16);
             penstart += 8;
@@ -235,7 +235,7 @@ void renderCleanup(uint16_t pentity) {
 /*----------------------------------------------------------------------------*/
 
 void renderCambufferTile(uint8_t i, uint8_t j) {
-    uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+    uint8_t tid = beebram[BGBUFFER + 40 * i + j];
     uint16_t tileptr = getTileTextureAddr(tid);
     uint16_t screenpos = SCREEN + (CAMC_WIDTH * i) + (8 * j);
 

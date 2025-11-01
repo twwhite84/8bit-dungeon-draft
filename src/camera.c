@@ -8,7 +8,7 @@
 void loadRoom(uint8_t roomID) {
 
     // clear the camera
-    memset(&beebram[CAMERA], SENTINEL8, (size_t)(CAMBUFFER - CAMERA));
+    memset(&beebram[CAMERA], SENTINEL8, (size_t)(BGBUFFER - CAMERA));
 
     beebram[CAMERA + CAMF_ROOMID] = roomID;
 

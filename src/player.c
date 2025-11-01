@@ -238,7 +238,7 @@ void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions) {
 
     for (uint8_t i = i1; i < (i1 + ilimit); i++) {
         for (uint8_t j = j1; j < (j1 + jlimit); j++) {
-            uint8_t tid = beebram[CAMBUFFER + 40 * i + j];
+            uint8_t tid = beebram[BGBUFFER + 40 * i + j];
             if (tid >= TID_WALLS) {
 
                 // exception for h1/v1 == 0 to allow a movement to a grid-snapped location

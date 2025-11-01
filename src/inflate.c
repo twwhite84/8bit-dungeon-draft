@@ -177,4 +177,4 @@ static uint16_t mapIDtoAddr(uint8_t id) {
 /*----------------------------------------------------------------------------*/
 
 // expand the given room's stored 13x20 map into the 26x40 tilebuffer
-void inflateMap(uint8_t mapID) { inflate(mapIDtoAddr(mapID), CAMBUFFER); }
+void inflateMap(uint8_t mapID) { inflate(mapIDtoAddr(mapID), BGBUFFER); }
