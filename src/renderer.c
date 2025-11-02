@@ -26,6 +26,7 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim, uint16_t buffer) {
 
 /*----------------------------------------------------------------------------*/
 
+// buffers a quad into the offbuffer
 void bufferFGQuad(uint16_t pquad) {
     for (uint8_t i = 0; i < 2; i++) {
         for (uint8_t j = 0; j < 2; j++) {
@@ -33,21 +34,6 @@ void bufferFGQuad(uint16_t pquad) {
         }
     }
 }
-
-// void bufferFGQuad(uint16_t pquad) {
-//     uint16_t penstart = OFFBUFFER;
-//     uint16_t mask = SENTINEL16, texture = 0;
-
-//     for (uint8_t tile = 0; tile < 4; tile++) {
-//         texture = beebram[pquad + 2 * tile] + (beebram[pquad + 2 * tile + 1] << 8);
-
-//         if (pquad >= QUADS_COMP)
-//             mask = beebram[pquad + 8 + 2 * tile] + (beebram[pquad + 8 + 2 * tile + 1] << 8);
-
-//         bufferTile(penstart, texture, mask);
-//         penstart += 8;
-//     }
-// }
 
 void bufferFGQuadToPlayer() {
     uint8_t pi = beebram[PLAYER + CEF_I];
@@ -60,6 +46,17 @@ void bufferFGQuadToPlayer() {
         psebase += 2;
         uint8_t nquads = beebram[pse + SEF_TYPE4_NQUADS4] & 0x0F;
         for (uint8_t q = 0; q < nquads; q++) {
+            uint16_t pvizdef =
+                beebram[pse + CEF_PVIZBASE_LO + (4 * q)] | (beebram[pse + CEF_PVIZBASE_HI + (4 * q)] << 8);
+
+            if (pvizdef >= AD_TABLE) {
+                uint16_t animdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
+                uint8_t current = beebram[pse + CEF_FELAPSED5_FCURRENT3] & 0b00000111;
+                pvizdef = beebram[(animdef + ADF_PFRAME_LO) + (2 * current)];
+                pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
+            }
+
+            uint16_t pquad = pvizdef;
             uint8_t qi = beebram[pse + CEF_I + (4 * q)];
             uint8_t qj = beebram[pse + CEF_J + (4 * q)];
             int di = (int)qi - (int)pi;
@@ -67,6 +64,7 @@ void bufferFGQuadToPlayer() {
             if (di < 3 && dj < 3) {
                 fprintf(stderr, "\nPLAYER OVERLAP: player (%d,%d) with statik (%d,%d)", pi, pj, qi, qj);
                 // copy the quad into the player buffer
+                bufferTileIJ(0, 0, 0, 0, pquad, PLAYERBUFFER);
             }
         }
     }
@@ -77,6 +75,15 @@ void bufferFGQuadToPlayer() {
 // renders to offbuffer one tile with optional masking
 void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint16_t buffer) {
 
+    uint8_t imult = 0;
+
+    // note 16*dst_i for a 2x2 buffer, PLAYERBUFFER ALWAYS 3x3 so 24*dst_i
+    if (buffer == OFFBUFFER) {
+        imult = 16;
+    } else if (buffer == PLAYERBUFFER) {
+        imult = 24;
+    }
+
     uint16_t ptexture, pmask, penread, penwrite;
 
     if (pquad >= QUADS_COMP) {
@@ -86,12 +93,7 @@ void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, ui
 plaindef:
     ptexture = pquad + (4 * src_i) + (2 * src_j);
     penread = beebram[ptexture] | (beebram[ptexture + 1] << 8);
-
-    if (buffer == OFFBUFFER) {
-        penwrite = buffer + (16 * dst_i) + (8 * dst_j); // note 16*dst_i for a 2x2 buffer
-    } else if (buffer == PLAYERBUFFER) {                // PLAYERBUFFER ALWAYS 3x3
-        penwrite = buffer + (24 * dst_i) + (8 * dst_j);
-    }
+    penwrite = buffer + (imult * dst_i) + (8 * dst_j);
 
     for (int s = 0; s < 8; s++) {
         beebram[penwrite + s] = beebram[penread + s];
@@ -109,7 +111,7 @@ compdef:
     uint8_t hflipped = ptexture >> 15;
 
     if (!hflipped) {
-        penwrite = buffer + (16 * dst_i) + (8 * dst_j);
+        penwrite = buffer + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
             beebram[penwrite + s] &= (beebram[pmask + s] ^ 0xFF);
             beebram[penwrite + s] |= (beebram[ptexture + s] & beebram[pmask + s]);
@@ -119,7 +121,7 @@ compdef:
     else {
         ptexture &= 0x7FFF;
         pmask &= 0x7FFF;
-        uint16_t penwrite = buffer + (16 * dst_i) + (8 * dst_j);
+        penwrite = buffer + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
             uint8_t mask_data = beebram[pmask + s];
             uint8_t texture_data = beebram[ptexture + s];
@@ -251,7 +253,7 @@ void renderPlayer() {
     //     beebram[penwrite + s] = beebram[penread + s];
     // }
 
-    // bufferFGSprite(PLAYER, OFFBUFFER);
+    bufferFGSprite(PLAYER, PLAYERBUFFER);
     renderOffbuffer(i, j, 3, PLAYERBUFFER);
 
     beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
