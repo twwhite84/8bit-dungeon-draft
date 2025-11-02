@@ -3,6 +3,7 @@
 #include "sprite.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void renderBGBufferTile(uint8_t i, uint8_t j);
@@ -61,13 +62,20 @@ void bufferFGQuadToPlayer() {
             uint8_t qj = beebram[pse + CEF_J + (4 * q)];
             int di = (int)qi - (int)pi;
             int dj = (int)qj - (int)pj;
-            if (di < 3 && dj < 3) {
-                fprintf(stderr, "\nPLAYER OVERLAP: player (%d,%d) with statik (%d,%d)", pi, pj, qi, qj);
+            if (abs(di) < 3 && abs(dj) < 3) {
+                fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di, dj);
                 // copy the quad into the player buffer
-                bufferTileIJ(0, 0, 0, 0, pquad, PLAYERBUFFER);
+                // bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
+                // bufferTileIJ(0, 0, 2, 1, pquad, PLAYERBUFFER);
+                // bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
+                if (pi == (qi - 2) && pj == qj) {
+                    bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 2, 1, pquad, PLAYERBUFFER);
+                }
             }
         }
     }
+    fprintf(stderr, "\n");
 }
 
 /*----------------------------------------------------------------------------*/

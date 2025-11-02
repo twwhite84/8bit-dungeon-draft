@@ -225,6 +225,7 @@ void render() {
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_PLAYER;
     }
 
+    memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
     mySDLRender();
 }
 
