@@ -10,8 +10,8 @@ void renderBGBufferTile(uint8_t i, uint8_t j);
 /*----------------------------------------------------------------------------*/
 
 // renders to offbuffer a square selection of the cambuffer from i,j
-void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim) {
-    uint16_t penstart = OFFBUFFER;
+void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim, uint16_t buffer) {
+    uint16_t penstart = buffer;
 
     for (int rel_i = 0; rel_i < dim; rel_i++) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
@@ -37,6 +37,29 @@ void bufferFGQuad(uint16_t pquad) {
 
         bufferTile(penstart, texture, mask);
         penstart += 8;
+    }
+}
+
+void bufferFGQuadToPlayer() {
+    uint8_t pi = beebram[PLAYER + CEF_I];
+    uint8_t pj = beebram[PLAYER + CEF_J];
+
+    // go through all my in-camera statiks
+    uint16_t psebase = CAMERA + CAMF_PSE0_LO;
+    for (uint8_t idx = 0; idx < 10; idx++) {
+        uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
+        psebase += 2;
+        uint8_t nquads = beebram[pse + SEF_TYPE4_NQUADS4] & 0x0F;
+        for (uint8_t q = 0; q < nquads; q++) {
+            uint8_t qi = beebram[pse + CEF_I + (4 * q)];
+            uint8_t qj = beebram[pse + CEF_J + (4 * q)];
+            int di = (int)qi - (int)pi;
+            int dj = (int)qj - (int)pj;
+            if (di < 3 && dj < 3) {
+                fprintf(stderr, "\nPLAYER OVERLAP: player (%d,%d) with statik (%d,%d)", pi, pj, qi, qj);
+                // copy the quad into the player buffer
+            }
+        }
     }
 }
 
@@ -120,7 +143,7 @@ void renderStatics() {
             pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
 
         render:
-            bufferBG(qi, qj, 2);
+            bufferBG(qi, qj, 2, OFFBUFFER);
             bufferFGQuad(pvizdef);
             renderOffbuffer(qi, qj, 2, OFFBUFFER);
         }
@@ -140,32 +163,33 @@ void renderPlayer() {
     if (clean == CEC_CLEAN) {
         renderCleanup(PLAYER);
 
-        // copy 3x3 from screen to playerbuffer
-        uint16_t penread = SCREEN + (i * 0x140) + (j * 8);
-        uint16_t penwrite = PLAYERBUFFER;
-        for (uint8_t row = 0; row < 3; row++) {
-            for (uint8_t col = 0; col < 3; col++) {
-                for (uint8_t s = 0; s < 8; s++) {
-                    beebram[penwrite + s] = beebram[penread + s];
-                }
-                penread += 8;
-                penwrite += 8;
-            }
-            penread += 0x140 - 24;
-        }
+        // // copy 3x3 from screen to playerbuffer
+        // uint16_t penread = SCREEN + (i * 0x140) + (j * 8);
+        // uint16_t penwrite = PLAYERBUFFER;
+        // for (uint8_t row = 0; row < 3; row++) {
+        //     for (uint8_t col = 0; col < 3; col++) {
+        //         for (uint8_t s = 0; s < 8; s++) {
+        //             beebram[penwrite + s] = beebram[penread + s];
+        //         }
+        //         penread += 8;
+        //         penwrite += 8;
+        //     }
+        //     penread += 0x140 - 24;
+        // }
     }
 
-    // bufferBG(i, j, 3);
+    bufferBG(i, j, 3, PLAYERBUFFER);
+    bufferFGQuadToPlayer();
 
     // copy the playerbuffer into the offbuffer
-    uint16_t penread = PLAYERBUFFER;
-    uint16_t penwrite = OFFBUFFER;
-    for (uint8_t s = 0; s < (8 * 9); s++) {
-        beebram[penwrite + s] = beebram[penread + s];
-    }
+    // uint16_t penread = PLAYERBUFFER;
+    // uint16_t penwrite = OFFBUFFER;
+    // for (uint8_t s = 0; s < (8 * 9); s++) {
+    //     beebram[penwrite + s] = beebram[penread + s];
+    // }
 
     // bufferFGSprite(PLAYER, OFFBUFFER);
-    renderOffbuffer(i, j, 3, OFFBUFFER);
+    renderOffbuffer(i, j, 3, PLAYERBUFFER);
 
     beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
 }
