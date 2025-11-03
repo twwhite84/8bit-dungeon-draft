@@ -37,8 +37,10 @@ void bufferFGQuad(uint16_t pquad) {
 }
 
 void bufferFGQuadToPlayer() {
-    uint8_t pi = beebram[PLAYER + CEF_I];
-    uint8_t pj = beebram[PLAYER + CEF_J];
+    memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
+
+    int pi = beebram[PLAYER + CEF_I];
+    int pj = beebram[PLAYER + CEF_J];
 
     // go through all my in-camera statiks
     uint16_t psebase = CAMERA + CAMF_PSE0_LO;
@@ -58,21 +60,184 @@ void bufferFGQuadToPlayer() {
             }
 
             uint16_t pquad = pvizdef;
-            uint8_t qi = beebram[pse + CEF_I + (4 * q)];
-            uint8_t qj = beebram[pse + CEF_J + (4 * q)];
-            int di = (int)qi - (int)pi;
-            int dj = (int)qj - (int)pj;
-            if (abs(di) < 3 && abs(dj) < 3) {
-                fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di, dj);
-                // copy the quad into the player buffer
-                // bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
-                // bufferTileIJ(0, 0, 2, 1, pquad, PLAYERBUFFER);
-                // bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
-                if (pi == (qi - 2) && pj == qj) {
+            int qi = beebram[pse + CEF_I + (4 * q)];
+            int qj = beebram[pse + CEF_J + (4 * q)];
+
+            if (qi == pi + 2) {
+                if (qj == pj + 2) {
+                    bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (qj == pj + 1) {
+                    bufferTileIJ(0, 0, 2, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (qj == pj) {
                     bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
                     bufferTileIJ(0, 1, 2, 1, pquad, PLAYERBUFFER);
                 }
+
+                if (qj == pj - 1) {
+                    bufferTileIJ(0, 1, 2, 0, pquad, PLAYERBUFFER);
+                }
             }
+
+            if (qi == pi + 1) {
+
+                if (qj == pj + 2) {
+                    bufferTileIJ(0, 0, 1, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (qj == pj + 1) {
+                    bufferTileIJ(0, 0, 1, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 1, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 2, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (qj == pj) {
+                    bufferTileIJ(0, 0, 1, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 1, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 2, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 2, 1, pquad, PLAYERBUFFER);
+                }
+
+                if (qj == pj - 1) {
+                    bufferTileIJ(0, 1, 1, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 2, 0, pquad, PLAYERBUFFER);
+                }
+            }
+
+            if (qi == pi) {
+                if (qj == pj + 2) {
+                    bufferTileIJ(0, 0, 0, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 1, 2, pquad, PLAYERBUFFER);
+                }
+                if (qj == pj + 1) {
+                    bufferTileIJ(0, 0, 0, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 0, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 1, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 1, 2, pquad, PLAYERBUFFER);
+                }
+                if (qj == pj) {
+                    bufferTileIJ(0, 0, 0, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 0, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 1, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 1, 1, pquad, PLAYERBUFFER);
+                }
+                if (qj == pj - 1) {
+                    bufferTileIJ(0, 1, 0, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 1, 0, pquad, PLAYERBUFFER);
+                }
+            }
+
+            if (qi == pi - 1) {
+                if (qj == pj + 2) {
+                    bufferTileIJ(1, 0, 0, 2, pquad, PLAYERBUFFER);
+                }
+                if (qj == pj + 1) {
+                    bufferTileIJ(1, 0, 0, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 0, 2, pquad, PLAYERBUFFER);
+                }
+                if (qj == pj) {
+                    bufferTileIJ(1, 0, 0, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 0, 1, pquad, PLAYERBUFFER);
+                }
+                if (qj == pj - 1) {
+                    bufferTileIJ(1, 1, 0, 0, pquad, PLAYERBUFFER);
+                }
+            }
+        }
+    }
+}
+
+void _bufferFGQuadToPlayer() {
+    memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
+
+    int pi = beebram[PLAYER + CEF_I];
+    int pj = beebram[PLAYER + CEF_J];
+
+    // go through all my in-camera statiks
+    uint16_t psebase = CAMERA + CAMF_PSE0_LO;
+    for (uint8_t idx = 0; idx < 10; idx++) {
+        uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
+        psebase += 2;
+        uint8_t nquads = beebram[pse + SEF_TYPE4_NQUADS4] & 0x0F;
+        for (uint8_t q = 0; q < nquads; q++) {
+            uint16_t pvizdef =
+                beebram[pse + CEF_PVIZBASE_LO + (4 * q)] | (beebram[pse + CEF_PVIZBASE_HI + (4 * q)] << 8);
+
+            if (pvizdef >= AD_TABLE) {
+                uint16_t animdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
+                uint8_t current = beebram[pse + CEF_FELAPSED5_FCURRENT3] & 0b00000111;
+                pvizdef = beebram[(animdef + ADF_PFRAME_LO) + (2 * current)];
+                pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
+            }
+
+            uint16_t pquad = pvizdef;
+            int qi = beebram[pse + CEF_I + (4 * q)];
+            int qj = beebram[pse + CEF_J + (4 * q)];
+            int di = qi - pi;
+            int dj = qj - pj;
+
+            // only statics with origins directly below player origin or right of considered
+            // if (qj >= pj) {
+            {
+                if (dj < -1)
+                    continue;
+
+                // if (abs(di) < 3 && abs(dj) < 3) {
+                // if ((di >= 0 && di < 3) && (dj >= 0 && dj < 3)) {
+
+                if (pi == (qi - 2) && pj == (qj - 2)) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (pi == (qi - 2) && pj == qj) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 2, 1, pquad, PLAYERBUFFER);
+                }
+
+                if (pi == (qi - 2) && pj == (qj + 2)) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (pi == (qi - 2) && pj == (qj + 1)) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(0, 1, 2, 0, pquad, PLAYERBUFFER);
+                }
+
+                if (pi == (qi - 2) && pj == (qj - 1)) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(0, 0, 2, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 2, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (pi == qi && pj == (qj - 2)) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(0, 0, 0, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 1, 2, pquad, PLAYERBUFFER);
+                }
+
+                if (pi == (qi + 1) && pj == (qj - 2)) {
+                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
+                            dj);
+                    bufferTileIJ(1, 0, 0, 2, pquad, PLAYERBUFFER);
+                }
+            }
+
+            // }
         }
     }
     fprintf(stderr, "\n");
@@ -317,6 +482,7 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim, uint16_t buffer) {
 // streak removal when moving the sprite container
 // this mainly seems to affect the vertical rather than horizontal axis
 void renderCleanup(uint16_t pentity) {
+    // return;
 
     uint8_t xdir = (beebram[pentity + MEF_XMD4_YMD4] >> 4) & 0b11;
     uint8_t ydir = (beebram[pentity + MEF_XMD4_YMD4] & 0x0F) & 0b11;
