@@ -54,88 +54,88 @@ void statiks2container(uint16_t pentity) {
 
             if (qi == pi + 2) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 2, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 2, 2, pquad, 3);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 2, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(0, 1, 2, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 2, 1, pquad, 3);
+                    bufferTileIJ(0, 1, 2, 2, pquad, 3);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 2, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(0, 1, 2, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 2, 0, pquad, 3);
+                    bufferTileIJ(0, 1, 2, 1, pquad, 3);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 2, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 2, 0, pquad, 3);
                 }
             }
 
             if (qi == pi + 1) {
 
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 1, 2, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 0, 2, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 1, 2, pquad, 3);
+                    bufferTileIJ(1, 0, 2, 2, pquad, 3);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 1, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(0, 1, 1, 2, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 0, 2, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 2, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 1, 1, pquad, 3);
+                    bufferTileIJ(0, 1, 1, 2, pquad, 3);
+                    bufferTileIJ(1, 0, 2, 1, pquad, 3);
+                    bufferTileIJ(1, 1, 2, 2, pquad, 3);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 1, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(0, 1, 1, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 0, 2, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 2, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 1, 0, pquad, 3);
+                    bufferTileIJ(0, 1, 1, 1, pquad, 3);
+                    bufferTileIJ(1, 0, 2, 0, pquad, 3);
+                    bufferTileIJ(1, 1, 2, 1, pquad, 3);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 1, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 2, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 1, 0, pquad, 3);
+                    bufferTileIJ(1, 1, 2, 0, pquad, 3);
                 }
             }
 
             if (qi == pi) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 0, 2, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 0, 1, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 0, 2, pquad, 3);
+                    bufferTileIJ(1, 0, 1, 2, pquad, 3);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 0, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(0, 1, 0, 2, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 0, 1, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 1, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 0, 1, pquad, 3);
+                    bufferTileIJ(0, 1, 0, 2, pquad, 3);
+                    bufferTileIJ(1, 0, 1, 1, pquad, 3);
+                    bufferTileIJ(1, 1, 1, 2, pquad, 3);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 0, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(0, 1, 0, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 0, 1, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 1, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 0, 0, 0, pquad, 3);
+                    bufferTileIJ(0, 1, 0, 1, pquad, 3);
+                    bufferTileIJ(1, 0, 1, 0, pquad, 3);
+                    bufferTileIJ(1, 1, 1, 1, pquad, 3);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 0, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 1, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 0, 0, pquad, 3);
+                    bufferTileIJ(1, 1, 1, 0, pquad, 3);
                 }
             }
 
             if (qi == pi - 1) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(1, 0, 0, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 0, 2, pquad, 3);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(1, 0, 0, 1, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 0, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 0, 1, pquad, 3);
+                    bufferTileIJ(1, 1, 0, 2, pquad, 3);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(1, 0, 0, 0, pquad, OFFBUFFER);
-                    bufferTileIJ(1, 1, 0, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 0, 0, pquad, 3);
+                    bufferTileIJ(1, 1, 0, 1, pquad, 3);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(1, 1, 0, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 0, 0, pquad, 3);
                 }
             }
         }
