@@ -12,18 +12,27 @@
 // copies background from I,J into a buffer
 void bufferBG(uint8_t i, uint8_t j, uint8_t dim) {
     uint16_t penstart = OFFBUFFER;
-
     for (int rel_i = 0; rel_i < dim; rel_i++) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
             uint8_t tileID = beebram[BGBUFFER + 40 * (i + rel_i) + (j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
-            bufferTile(penstart, texture, SENTINEL16);
-            penstart += 8;
+            bufferTileIJ(rel_i, rel_j, texture, SENTINEL16, dim);
         }
     }
 }
 
 /*----------------------------------------------------------------------------*/
+
+void getTextureAndMask(uint8_t i, uint8_t j, uint16_t quad, uint16_t *texture, uint16_t *mask) {
+    uint16_t ptexture_lo = quad + (4 * i) + (2 * j);
+    *texture = beebram[ptexture_lo] | (beebram[ptexture_lo + 1] << 8);
+
+    if (quad >= QUADS_COMP) {
+        uint16_t pmask_lo = beebram[quad + (4 * i) + (2 * j) + 8];
+        *mask = beebram[pmask_lo] | (beebram[pmask_lo + 1] << 8);
+    } else
+        *mask = SENTINEL16;
+}
 
 // copies all statiks overlapping a sprite into the sprite buffer
 void statiks2container(uint16_t pentity) {
@@ -51,91 +60,127 @@ void statiks2container(uint16_t pentity) {
             uint16_t pquad = pvizdef;
             int qi = beebram[pse + CEF_I + (4 * q)];
             int qj = beebram[pse + CEF_J + (4 * q)];
-
+            uint16_t texture, mask;
             if (qi == pi + 2) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 2, 2, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(2, 2, texture, mask, 3);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 2, 1, pquad, 3);
-                    bufferTileIJ(0, 1, 2, 2, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(2, 1, texture, mask, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(2, 2, texture, mask, 3);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 2, 0, pquad, 3);
-                    bufferTileIJ(0, 1, 2, 1, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(2, 0, texture, mask, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(2, 1, texture, mask, 3);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 2, 0, pquad, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(2, 0, texture, mask, 3);
                 }
             }
 
             if (qi == pi + 1) {
 
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 1, 2, pquad, 3);
-                    bufferTileIJ(1, 0, 2, 2, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(1, 2, texture, mask, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(2, 2, texture, mask, 3);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 1, 1, pquad, 3);
-                    bufferTileIJ(0, 1, 1, 2, pquad, 3);
-                    bufferTileIJ(1, 0, 2, 1, pquad, 3);
-                    bufferTileIJ(1, 1, 2, 2, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(1, 1, texture, mask, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(1, 2, texture, mask, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(2, 1, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(2, 2, texture, mask, 3);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 1, 0, pquad, 3);
-                    bufferTileIJ(0, 1, 1, 1, pquad, 3);
-                    bufferTileIJ(1, 0, 2, 0, pquad, 3);
-                    bufferTileIJ(1, 1, 2, 1, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(1, 0, texture, mask, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(1, 1, texture, mask, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(2, 0, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(2, 1, texture, mask, 3);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 1, 0, pquad, 3);
-                    bufferTileIJ(1, 1, 2, 0, pquad, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(1, 0, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(2, 0, texture, mask, 3);
                 }
             }
 
             if (qi == pi) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 0, 2, pquad, 3);
-                    bufferTileIJ(1, 0, 1, 2, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(0, 2, texture, mask, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(1, 2, texture, mask, 3);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 0, 1, pquad, 3);
-                    bufferTileIJ(0, 1, 0, 2, pquad, 3);
-                    bufferTileIJ(1, 0, 1, 1, pquad, 3);
-                    bufferTileIJ(1, 1, 1, 2, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(0, 1, texture, mask, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(0, 2, texture, mask, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(1, 1, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(1, 2, texture, mask, 3);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 0, 0, pquad, 3);
-                    bufferTileIJ(0, 1, 0, 1, pquad, 3);
-                    bufferTileIJ(1, 0, 1, 0, pquad, 3);
-                    bufferTileIJ(1, 1, 1, 1, pquad, 3);
+                    getTextureAndMask(0, 0, pquad, &texture, &mask);
+                    bufferTileIJ(0, 0, texture, mask, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(0, 1, texture, mask, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(1, 0, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(1, 1, texture, mask, 3);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 0, 0, pquad, 3);
-                    bufferTileIJ(1, 1, 1, 0, pquad, 3);
+                    getTextureAndMask(0, 1, pquad, &texture, &mask);
+                    bufferTileIJ(0, 0, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(1, 0, texture, mask, 3);
                 }
             }
 
             if (qi == pi - 1) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(1, 0, 0, 2, pquad, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(0, 2, texture, mask, 3);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(1, 0, 0, 1, pquad, 3);
-                    bufferTileIJ(1, 1, 0, 2, pquad, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(0, 1, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(0, 2, texture, mask, 3);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(1, 0, 0, 0, pquad, 3);
-                    bufferTileIJ(1, 1, 0, 1, pquad, 3);
+                    getTextureAndMask(1, 0, pquad, &texture, &mask);
+                    bufferTileIJ(0, 0, texture, mask, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(0, 1, texture, mask, 3);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(1, 1, 0, 0, pquad, 3);
+                    getTextureAndMask(1, 1, pquad, &texture, &mask);
+                    bufferTileIJ(0, 0, texture, mask, 3);
                 }
             }
         }
@@ -144,48 +189,32 @@ void statiks2container(uint16_t pentity) {
 
 /*----------------------------------------------------------------------------*/
 
-// renders to offbuffer one tile with optional masking
-void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint8_t dim) {
-
+void bufferTileIJ(uint8_t dst_i, uint8_t dst_j, uint16_t texture, uint16_t mask, uint8_t dim) {
     uint8_t imult = (dim == 2) ? 16 : 24;
-
     uint16_t ptexture, pmask, penread, penwrite;
-
-    if (pquad >= QUADS_COMP) {
+    if (mask != SENTINEL16)
         goto compdef;
-    }
 
 plaindef:
-    ptexture = pquad + (4 * src_i) + (2 * src_j);
-    penread = beebram[ptexture] | (beebram[ptexture + 1] << 8);
     penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
-
     for (int s = 0; s < 8; s++) {
-        beebram[penwrite + s] = beebram[penread + s];
+        beebram[penwrite + s] = beebram[texture + s];
     }
     return;
 
 compdef:
-    // compdef quads always stored in 4xquad_texture, 4xquad_mask order
-    // also the MSB is a flag indicating reverse storage
-    ptexture = beebram[pquad + (4 * src_i) + (2 * src_j)];
-    ptexture |= (beebram[pquad + (4 * src_i) + (2 * src_j) + 1] << 8);
-    pmask = beebram[pquad + (4 * src_i) + (2 * src_j) + 8];
-    pmask |= (beebram[pquad + (4 * src_i) + (2 * src_j) + 1 + 8] << 8);
-
     uint8_t hflipped = ptexture >> 15;
-
     if (!hflipped) {
         penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
-            beebram[penwrite + s] &= (beebram[pmask + s] ^ 0xFF);
-            beebram[penwrite + s] |= (beebram[ptexture + s] & beebram[pmask + s]);
+            beebram[penwrite + s] &= (beebram[mask + s] ^ 0xFF);
+            beebram[penwrite + s] |= (beebram[texture + s] & beebram[mask + s]);
         }
     }
 
     else {
-        ptexture &= 0x7FFF;
-        pmask &= 0x7FFF;
+        texture &= 0x7FFF;
+        mask &= 0x7FFF;
         penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
             uint8_t mask_data = beebram[pmask + s];
@@ -272,10 +301,13 @@ void renderStatics() {
             pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
 
         render:
+            // uint16_t quad = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
             bufferBG(qi, qj, 2);
             for (uint8_t i = 0; i < 2; i++) {
                 for (uint8_t j = 0; j < 2; j++) {
-                    bufferTileIJ(i, j, i, j, pvizdef, 2);
+                    uint16_t texture, mask;
+                    getTextureAndMask(i, j, pvizdef, &texture, &mask);
+                    bufferTileIJ(i, j, texture, mask, 2);
                 }
             }
             renderOffbuffer(qi, qj, 2);
