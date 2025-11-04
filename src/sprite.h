@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 void updateSpriteContainer(uint16_t actor);
-void bufferFGSprite(uint16_t actor, uint16_t buffer);
+void bufferFGSprite(uint16_t pentity);
 
 #endif

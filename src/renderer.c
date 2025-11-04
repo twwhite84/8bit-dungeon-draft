@@ -7,16 +7,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-// void renderBGBufferTile(uint8_t i, uint8_t j);
-void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint16_t buffer);
-void statiks2container(uint16_t pentity);
-
 /*----------------------------------------------------------------------------*/
 
 // copies background from I,J into a buffer
-void bufferBG(uint8_t i, uint8_t j, uint16_t buffer) {
-    uint8_t dim = (buffer == STATIKBUFFER) ? 2 : 3;
-    uint16_t penstart = buffer;
+void bufferBG(uint8_t i, uint8_t j, uint8_t dim) {
+    uint16_t penstart = OFFBUFFER;
 
     for (int rel_i = 0; rel_i < dim; rel_i++) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
@@ -32,7 +27,7 @@ void bufferBG(uint8_t i, uint8_t j, uint16_t buffer) {
 
 // copies all statiks overlapping a sprite into the sprite buffer
 void statiks2container(uint16_t pentity) {
-    // memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
+    // memset(&beebram[OFFBUFFER], 0, (size_t)(8 * 9));
 
     int pi = beebram[pentity + CEF_I];
     int pj = beebram[pentity + CEF_J];
@@ -59,88 +54,88 @@ void statiks2container(uint16_t pentity) {
 
             if (qi == pi + 2) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 2, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 2, 2, pquad, OFFBUFFER);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 2, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(0, 1, 2, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 2, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 2, 2, pquad, OFFBUFFER);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 2, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(0, 1, 2, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 2, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 2, 1, pquad, OFFBUFFER);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 2, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 2, 0, pquad, OFFBUFFER);
                 }
             }
 
             if (qi == pi + 1) {
 
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 1, 2, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 0, 2, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 1, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 2, 2, pquad, OFFBUFFER);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 1, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(0, 1, 1, 2, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 0, 2, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 2, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 1, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 1, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 2, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 2, 2, pquad, OFFBUFFER);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 1, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(0, 1, 1, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 0, 2, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 2, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 1, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 1, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 2, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 2, 1, pquad, OFFBUFFER);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 1, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 2, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 1, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 2, 0, pquad, OFFBUFFER);
                 }
             }
 
             if (qi == pi) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 0, 2, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 0, 1, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 0, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 1, 2, pquad, OFFBUFFER);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 0, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(0, 1, 0, 2, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 0, 1, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 1, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 0, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 0, 2, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 1, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 1, 2, pquad, OFFBUFFER);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 0, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(0, 1, 0, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 0, 1, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 1, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 0, 0, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(0, 1, 0, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 0, 1, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 1, 1, pquad, OFFBUFFER);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 0, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 1, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 0, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 1, 0, pquad, OFFBUFFER);
                 }
             }
 
             if (qi == pi - 1) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(1, 0, 0, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 0, 2, pquad, OFFBUFFER);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(1, 0, 0, 1, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 0, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 0, 1, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 0, 2, pquad, OFFBUFFER);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(1, 0, 0, 0, pquad, SPRITEBUFFER);
-                    bufferTileIJ(1, 1, 0, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 0, 0, pquad, OFFBUFFER);
+                    bufferTileIJ(1, 1, 0, 1, pquad, OFFBUFFER);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(1, 1, 0, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 0, 0, pquad, OFFBUFFER);
                 }
             }
         }
@@ -150,9 +145,9 @@ void statiks2container(uint16_t pentity) {
 /*----------------------------------------------------------------------------*/
 
 // renders to offbuffer one tile with optional masking
-void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint16_t buffer) {
+void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint8_t dim) {
 
-    uint8_t imult = (buffer == STATIKBUFFER) ? 16 : 24;
+    uint8_t imult = (dim == 2) ? 16 : 24;
 
     uint16_t ptexture, pmask, penread, penwrite;
 
@@ -163,7 +158,7 @@ void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, ui
 plaindef:
     ptexture = pquad + (4 * src_i) + (2 * src_j);
     penread = beebram[ptexture] | (beebram[ptexture + 1] << 8);
-    penwrite = buffer + (imult * dst_i) + (8 * dst_j);
+    penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
 
     for (int s = 0; s < 8; s++) {
         beebram[penwrite + s] = beebram[penread + s];
@@ -181,7 +176,7 @@ compdef:
     uint8_t hflipped = ptexture >> 15;
 
     if (!hflipped) {
-        penwrite = buffer + (imult * dst_i) + (8 * dst_j);
+        penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
             beebram[penwrite + s] &= (beebram[pmask + s] ^ 0xFF);
             beebram[penwrite + s] |= (beebram[ptexture + s] & beebram[pmask + s]);
@@ -191,7 +186,7 @@ compdef:
     else {
         ptexture &= 0x7FFF;
         pmask &= 0x7FFF;
-        penwrite = buffer + (imult * dst_i) + (8 * dst_j);
+        penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
             uint8_t mask_data = beebram[pmask + s];
             uint8_t texture_data = beebram[ptexture + s];
@@ -277,13 +272,13 @@ void renderStatics() {
             pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
 
         render:
-            bufferBG(qi, qj, STATIKBUFFER);
+            bufferBG(qi, qj, 2);
             for (uint8_t i = 0; i < 2; i++) {
                 for (uint8_t j = 0; j < 2; j++) {
-                    bufferTileIJ(i, j, i, j, pvizdef, STATIKBUFFER);
+                    bufferTileIJ(i, j, i, j, pvizdef, 2);
                 }
             }
-            renderOffbuffer(qi, qj, 2, STATIKBUFFER);
+            renderOffbuffer(qi, qj, 2);
         }
     }
 }
@@ -294,10 +289,10 @@ void renderStatics() {
 void renderPlayer() {
     uint8_t i = beebram[PLAYER + CEF_I];
     uint8_t j = beebram[PLAYER + CEF_J];
-    bufferBG(i, j, SPRITEBUFFER);
+    bufferBG(i, j, 3);
     statiks2container(PLAYER);
-    bufferFGSprite(PLAYER, SPRITEBUFFER);
-    renderOffbuffer(i, j, 3, SPRITEBUFFER);
+    bufferFGSprite(PLAYER);
+    renderOffbuffer(i, j, 3);
 
     beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
 }
@@ -342,9 +337,9 @@ void renderBG() {
 /*----------------------------------------------------------------------------*/
 
 // renders square portion of the offbuffer to screen at absolute i,j
-void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim, uint16_t buffer) {
+void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
     uint16_t penstart = SCREEN + i * 0x140 + j * 8;
-    uint16_t offbase = buffer;
+    uint16_t offbase = OFFBUFFER;
 
     for (uint8_t rel_i = 0; rel_i < dim; rel_i++) {
         for (uint8_t rel_j = 0; rel_j < dim; rel_j++) {
