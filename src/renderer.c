@@ -28,7 +28,8 @@ void getTextureAndMask(uint8_t i, uint8_t j, uint16_t quad, uint16_t *texture, u
     *texture = beebram[ptexture_lo] | (beebram[ptexture_lo + 1] << 8);
 
     if (quad >= QUADS_COMP) {
-        uint16_t pmask_lo = beebram[quad + (4 * i) + (2 * j) + 8];
+        // uint16_t pmask_lo = beebram[quad + (4 * i) + (2 * j) + 8];
+        uint16_t pmask_lo = quad + (4 * i) + (2 * j) + 8;
         *mask = beebram[pmask_lo] | (beebram[pmask_lo + 1] << 8);
     } else
         *mask = SENTINEL16;
@@ -191,7 +192,7 @@ void statiks2container(uint16_t pentity) {
 
 void bufferTileIJ(uint8_t dst_i, uint8_t dst_j, uint16_t texture, uint16_t mask, uint8_t dim) {
     uint8_t imult = (dim == 2) ? 16 : 24;
-    uint16_t ptexture, pmask, penread, penwrite;
+    uint16_t penread, penwrite;
     if (mask != SENTINEL16)
         goto compdef;
 
@@ -203,7 +204,7 @@ plaindef:
     return;
 
 compdef:
-    uint8_t hflipped = ptexture >> 15;
+    uint8_t hflipped = texture >> 15;
     if (!hflipped) {
         penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
@@ -217,8 +218,8 @@ compdef:
         mask &= 0x7FFF;
         penwrite = OFFBUFFER + (imult * dst_i) + (8 * dst_j);
         for (int s = 0; s < 8; s++) {
-            uint8_t mask_data = beebram[pmask + s];
-            uint8_t texture_data = beebram[ptexture + s];
+            uint8_t mask_data = beebram[mask + s];
+            uint8_t texture_data = beebram[texture + s];
             beebram[penwrite + s] &= (beebram[LUT_REVERSE + mask_data] ^ 0xFF);
             beebram[penwrite + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
         }
@@ -301,7 +302,6 @@ void renderStatics() {
             pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
 
         render:
-            // uint16_t quad = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
             bufferBG(qi, qj, 2);
             for (uint8_t i = 0; i < 2; i++) {
                 for (uint8_t j = 0; j < 2; j++) {
