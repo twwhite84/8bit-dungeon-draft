@@ -158,7 +158,7 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
 /*----------------------------------------------------------------------------*/
 
 void handlePickup(uint16_t pentity) {
-    // return;
+    return;
     // find a free inventory slot, or bail
     uint16_t free_slot = PLAYER + PLRF_PINVA_LO;
     if (beebram[free_slot] != SENTINEL8) // A in use
