@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "mySDL.h"
 #include "shared.h"
 #include "sprite.h"
 #include <stdbool.h>
@@ -6,18 +7,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-void renderBGBufferTile(uint8_t i, uint8_t j);
+// void renderBGBufferTile(uint8_t i, uint8_t j);
 void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint16_t buffer);
+void statiks2container(uint16_t pentity);
 
 /*----------------------------------------------------------------------------*/
 
-// renders to offbuffer a square selection of the cambuffer from i,j
-void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim, uint16_t buffer) {
+// copies background from I,J into a buffer
+void bufferBG(uint8_t i, uint8_t j, uint16_t buffer) {
+    uint8_t dim = (buffer == STATIKBUFFER) ? 2 : 3;
     uint16_t penstart = buffer;
 
     for (int rel_i = 0; rel_i < dim; rel_i++) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
-            uint8_t tileID = beebram[BGBUFFER + 40 * (abs_i + rel_i) + (abs_j + rel_j)];
+            uint8_t tileID = beebram[BGBUFFER + 40 * (i + rel_i) + (j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
             bufferTile(penstart, texture, SENTINEL16);
             penstart += 8;
@@ -27,22 +30,13 @@ void bufferBG(uint8_t abs_i, uint8_t abs_j, uint8_t dim, uint16_t buffer) {
 
 /*----------------------------------------------------------------------------*/
 
-// buffers a quad into the offbuffer
-void bufferFGQuad(uint16_t pquad) {
-    for (uint8_t i = 0; i < 2; i++) {
-        for (uint8_t j = 0; j < 2; j++) {
-            bufferTileIJ(i, j, i, j, pquad, OFFBUFFER);
-        }
-    }
-}
+// copies all statiks overlapping a sprite into the sprite buffer
+void statiks2container(uint16_t pentity) {
+    // memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
 
-void bufferFGQuadToPlayer() {
-    memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
+    int pi = beebram[pentity + CEF_I];
+    int pj = beebram[pentity + CEF_J];
 
-    int pi = beebram[PLAYER + CEF_I];
-    int pj = beebram[PLAYER + CEF_J];
-
-    // go through all my in-camera statiks
     uint16_t psebase = CAMERA + CAMF_PSE0_LO;
     for (uint8_t idx = 0; idx < 10; idx++) {
         uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
@@ -65,182 +59,92 @@ void bufferFGQuadToPlayer() {
 
             if (qi == pi + 2) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 2, 2, pquad, SPRITEBUFFER);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 2, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 2, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 2, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 2, 2, pquad, SPRITEBUFFER);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 2, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 2, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 2, 1, pquad, SPRITEBUFFER);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 2, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 2, 0, pquad, SPRITEBUFFER);
                 }
             }
 
             if (qi == pi + 1) {
 
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 1, 2, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 2, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 1, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 2, 2, pquad, SPRITEBUFFER);
                 }
 
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 1, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 1, 2, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 2, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 2, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 1, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 1, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 2, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 2, 2, pquad, SPRITEBUFFER);
                 }
 
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 1, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 1, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 2, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 2, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 1, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 1, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 2, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 2, 1, pquad, SPRITEBUFFER);
                 }
 
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 1, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 2, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 1, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 2, 0, pquad, SPRITEBUFFER);
                 }
             }
 
             if (qi == pi) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(0, 0, 0, 2, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 1, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 0, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 1, 2, pquad, SPRITEBUFFER);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(0, 0, 0, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 0, 2, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 1, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 1, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 0, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 0, 2, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 1, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 1, 2, pquad, SPRITEBUFFER);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(0, 0, 0, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 0, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 1, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 1, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 0, 0, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(0, 1, 0, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 0, 1, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 1, 1, pquad, SPRITEBUFFER);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(0, 1, 0, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 1, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(0, 1, 0, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 1, 0, pquad, SPRITEBUFFER);
                 }
             }
 
             if (qi == pi - 1) {
                 if (qj == pj + 2) {
-                    bufferTileIJ(1, 0, 0, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 0, 2, pquad, SPRITEBUFFER);
                 }
                 if (qj == pj + 1) {
-                    bufferTileIJ(1, 0, 0, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 0, 2, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 0, 1, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 0, 2, pquad, SPRITEBUFFER);
                 }
                 if (qj == pj) {
-                    bufferTileIJ(1, 0, 0, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 1, 0, 1, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 0, 0, 0, pquad, SPRITEBUFFER);
+                    bufferTileIJ(1, 1, 0, 1, pquad, SPRITEBUFFER);
                 }
                 if (qj == pj - 1) {
-                    bufferTileIJ(1, 1, 0, 0, pquad, PLAYERBUFFER);
+                    bufferTileIJ(1, 1, 0, 0, pquad, SPRITEBUFFER);
                 }
             }
         }
     }
-}
-
-void _bufferFGQuadToPlayer() {
-    memset(&beebram[PLAYERBUFFER], 0, (size_t)(8 * 9));
-
-    int pi = beebram[PLAYER + CEF_I];
-    int pj = beebram[PLAYER + CEF_J];
-
-    // go through all my in-camera statiks
-    uint16_t psebase = CAMERA + CAMF_PSE0_LO;
-    for (uint8_t idx = 0; idx < 10; idx++) {
-        uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
-        psebase += 2;
-        uint8_t nquads = beebram[pse + SEF_TYPE4_NQUADS4] & 0x0F;
-        for (uint8_t q = 0; q < nquads; q++) {
-            uint16_t pvizdef =
-                beebram[pse + CEF_PVIZBASE_LO + (4 * q)] | (beebram[pse + CEF_PVIZBASE_HI + (4 * q)] << 8);
-
-            if (pvizdef >= AD_TABLE) {
-                uint16_t animdef = beebram[pvizdef] | (beebram[pvizdef + 1] << 8);
-                uint8_t current = beebram[pse + CEF_FELAPSED5_FCURRENT3] & 0b00000111;
-                pvizdef = beebram[(animdef + ADF_PFRAME_LO) + (2 * current)];
-                pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
-            }
-
-            uint16_t pquad = pvizdef;
-            int qi = beebram[pse + CEF_I + (4 * q)];
-            int qj = beebram[pse + CEF_J + (4 * q)];
-            int di = qi - pi;
-            int dj = qj - pj;
-
-            // only statics with origins directly below player origin or right of considered
-            // if (qj >= pj) {
-            {
-                if (dj < -1)
-                    continue;
-
-                // if (abs(di) < 3 && abs(dj) < 3) {
-                // if ((di >= 0 && di < 3) && (dj >= 0 && dj < 3)) {
-
-                if (pi == (qi - 2) && pj == (qj - 2)) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
-                }
-
-                if (pi == (qi - 2) && pj == qj) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(0, 0, 2, 0, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 2, 1, pquad, PLAYERBUFFER);
-                }
-
-                if (pi == (qi - 2) && pj == (qj + 2)) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(0, 0, 2, 2, pquad, PLAYERBUFFER);
-                }
-
-                if (pi == (qi - 2) && pj == (qj + 1)) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(0, 1, 2, 0, pquad, PLAYERBUFFER);
-                }
-
-                if (pi == (qi - 2) && pj == (qj - 1)) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(0, 0, 2, 1, pquad, PLAYERBUFFER);
-                    bufferTileIJ(0, 1, 2, 2, pquad, PLAYERBUFFER);
-                }
-
-                if (pi == qi && pj == (qj - 2)) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(0, 0, 0, 2, pquad, PLAYERBUFFER);
-                    bufferTileIJ(1, 0, 1, 2, pquad, PLAYERBUFFER);
-                }
-
-                if (pi == (qi + 1) && pj == (qj - 2)) {
-                    fprintf(stderr, "\nOVERLAP: player (%d,%d), statik (%d,%d), delta (%d, %d)", pi, pj, qi, qj, di,
-                            dj);
-                    bufferTileIJ(1, 0, 0, 2, pquad, PLAYERBUFFER);
-                }
-            }
-
-            // }
-        }
-    }
-    fprintf(stderr, "\n");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -248,14 +152,7 @@ void _bufferFGQuadToPlayer() {
 // renders to offbuffer one tile with optional masking
 void bufferTileIJ(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j, uint16_t pquad, uint16_t buffer) {
 
-    uint8_t imult = 0;
-
-    // note 16*dst_i for a 2x2 buffer, PLAYERBUFFER ALWAYS 3x3 so 24*dst_i
-    if (buffer == OFFBUFFER) {
-        imult = 16;
-    } else if (buffer == PLAYERBUFFER) {
-        imult = 24;
-    }
+    uint8_t imult = (buffer == STATIKBUFFER) ? 16 : 24;
 
     uint16_t ptexture, pmask, penread, penwrite;
 
@@ -334,7 +231,6 @@ compdef:
             beebram[penstart + s] |= (beebram[LUT_REVERSE + texture_data] & beebram[LUT_REVERSE + mask_data]);
         }
     }
-    // mySDLRender();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -381,9 +277,13 @@ void renderStatics() {
             pvizdef |= (beebram[(animdef + ADF_PFRAME_HI) + (2 * current)] << 8);
 
         render:
-            bufferBG(qi, qj, 2, OFFBUFFER);
-            bufferFGQuad(pvizdef);
-            renderOffbuffer(qi, qj, 2, OFFBUFFER);
+            bufferBG(qi, qj, STATIKBUFFER);
+            for (uint8_t i = 0; i < 2; i++) {
+                for (uint8_t j = 0; j < 2; j++) {
+                    bufferTileIJ(i, j, i, j, pvizdef, STATIKBUFFER);
+                }
+            }
+            renderOffbuffer(qi, qj, 2, STATIKBUFFER);
         }
     }
 }
@@ -394,40 +294,10 @@ void renderStatics() {
 void renderPlayer() {
     uint8_t i = beebram[PLAYER + CEF_I];
     uint8_t j = beebram[PLAYER + CEF_J];
-
-    uint8_t clean = (beebram[PLAYER + CEF_ROOMID6_REDRAW2] & CEC_CLEAN);
-
-    // if the clean flag is up, it means sprite container has moved
-    if (clean == CEC_CLEAN) {
-        renderCleanup(PLAYER);
-
-        // // copy 3x3 from screen to playerbuffer
-        // uint16_t penread = SCREEN + (i * 0x140) + (j * 8);
-        // uint16_t penwrite = PLAYERBUFFER;
-        // for (uint8_t row = 0; row < 3; row++) {
-        //     for (uint8_t col = 0; col < 3; col++) {
-        //         for (uint8_t s = 0; s < 8; s++) {
-        //             beebram[penwrite + s] = beebram[penread + s];
-        //         }
-        //         penread += 8;
-        //         penwrite += 8;
-        //     }
-        //     penread += 0x140 - 24;
-        // }
-    }
-
-    bufferBG(i, j, 3, PLAYERBUFFER);
-    bufferFGQuadToPlayer();
-
-    // copy the playerbuffer into the offbuffer
-    // uint16_t penread = PLAYERBUFFER;
-    // uint16_t penwrite = OFFBUFFER;
-    // for (uint8_t s = 0; s < (8 * 9); s++) {
-    //     beebram[penwrite + s] = beebram[penread + s];
-    // }
-
-    bufferFGSprite(PLAYER, PLAYERBUFFER);
-    renderOffbuffer(i, j, 3, PLAYERBUFFER);
+    bufferBG(i, j, SPRITEBUFFER);
+    statiks2container(PLAYER);
+    bufferFGSprite(PLAYER, SPRITEBUFFER);
+    renderOffbuffer(i, j, 3, SPRITEBUFFER);
 
     beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
 }
@@ -449,11 +319,22 @@ void renderMovables() {
 
 /*----------------------------------------------------------------------------*/
 
-// renders the entire cambuffer (ie background tilemap) to the framebuffer
-void renderBackground() {
+// renders a background tile
+void renderBGTile(uint8_t i, uint8_t j) {
+    uint8_t tid = beebram[BGBUFFER + 40 * i + j];
+    uint16_t tileptr = getTileTextureAddr(tid);
+    uint16_t screenpos = SCREEN + (CAMC_WIDTH * i) + (8 * j);
+
+    for (uint8_t s = 0; s < 8; s++) {
+        beebram[screenpos + s] = beebram[tileptr + s];
+    }
+}
+
+// renders entire background
+void renderBG() {
     for (uint8_t i = 0; i < 26; i++) {
         for (uint8_t j = 0; j < 40; j++) {
-            renderBGBufferTile(i, j);
+            renderBGTile(i, j);
         }
     }
 }
@@ -492,30 +373,30 @@ void renderCleanup(uint16_t pentity) {
 
     // moving up, clear below
     if (ydir == DIR_UP) {
-        renderBGBufferTile(old_i + 2, old_j + 0);
-        renderBGBufferTile(old_i + 2, old_j + 1);
-        renderBGBufferTile(old_i + 2, old_j + 2);
+        renderBGTile(old_i + 2, old_j + 0);
+        renderBGTile(old_i + 2, old_j + 1);
+        renderBGTile(old_i + 2, old_j + 2);
     }
 
     // moving down, clean above
     if (ydir == DIR_DOWN) {
-        renderBGBufferTile(old_i, old_j + 0);
-        renderBGBufferTile(old_i, old_j + 1);
-        renderBGBufferTile(old_i, old_j + 2);
+        renderBGTile(old_i, old_j + 0);
+        renderBGTile(old_i, old_j + 1);
+        renderBGTile(old_i, old_j + 2);
     }
 
     // moving left, clear right
     if (xdir = DIR_LEFT) {
-        renderBGBufferTile(old_i + 0, old_j + 2);
-        renderBGBufferTile(old_i + 1, old_j + 2);
-        renderBGBufferTile(old_i + 2, old_j + 2);
+        renderBGTile(old_i + 0, old_j + 2);
+        renderBGTile(old_i + 1, old_j + 2);
+        renderBGTile(old_i + 2, old_j + 2);
     }
 
     // moving right, clear left
     if (xdir = DIR_RIGHT) {
-        renderBGBufferTile(old_i + 0, old_j);
-        renderBGBufferTile(old_i + 1, old_j);
-        renderBGBufferTile(old_i + 2, old_j);
+        renderBGTile(old_i + 0, old_j);
+        renderBGTile(old_i + 1, old_j);
+        renderBGTile(old_i + 2, old_j);
     }
 
     // lower cleanup flag
@@ -524,25 +405,15 @@ void renderCleanup(uint16_t pentity) {
 
 /*----------------------------------------------------------------------------*/
 
-void renderBGBufferTile(uint8_t i, uint8_t j) {
-    uint8_t tid = beebram[BGBUFFER + 40 * i + j];
-    uint16_t tileptr = getTileTextureAddr(tid);
-    uint16_t screenpos = SCREEN + (CAMC_WIDTH * i) + (8 * j);
-
-    for (uint8_t s = 0; s < 8; s++) {
-        beebram[screenpos + s] = beebram[tileptr + s];
-    }
-}
-
 void renderEraseSlot() {
     // background redrawn over the item's tile/quad
     uint16_t pentity = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
     uint8_t sei = beebram[pentity + CEF_I];
     uint8_t sej = beebram[pentity + CEF_J];
-    renderBGBufferTile(sei, sej);
-    renderBGBufferTile(sei, sej + 1);
-    renderBGBufferTile(sei + 1, sej);
-    renderBGBufferTile(sei + 1, sej + 1);
+    renderBGTile(sei, sej);
+    renderBGTile(sei, sej + 1);
+    renderBGTile(sei + 1, sej);
+    renderBGTile(sei + 1, sej + 1);
 
     // clear the erase slot
     beebram[CAMERA + CAMF_PERASE_LO] = SENTINEL8;
