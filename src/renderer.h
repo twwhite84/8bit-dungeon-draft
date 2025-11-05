@@ -14,6 +14,6 @@ void renderStatics();
 void renderCleanup(uint16_t pentity);
 void renderEraseSlot();
 // void statiks2container(uint16_t pentity);
-void statiks2container(int pi, int pj);
+void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen);
 
 #endif

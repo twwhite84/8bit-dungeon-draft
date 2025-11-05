@@ -80,11 +80,7 @@ compdef:
 /*----------------------------------------------------------------------------*/
 
 // copies any statik cells overlapping a movable entity into the offbuffer
-// void statiks2container(uint16_t pentity) {
-void statiks2container(int pi, int pj) {
-    // int pi = beebram[pentity + CEF_I];
-    // int pj = beebram[pentity + CEF_J];
-
+void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen) {
     uint16_t psebase = CAMERA + CAMF_PSE0_LO;
     for (uint8_t idx = 0; idx < 10; idx++) {
         uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
@@ -102,129 +98,21 @@ void statiks2container(int pi, int pj) {
             }
 
             uint16_t pquad = pvizdef;
-            int qi = beebram[pse + CEF_I + (4 * q)];
-            int qj = beebram[pse + CEF_J + (4 * q)];
+            uint8_t SEi_screen = beebram[pse + CEF_I + (4 * q)];
+            uint8_t SEj_screen = beebram[pse + CEF_J + (4 * q)];
             uint16_t texture, mask;
-            if (qi == pi + 2) {
-                if (qj == pj + 2) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 2, texture, mask, 3);
-                }
 
-                if (qj == pj + 1) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 1, texture, mask, 3);
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 2, texture, mask, 3);
-                }
-
-                if (qj == pj) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 0, texture, mask, 3);
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 1, texture, mask, 3);
-                }
-
-                if (qj == pj - 1) {
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 0, texture, mask, 3);
-                }
-            }
-
-            if (qi == pi + 1) {
-
-                if (qj == pj + 2) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 2, texture, mask, 3);
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 2, texture, mask, 3);
-                }
-
-                if (qj == pj + 1) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 1, texture, mask, 3);
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 2, texture, mask, 3);
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 1, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 2, texture, mask, 3);
-                }
-
-                if (qj == pj) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 0, texture, mask, 3);
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 1, texture, mask, 3);
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 0, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 1, texture, mask, 3);
-                }
-
-                if (qj == pj - 1) {
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 0, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(2, 0, texture, mask, 3);
-                }
-            }
-
-            if (qi == pi) {
-                if (qj == pj + 2) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 2, texture, mask, 3);
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 2, texture, mask, 3);
-                }
-                if (qj == pj + 1) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 1, texture, mask, 3);
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 2, texture, mask, 3);
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 1, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 2, texture, mask, 3);
-                }
-                if (qj == pj) {
-                    getTextureAndMask(0, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 0, texture, mask, 3);
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 1, texture, mask, 3);
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 0, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 1, texture, mask, 3);
-                }
-                if (qj == pj - 1) {
-                    getTextureAndMask(0, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 0, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(1, 0, texture, mask, 3);
-                }
-            }
-
-            if (qi == pi - 1) {
-                if (qj == pj + 2) {
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 2, texture, mask, 3);
-                }
-                if (qj == pj + 1) {
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 1, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 2, texture, mask, 3);
-                }
-                if (qj == pj) {
-                    getTextureAndMask(1, 0, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 0, texture, mask, 3);
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 1, texture, mask, 3);
-                }
-                if (qj == pj - 1) {
-                    getTextureAndMask(1, 1, pquad, &texture, &mask);
-                    bufferTextureAndMask(0, 0, texture, mask, 3);
+            // fetch each cell of the statik and paint at relative offset in sprite container
+            uint8_t delta_i = SEi_screen - MEi_screen;
+            uint8_t delta_j = SEj_screen - MEj_screen;
+            for (uint8_t SEi_box = 0; SEi_box < 2; SEi_box++) {
+                for (uint8_t SEj_box = 0; SEj_box < 2; SEj_box++) {
+                    getTextureAndMask(SEi_box, SEj_box, pquad, &texture, &mask);
+                    uint8_t i_shifted = SEi_box + delta_i;
+                    uint8_t j_shifted = SEj_box + delta_j;
+                    // only paint if the shift falls within the container
+                    if ((i_shifted >= 0 && i_shifted < 3) && (j_shifted >= 0 && j_shifted < 3))
+                        bufferTextureAndMask(i_shifted, j_shifted, texture, mask, 3);
                 }
             }
         }
@@ -365,7 +253,6 @@ void renderOffbufferCell(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t ds
 /*----------------------------------------------------------------------------*/
 
 // streak removal when moving the sprite container
-// this mainly seems to affect the vertical rather than horizontal axis
 void renderCleanup(uint16_t pentity) {
     uint8_t xmag = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) >> 2;
     uint8_t xdir = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) & 0b11;
@@ -378,40 +265,37 @@ void renderCleanup(uint16_t pentity) {
     // moving up, clear below
     if (ymag != 0) {
         if (ydir == DIR_UP) {
-            // fprintf(stderr, "\nCLEAN: MOVING UP, CLEAR BELOW");
-            renderBGTile(old_i + 2, old_j + 0);
-            renderBGTile(old_i + 2, old_j + 1);
-            renderBGTile(old_i + 2, old_j + 2);
+            bufferBG(old_i, old_j, 3);
+            statiks2container(old_i, old_j);
+            renderOffbufferCell(2, 0, old_i + 2, old_j + 0);
+            renderOffbufferCell(2, 1, old_i + 2, old_j + 1);
+            renderOffbufferCell(2, 2, old_i + 2, old_j + 2);
         }
 
         // moving down, clean above
         else if (ydir == DIR_DOWN) {
-            // fprintf(stderr, "\nCLEAN: MOVING DOWN, CLEAR ABOVE");
-            renderBGTile(old_i, old_j + 0);
-            renderBGTile(old_i, old_j + 1);
-            renderBGTile(old_i, old_j + 2);
+            bufferBG(old_i, old_j, 3);
+            statiks2container(old_i, old_j);
+            renderOffbufferCell(0, 0, old_i, old_j + 0);
+            renderOffbufferCell(0, 1, old_i, old_j + 1);
+            renderOffbufferCell(0, 2, old_i, old_j + 2);
         }
     }
 
     if (xmag != 0) {
         // moving left, clear right
         if (xdir == DIR_LEFT) {
-            // fprintf(stderr, "\nCLEAN: MOVING LEFT, CLEAR RIGHT");
-            renderBGTile(old_i + 0, old_j + 2);
-            renderBGTile(old_i + 1, old_j + 2);
-            renderBGTile(old_i + 2, old_j + 2);
+            bufferBG(old_i, old_j, 3);
+            statiks2container(old_i, old_j);
+            renderOffbufferCell(0, 2, old_i + 0, old_j + 2);
+            renderOffbufferCell(1, 2, old_i + 1, old_j + 2);
+            renderOffbufferCell(2, 2, old_i + 2, old_j + 2);
         }
 
         // moving right, clear left
         else if (xdir == DIR_RIGHT) {
-            // fprintf(stderr, "\nCLEAN: MOVING RIGHT, CLEAR LEFT");
-            // renderBGTile(old_i + 0, old_j);
-            // renderBGTile(old_i + 1, old_j);
-            // renderBGTile(old_i + 2, old_j);
-
             bufferBG(old_i, old_j, 3);
             statiks2container(old_i, old_j);
-
             renderOffbufferCell(0, 0, old_i + 0, old_j);
             renderOffbufferCell(1, 0, old_i + 1, old_j);
             renderOffbufferCell(2, 0, old_i + 2, old_j);

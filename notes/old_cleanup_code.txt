@@ -1,0 +1,122 @@
+// if (qi == pi + 2) {
+//     if (qj == pj + 2) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 2, texture, mask, 3);
+//     }
+
+//     if (qj == pj + 1) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 1, texture, mask, 3);
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 2, texture, mask, 3);
+//     }
+
+//     if (qj == pj) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 0, texture, mask, 3);
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 1, texture, mask, 3);
+//     }
+
+//     if (qj == pj - 1) {
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 0, texture, mask, 3);
+//     }
+// }
+
+// if (qi == pi + 1) {
+
+//     if (qj == pj + 2) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 2, texture, mask, 3);
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 2, texture, mask, 3);
+//     }
+
+//     if (qj == pj + 1) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 1, texture, mask, 3);
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 2, texture, mask, 3);
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 1, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 2, texture, mask, 3);
+//     }
+
+//     if (qj == pj) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 0, texture, mask, 3);
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 1, texture, mask, 3);
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 0, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 1, texture, mask, 3);
+//     }
+
+//     if (qj == pj - 1) {
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 0, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(2, 0, texture, mask, 3);
+//     }
+// }
+
+// if (qi == pi) {
+//     if (qj == pj + 2) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 2, texture, mask, 3);
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 2, texture, mask, 3);
+//     }
+//     if (qj == pj + 1) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 1, texture, mask, 3);
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 2, texture, mask, 3);
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 1, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 2, texture, mask, 3);
+//     }
+//     if (qj == pj) {
+//         getTextureAndMask(0, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 0, texture, mask, 3);
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 1, texture, mask, 3);
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 0, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 1, texture, mask, 3);
+//     }
+//     if (qj == pj - 1) {
+//         getTextureAndMask(0, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 0, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(1, 0, texture, mask, 3);
+//     }
+// }
+
+// if (qi == pi - 1) {
+//     if (qj == pj + 2) {
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 2, texture, mask, 3);
+//     }
+//     if (qj == pj + 1) {
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 1, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 2, texture, mask, 3);
+//     }
+//     if (qj == pj) {
+//         getTextureAndMask(1, 0, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 0, texture, mask, 3);
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 1, texture, mask, 3);
+//     }
+//     if (qj == pj - 1) {
+//         getTextureAndMask(1, 1, pquad, &texture, &mask);
+//         bufferTextureAndMask(0, 0, texture, mask, 3);
+//     }
+// }
