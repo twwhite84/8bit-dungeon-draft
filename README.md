@@ -11,11 +11,14 @@ C draft base for an 8-bit overhead Zelda-inspired game. I'm designing this to be
 ### Fixing the Compositing Problem
 After experimenting with rendering queues in a dictionary with coordinates for keys, I have decided to stick with flags instead. This saves a lot of memory when I only need a flag bit. I have changed some of my functions to render a single cell tile at a time instead of quads, and added new functions for fetching a specific cell from a quad and writing at a specific location to the offscreen buffer. A new function "statiks2container" checks all statiks for the current room for overlaps with the player sprite contaier and then copies in those statik texture cells before compositing the sprite over the time of them. The renderCleanup function has also been changed to perform a similar function but only copies relevant cells from textures into a small strip that is then drawn at the old position of the sprite container whenever the sprite container position updates.
 
+---
+
 ### 23/10/2025
 ### Using Dictionary to Render
 
 I have decided to change my approach to rendering. I will have a single fixed sized 2x2 offscreen buffer, and I will render my statics and sprites piecemeal. Statics are always aligned to a 16x16 grid anyway. But I will be using a dictionary where those grid cells will serve as keys. Each key will hold a static and up to 2 movable items. The movable items are stored with offsets for the sprite container as that moves on an 8x8 basis. During the update phase the dictionary will track what needs to be rendered at which cells. This way I can avoid having to statically allocate a large amount of ram, at the expense of some amount of dictionary traversal. I may be able to improve performance here with a hashing function, but for now I have simply implemented linear search for when keys are inserted. (During rendering no linear search is necessary.)
 
+---
 
 ### 18/10/2025
 ### Rendering Order Issue
@@ -44,6 +47,8 @@ next to the erase buffer that the call to render player checks in order to do
 any triple compositing necessary. At this point I effectively have two kinds of
 statics: triple-composited if overlapped with player, and double-composited if
 not.
+
+---
 
 ### 16/10/2025
 ### Collision Handling: Static Items
