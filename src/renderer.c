@@ -364,42 +364,48 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
 void renderCleanup(uint16_t pentity) {
     // return;
 
-    uint8_t xdir = (beebram[pentity + MEF_XMD4_YMD4] >> 4) & 0b11;
-    uint8_t ydir = (beebram[pentity + MEF_XMD4_YMD4] & 0x0F) & 0b11;
+    uint8_t xmag = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) >> 2;
+    uint8_t xdir = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) & 0b11;
+    uint8_t ymag = (beebram[PLAYER + MEF_XMD4_YMD4] & 0x0F) >> 2;
+    uint8_t ydir = (beebram[PLAYER + MEF_XMD4_YMD4] & 0x0F) & 0b11;
 
     uint8_t old_i = beebram[pentity + MEF_OLDI];
     uint8_t old_j = beebram[pentity + MEF_OLDJ];
 
     // moving up, clear below
-    if (ydir == DIR_UP) {
-        fprintf(stderr, "\nCLEAN: MOVING UP, CLEAR BELOW");
-        renderBGTile(old_i + 2, old_j + 0);
-        renderBGTile(old_i + 2, old_j + 1);
-        renderBGTile(old_i + 2, old_j + 2);
+    if (ymag != 0) {
+        if (ydir == DIR_UP) {
+            fprintf(stderr, "\nCLEAN: MOVING UP, CLEAR BELOW");
+            renderBGTile(old_i + 2, old_j + 0);
+            renderBGTile(old_i + 2, old_j + 1);
+            renderBGTile(old_i + 2, old_j + 2);
+        }
+
+        // moving down, clean above
+        if (ydir == DIR_DOWN) {
+            fprintf(stderr, "\nCLEAN: MOVING DOWN, CLEAR ABOVE");
+            renderBGTile(old_i, old_j + 0);
+            renderBGTile(old_i, old_j + 1);
+            renderBGTile(old_i, old_j + 2);
+        }
     }
 
-    // moving down, clean above
-    if (ydir == DIR_DOWN) {
-        fprintf(stderr, "\nCLEAN: MOVING DOWN, CLEAR ABOVE");
-        renderBGTile(old_i, old_j + 0);
-        renderBGTile(old_i, old_j + 1);
-        renderBGTile(old_i, old_j + 2);
-    }
+    if (xmag != 0) {
+        // moving left, clear right
+        if (xdir == DIR_LEFT) {
+            fprintf(stderr, "\nCLEAN: MOVING LEFT, CLEAR RIGHT");
+            renderBGTile(old_i + 0, old_j + 2);
+            renderBGTile(old_i + 1, old_j + 2);
+            renderBGTile(old_i + 2, old_j + 2);
+        }
 
-    // moving left, clear right
-    if (xdir == DIR_LEFT) {
-        fprintf(stderr, "\nCLEAN: MOVING LEFT, CLEAR RIGHT");
-        renderBGTile(old_i + 0, old_j + 2);
-        renderBGTile(old_i + 1, old_j + 2);
-        renderBGTile(old_i + 2, old_j + 2);
-    }
-
-    // moving right, clear left
-    if (xdir == DIR_RIGHT) {
-        fprintf(stderr, "\nCLEAN: MOVING RIGHT, CLEAR LEFT");
-        renderBGTile(old_i + 0, old_j);
-        renderBGTile(old_i + 1, old_j);
-        renderBGTile(old_i + 2, old_j);
+        // moving right, clear left
+        if (xdir == DIR_RIGHT) {
+            fprintf(stderr, "\nCLEAN: MOVING RIGHT, CLEAR LEFT");
+            renderBGTile(old_i + 0, old_j);
+            renderBGTile(old_i + 1, old_j);
+            renderBGTile(old_i + 2, old_j);
+        }
     }
 
     // lower cleanup flag
