@@ -80,9 +80,10 @@ compdef:
 /*----------------------------------------------------------------------------*/
 
 // copies any statik cells overlapping a movable entity into the offbuffer
-void statiks2container(uint16_t pentity) {
-    int pi = beebram[pentity + CEF_I];
-    int pj = beebram[pentity + CEF_J];
+// void statiks2container(uint16_t pentity) {
+void statiks2container(int pi, int pj) {
+    // int pi = beebram[pentity + CEF_I];
+    // int pj = beebram[pentity + CEF_J];
 
     uint16_t psebase = CAMERA + CAMF_PSE0_LO;
     for (uint8_t idx = 0; idx < 10; idx++) {
@@ -298,7 +299,7 @@ void renderPlayer() {
     uint8_t i = beebram[PLAYER + CEF_I];
     uint8_t j = beebram[PLAYER + CEF_J];
     bufferBG(i, j, 3);
-    statiks2container(PLAYER);
+    statiks2container(i, j);
     bufferFGSprite(PLAYER);
     renderOffbuffer(i, j, 3);
     beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
@@ -409,6 +410,7 @@ void renderCleanup(uint16_t pentity) {
             // renderBGTile(old_i + 2, old_j);
 
             bufferBG(old_i, old_j, 3);
+            statiks2container(old_i, old_j);
 
             renderOffbufferCell(0, 0, old_i + 0, old_j);
             renderOffbufferCell(1, 0, old_i + 1, old_j);

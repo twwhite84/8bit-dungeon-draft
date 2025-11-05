@@ -13,6 +13,7 @@ void renderMovables();
 void renderStatics();
 void renderCleanup(uint16_t pentity);
 void renderEraseSlot();
-void statiks2container(uint16_t pentity);
+// void statiks2container(uint16_t pentity);
+void statiks2container(int pi, int pj);
 
 #endif
