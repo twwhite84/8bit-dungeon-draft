@@ -288,6 +288,10 @@ void renderStatics() {
 
 // renders players to framebuffer
 void renderPlayer() {
+    if (beebram[PLAYER + CEF_ROOMID6_REDRAW2] & CEC_CLEAN != 0) {
+        renderCleanup(PLAYER);
+    }
+
     uint8_t i = beebram[PLAYER + CEF_I];
     uint8_t j = beebram[PLAYER + CEF_J];
     bufferBG(i, j, 3);
@@ -368,6 +372,7 @@ void renderCleanup(uint16_t pentity) {
 
     // moving up, clear below
     if (ydir == DIR_UP) {
+        fprintf(stderr, "\nCLEAN: MOVING UP, CLEAR BELOW");
         renderBGTile(old_i + 2, old_j + 0);
         renderBGTile(old_i + 2, old_j + 1);
         renderBGTile(old_i + 2, old_j + 2);
@@ -375,20 +380,23 @@ void renderCleanup(uint16_t pentity) {
 
     // moving down, clean above
     if (ydir == DIR_DOWN) {
+        fprintf(stderr, "\nCLEAN: MOVING DOWN, CLEAR ABOVE");
         renderBGTile(old_i, old_j + 0);
         renderBGTile(old_i, old_j + 1);
         renderBGTile(old_i, old_j + 2);
     }
 
     // moving left, clear right
-    if (xdir = DIR_LEFT) {
+    if (xdir == DIR_LEFT) {
+        fprintf(stderr, "\nCLEAN: MOVING LEFT, CLEAR RIGHT");
         renderBGTile(old_i + 0, old_j + 2);
         renderBGTile(old_i + 1, old_j + 2);
         renderBGTile(old_i + 2, old_j + 2);
     }
 
     // moving right, clear left
-    if (xdir = DIR_RIGHT) {
+    if (xdir == DIR_RIGHT) {
+        fprintf(stderr, "\nCLEAN: MOVING RIGHT, CLEAR LEFT");
         renderBGTile(old_i + 0, old_j);
         renderBGTile(old_i + 1, old_j);
         renderBGTile(old_i + 2, old_j);

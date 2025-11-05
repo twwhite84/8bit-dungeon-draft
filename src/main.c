@@ -224,7 +224,6 @@ void render() {
         renderPlayer(PLAYER);
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_PLAYER;
     }
-
     mySDLRender();
 }
 
