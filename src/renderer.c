@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+void renderOffbufferCell(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j);
+
 /*----------------------------------------------------------------------------*/
 
 // copies portion of background starting from I,J into the offbuffer
@@ -39,7 +41,8 @@ void getTextureAndMask(uint8_t i, uint8_t j, uint16_t quad, uint16_t *texture, u
 
 // writes a texture cell with optional mask into offbuffer at I,J
 void bufferTextureAndMask(uint8_t i, uint8_t j, uint16_t texture, uint16_t mask, uint8_t dim) {
-    uint8_t imult = (dim == 2) ? 16 : 24;
+    // uint8_t imult = (dim == 2) ? 16 : 24;
+    uint8_t imult = 24;
     uint16_t penread, penwrite;
     if (mask != SENTINEL16)
         goto compdef;
@@ -340,20 +343,21 @@ void renderBG() {
 
 /*----------------------------------------------------------------------------*/
 
-// renders portion of the offbuffer to screen at screen i,j
+// renders a dim-squared portion of the offbuffer to screen at screen i,j
 void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
-    uint16_t penstart = SCREEN + i * 0x140 + j * 8;
-    uint16_t offbase = OFFBUFFER;
-
     for (uint8_t rel_i = 0; rel_i < dim; rel_i++) {
         for (uint8_t rel_j = 0; rel_j < dim; rel_j++) {
-            for (uint8_t s = 0; s < 8; s++) {
-                beebram[penstart + s] = beebram[offbase + s];
-            }
-            offbase += 8;
-            penstart += 8;
+            renderOffbufferCell(rel_i, rel_j, i + rel_i, j + rel_j);
         }
-        penstart += CAMC_WIDTH - (dim << 3);
+    }
+}
+
+// renders a specific offbuffer cell to screen at i,j
+void renderOffbufferCell(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j) {
+    uint16_t offbase = OFFBUFFER + (24 * src_i) + (8 * src_j);
+    uint16_t penstart = SCREEN + (0x140 * dst_i) + (8 * dst_j);
+    for (uint8_t s = 0; s < 8; s++) {
+        beebram[penstart + s] = beebram[offbase + s];
     }
 }
 
@@ -362,8 +366,6 @@ void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim) {
 // streak removal when moving the sprite container
 // this mainly seems to affect the vertical rather than horizontal axis
 void renderCleanup(uint16_t pentity) {
-    // return;
-
     uint8_t xmag = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) >> 2;
     uint8_t xdir = (beebram[PLAYER + MEF_XMD4_YMD4] >> 4) & 0b11;
     uint8_t ymag = (beebram[PLAYER + MEF_XMD4_YMD4] & 0x0F) >> 2;
@@ -375,15 +377,15 @@ void renderCleanup(uint16_t pentity) {
     // moving up, clear below
     if (ymag != 0) {
         if (ydir == DIR_UP) {
-            fprintf(stderr, "\nCLEAN: MOVING UP, CLEAR BELOW");
+            // fprintf(stderr, "\nCLEAN: MOVING UP, CLEAR BELOW");
             renderBGTile(old_i + 2, old_j + 0);
             renderBGTile(old_i + 2, old_j + 1);
             renderBGTile(old_i + 2, old_j + 2);
         }
 
         // moving down, clean above
-        if (ydir == DIR_DOWN) {
-            fprintf(stderr, "\nCLEAN: MOVING DOWN, CLEAR ABOVE");
+        else if (ydir == DIR_DOWN) {
+            // fprintf(stderr, "\nCLEAN: MOVING DOWN, CLEAR ABOVE");
             renderBGTile(old_i, old_j + 0);
             renderBGTile(old_i, old_j + 1);
             renderBGTile(old_i, old_j + 2);
@@ -393,18 +395,24 @@ void renderCleanup(uint16_t pentity) {
     if (xmag != 0) {
         // moving left, clear right
         if (xdir == DIR_LEFT) {
-            fprintf(stderr, "\nCLEAN: MOVING LEFT, CLEAR RIGHT");
+            // fprintf(stderr, "\nCLEAN: MOVING LEFT, CLEAR RIGHT");
             renderBGTile(old_i + 0, old_j + 2);
             renderBGTile(old_i + 1, old_j + 2);
             renderBGTile(old_i + 2, old_j + 2);
         }
 
         // moving right, clear left
-        if (xdir == DIR_RIGHT) {
-            fprintf(stderr, "\nCLEAN: MOVING RIGHT, CLEAR LEFT");
-            renderBGTile(old_i + 0, old_j);
-            renderBGTile(old_i + 1, old_j);
-            renderBGTile(old_i + 2, old_j);
+        else if (xdir == DIR_RIGHT) {
+            // fprintf(stderr, "\nCLEAN: MOVING RIGHT, CLEAR LEFT");
+            // renderBGTile(old_i + 0, old_j);
+            // renderBGTile(old_i + 1, old_j);
+            // renderBGTile(old_i + 2, old_j);
+
+            bufferBG(old_i, old_j, 3);
+
+            renderOffbufferCell(0, 0, old_i + 0, old_j);
+            renderOffbufferCell(1, 0, old_i + 1, old_j);
+            renderOffbufferCell(2, 0, old_i + 2, old_j);
         }
     }
 
