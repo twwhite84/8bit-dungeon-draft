@@ -18,7 +18,7 @@ void bufferBG(uint8_t i, uint8_t j, uint8_t dim) {
         for (int rel_j = 0; rel_j < dim; rel_j++) {
             uint8_t tileID = beebram[BGBUFFER + 40 * (i + rel_i) + (j + rel_j)];
             uint16_t texture = getTileTextureAddr(tileID);
-            bufferTextureAndMask(rel_i, rel_j, texture, SENTINEL16, dim);
+            bufferTextureAndMask(rel_i, rel_j, texture, SENTINEL16);
         }
     }
 }
@@ -40,15 +40,13 @@ void getTextureAndMask(uint8_t i, uint8_t j, uint16_t quad, uint16_t *texture, u
 /*----------------------------------------------------------------------------*/
 
 // writes a texture cell with optional mask into offbuffer at I,J
-void bufferTextureAndMask(uint8_t i, uint8_t j, uint16_t texture, uint16_t mask, uint8_t dim) {
-    // uint8_t imult = (dim == 2) ? 16 : 24;
-    uint8_t imult = 24;
+void bufferTextureAndMask(uint8_t i, uint8_t j, uint16_t texture, uint16_t mask) {
     uint16_t penread, penwrite;
     if (mask != SENTINEL16)
         goto compdef;
 
 plaindef:
-    penwrite = OFFBUFFER + (imult * i) + (8 * j);
+    penwrite = OFFBUFFER + (24 * i) + (8 * j);
     for (int s = 0; s < 8; s++) {
         beebram[penwrite + s] = beebram[texture + s];
     }
@@ -57,7 +55,7 @@ plaindef:
 compdef:
     uint8_t hflipped = texture >> 15;
     if (!hflipped) {
-        penwrite = OFFBUFFER + (imult * i) + (8 * j);
+        penwrite = OFFBUFFER + (24 * i) + (8 * j);
         for (int s = 0; s < 8; s++) {
             beebram[penwrite + s] &= (beebram[mask + s] ^ 0xFF);
             beebram[penwrite + s] |= (beebram[texture + s] & beebram[mask + s]);
@@ -67,7 +65,7 @@ compdef:
     else {
         texture &= 0x7FFF;
         mask &= 0x7FFF;
-        penwrite = OFFBUFFER + (imult * i) + (8 * j);
+        penwrite = OFFBUFFER + (24 * i) + (8 * j);
         for (int s = 0; s < 8; s++) {
             uint8_t mask_data = beebram[mask + s];
             uint8_t texture_data = beebram[texture + s];
@@ -119,7 +117,7 @@ void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen) {
                     uint8_t j_shifted = SEj_box + delta_j;
                     // only paint if the shift falls within the container
                     if ((i_shifted >= 0 && i_shifted < 3) && (j_shifted >= 0 && j_shifted < 3))
-                        bufferTextureAndMask(i_shifted, j_shifted, texture, mask, 3);
+                        bufferTextureAndMask(i_shifted, j_shifted, texture, mask);
                 }
             }
         }
@@ -175,7 +173,7 @@ void renderStatics() {
                 for (uint8_t j = 0; j < 2; j++) {
                     uint16_t texture, mask;
                     getTextureAndMask(i, j, pvizdef, &texture, &mask);
-                    bufferTextureAndMask(i, j, texture, mask, 2);
+                    bufferTextureAndMask(i, j, texture, mask);
                 }
             }
             renderOffbuffer(qi, qj, 2);
