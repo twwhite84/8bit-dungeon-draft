@@ -79,12 +79,19 @@ compdef:
 
 /*----------------------------------------------------------------------------*/
 
-// copies any statik cells overlapping a movable entity into the offbuffer
+// composites any statiks that have comp flag raised into offbuffer at offsets
 void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen) {
     uint16_t psebase = CAMERA + CAMF_PSE0_LO;
     for (uint8_t idx = 0; idx < 10; idx++) {
         uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
         psebase += 2;
+        if (pse == SENTINEL16)
+            return;
+
+        // if no overlap has been registered by collision detection, skip
+        if ((beebram[pse + CEF_DRAWOPTS] & CEC_DRAWOPTS_COMP) == 0)
+            continue;
+
         uint8_t nquads = beebram[pse + SEF_TYPE4_NQUADS4] & 0x0F;
         for (uint8_t q = 0; q < nquads; q++) {
             uint16_t pvizdef =
@@ -134,12 +141,10 @@ void renderStatics() {
         pstart += 2;
 
         // skip entity if not marked for redraw, or disable redraw until future update
-        // uint8_t redraw = (beebram[pentity + CEF_ROOMID6_REDRAW2] & CEC_REDRAW);
         uint8_t redraw = (beebram[pentity + CEF_DRAWOPTS] & CEC_DRAWOPTS_REDRAW);
         if (redraw != CEC_DRAWOPTS_REDRAW)
             continue;
         else
-            // beebram[pentity + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
             beebram[pentity + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_REDRAW;
 
         uint8_t nquads = beebram[pentity + SEF_TYPE4_NQUADS4] & 0x0F;
@@ -182,7 +187,6 @@ void renderStatics() {
 
 // renders players to framebuffer
 void renderPlayer() {
-    // if (beebram[PLAYER + CEF_ROOMID6_REDRAW2] & CEC_CLEAN != 0) {
     if (beebram[PLAYER + CEF_DRAWOPTS] & CEC_DRAWOPTS_CLEAN != 0) {
         renderCleanup(PLAYER);
     }
@@ -193,7 +197,6 @@ void renderPlayer() {
     statiks2container(i, j);
     bufferFGSprite(PLAYER);
     renderOffbuffer(i, j, 3);
-    // beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
     beebram[PLAYER + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_REDRAW;
 }
 
@@ -207,7 +210,6 @@ void renderMovables() {
         if (pmovable == SENTINEL16)
             break;
         pstart += 2;
-        // if ((beebram[pmovable + CEF_ROOMID6_REDRAW2] & CEC_REDRAW) == CEC_REDRAW)
         if ((beebram[pmovable + CEF_DRAWOPTS] & CEC_DRAWOPTS_REDRAW) == CEC_DRAWOPTS_REDRAW)
             renderPlayer(pmovable);
     }
@@ -308,7 +310,6 @@ void renderCleanup(uint16_t pentity) {
     }
 
     // lower cleanup flag
-    // beebram[pentity + CEF_ROOMID6_REDRAW2] &= ~CEC_CLEAN;
     beebram[pentity + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_CLEAN;
 }
 

@@ -36,7 +36,6 @@ enum {
     ADC_SET_WALKR = 6,
 
     // COMMON ENTITY FIELDS
-    // CEF_ROOMID6_REDRAW2 = 0x0,
     CEF_ROOMID = 0x0,
     CEF_DRAWOPTS = 0x1,
     CEF_FELAPSED5_FCURRENT3 = 0x2,
@@ -44,10 +43,9 @@ enum {
     CEF_J = 0x8,
     CEF_PVIZBASE_LO = 0x9,
     CEF_PVIZBASE_HI = 0xA,
-    // CEC_REDRAW = 0b1,
-    // CEC_CLEAN = 0b10,
     CEC_DRAWOPTS_REDRAW = 0b1,
     CEC_DRAWOPTS_CLEAN = 0b10,
+    CEC_DRAWOPTS_COMP = 0b100,
 
     // COMMON ME FIELDS
     MEF_X_LO = 0x3,
