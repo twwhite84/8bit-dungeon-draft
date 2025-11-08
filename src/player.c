@@ -312,8 +312,6 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
             }
 
             if (redraw_intercepts == 2) {
-                // beebram[pse + CEF_DRAWOPTS] |= CEC_DRAWOPTS_REDRAW;
-                // beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
                 beebram[pse + CEF_DRAWOPTS] |= CEC_DRAWOPTS_COMP;
             }
             if (collision_intercepts != 2)
