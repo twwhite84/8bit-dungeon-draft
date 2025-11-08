@@ -134,11 +134,13 @@ void renderStatics() {
         pstart += 2;
 
         // skip entity if not marked for redraw, or disable redraw until future update
-        uint8_t redraw = (beebram[pentity + CEF_ROOMID6_REDRAW2] & CEC_REDRAW);
-        if (redraw != CEC_REDRAW)
+        // uint8_t redraw = (beebram[pentity + CEF_ROOMID6_REDRAW2] & CEC_REDRAW);
+        uint8_t redraw = (beebram[pentity + CEF_DRAWOPTS] & CEC_DRAWOPTS_REDRAW);
+        if (redraw != CEC_DRAWOPTS_REDRAW)
             continue;
         else
-            beebram[pentity + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
+            // beebram[pentity + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
+            beebram[pentity + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_REDRAW;
 
         uint8_t nquads = beebram[pentity + SEF_TYPE4_NQUADS4] & 0x0F;
         for (int q = 0; q < nquads; q++) {
@@ -180,7 +182,8 @@ void renderStatics() {
 
 // renders players to framebuffer
 void renderPlayer() {
-    if (beebram[PLAYER + CEF_ROOMID6_REDRAW2] & CEC_CLEAN != 0) {
+    // if (beebram[PLAYER + CEF_ROOMID6_REDRAW2] & CEC_CLEAN != 0) {
+    if (beebram[PLAYER + CEF_DRAWOPTS] & CEC_DRAWOPTS_CLEAN != 0) {
         renderCleanup(PLAYER);
     }
 
@@ -190,7 +193,8 @@ void renderPlayer() {
     statiks2container(i, j);
     bufferFGSprite(PLAYER);
     renderOffbuffer(i, j, 3);
-    beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
+    // beebram[PLAYER + CEF_ROOMID6_REDRAW2] &= ~CEC_REDRAW;
+    beebram[PLAYER + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_REDRAW;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -203,7 +207,8 @@ void renderMovables() {
         if (pmovable == SENTINEL16)
             break;
         pstart += 2;
-        if ((beebram[pmovable + CEF_ROOMID6_REDRAW2] & CEC_REDRAW) == CEC_REDRAW)
+        // if ((beebram[pmovable + CEF_ROOMID6_REDRAW2] & CEC_REDRAW) == CEC_REDRAW)
+        if ((beebram[pmovable + CEF_DRAWOPTS] & CEC_DRAWOPTS_REDRAW) == CEC_DRAWOPTS_REDRAW)
             renderPlayer(pmovable);
     }
 }
@@ -303,7 +308,8 @@ void renderCleanup(uint16_t pentity) {
     }
 
     // lower cleanup flag
-    beebram[pentity + CEF_ROOMID6_REDRAW2] &= ~CEC_CLEAN;
+    // beebram[pentity + CEF_ROOMID6_REDRAW2] &= ~CEC_CLEAN;
+    beebram[pentity + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_CLEAN;
 }
 
 /*----------------------------------------------------------------------------*/

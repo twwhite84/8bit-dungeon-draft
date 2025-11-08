@@ -108,14 +108,14 @@ void animateEntity(uint16_t pentity) {
         beebram[pentity + CEF_FELAPSED5_FCURRENT3] |= (elapsed << 3);
 
         // raise redraw flags on the entity and the camera for its kind
-        beebram[pentity + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
+        beebram[pentity + CEF_DRAWOPTS] |= CEC_DRAWOPTS_REDRAW;
 
         // this check is possibily redundant as movePlayer already raises the flag
         // and there isn't animation without movement (at the moment)
         if (pentity >= SE_DEFS && pentity < PLAYER) {
             beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
         }
-        if (pentity >= PLAYER && pentity < MOVENTS) {
+        if (pentity >= PLAYER && pentity < ME_TABLE) {
             beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_PLAYER;
         }
     }

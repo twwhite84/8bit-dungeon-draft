@@ -171,7 +171,7 @@ void handlePickup(uint16_t pentity) {
     }
 
     // change the item's room code to null
-    beebram[pentity + CEF_ROOMID6_REDRAW2] = (SENTINEL8 << 2);
+    beebram[pentity + CEF_ROOMID] = SENTINEL8;
 
     // copy item to the player inventory
     beebram[free_slot] = pentity & 0xFF;
@@ -198,8 +198,9 @@ void handleDrop(uint8_t drop_slot) {
 
     // change the room code on the item to match the current room
     uint8_t current_room = beebram[CAMERA + CAMF_ROOMID];
-    beebram[pentity + CEF_ROOMID6_REDRAW2] &= 0b11;
-    beebram[pentity + CEF_ROOMID6_REDRAW2] |= (current_room << 2);
+    // beebram[pentity + CEF_ROOMID6_REDRAW2] &= 0b11;
+    // beebram[pentity + CEF_ROOMID6_REDRAW2] |= (current_room << 2);
+    beebram[pentity + CEF_ROOMID] = current_room;
 
     // change the (I,J) on the item to the current player (I,J)
     beebram[pentity + CEF_I] = beebram[(PLAYER + CEF_I)];
@@ -209,7 +210,7 @@ void handleDrop(uint8_t drop_slot) {
     loadStatics(current_room, false);
 
     // raise the redraw flag on the item and the REDRAW_STATICS flag on the camera.
-    beebram[pentity + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
+    beebram[pentity + CEF_DRAWOPTS] |= CEC_DRAWOPTS_REDRAW;
     beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
 }
 
@@ -311,7 +312,7 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
             }
 
             if (redraw_intercepts == 2) {
-                beebram[pse + CEF_ROOMID6_REDRAW2] |= CEC_REDRAW;
+                beebram[pse + CEF_DRAWOPTS] |= CEC_DRAWOPTS_REDRAW;
                 beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
             }
             if (collision_intercepts != 2)
