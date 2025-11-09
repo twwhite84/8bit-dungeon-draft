@@ -46,6 +46,7 @@ void bufferTextureAndMask(uint8_t i, uint8_t j, uint16_t texture, uint16_t mask)
         goto compdef;
 
 plaindef:
+    // 24i+8j because offbuffer is 3x3 cells
     penwrite = OFFBUFFER + (24 * i) + (8 * j);
     for (int s = 0; s < 8; s++) {
         beebram[penwrite + s] = beebram[texture + s];
@@ -315,9 +316,10 @@ void renderCleanup(uint16_t pentity) {
 
 void renderEraseSlot() {
     // background redrawn over the item's tile/quad
-    uint16_t pentity = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
-    uint8_t sei = beebram[pentity + CEF_I];
-    uint8_t sej = beebram[pentity + CEF_J];
+    uint16_t pse = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
+    uint8_t sei = beebram[pse + CEF_I];
+    uint8_t sej = beebram[pse + CEF_J];
+
     renderBGTile(sei, sej);
     renderBGTile(sei, sej + 1);
     renderBGTile(sei + 1, sej);

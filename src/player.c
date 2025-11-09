@@ -97,6 +97,8 @@ void movePlayer() {
     }
 
     // check player path for walls or statics
+
+    // collisions array holds pointers of the items collided with
     uint16_t collisions[4];
     if (xmag > 0) {
         for (uint8_t i = 0; i < 4; i++)
@@ -158,7 +160,7 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
 /*----------------------------------------------------------------------------*/
 
 void handlePickup(uint16_t pentity) {
-    return;
+    // return;
     // find a free inventory slot, or bail
     uint16_t free_slot = PLAYER + PLRF_PINVA_LO;
     if (beebram[free_slot] != SENTINEL8) // A in use
@@ -181,7 +183,7 @@ void handlePickup(uint16_t pentity) {
     beebram[CAMERA + CAMF_PERASE_LO] = pentity & 0xFF;
     beebram[CAMERA + CAMF_PERASE_HI] = pentity >> 8;
 
-    // reload statics but don't mark all for redraw, we're just dropping the item
+    // reload statics but don't redraw, we're only dropping the item
     loadStatics(beebram[CAMERA + CAMF_ROOMID], false);
 }
 
@@ -209,9 +211,9 @@ void handleDrop(uint8_t drop_slot) {
     // reload the room items; the roombuffer will now contain the item
     loadStatics(current_room, false);
 
-    // raise the redraw flag on the item and the REDRAW_STATICS flag on the camera.
-    beebram[pentity + CEF_DRAWOPTS] |= CEC_DRAWOPTS_REDRAW;
-    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_STATICS;
+    // redraw the item under the player
+    beebram[pentity + CEF_DRAWOPTS] |= CEC_DRAWOPTS_COMP;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_PLAYER;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -327,6 +329,7 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
             ydelta_current = (ydelta_current >= 0x80) ? (ydelta_current ^ 0xFF) + 1 : ydelta_current;
 
             if (xdelta_current < 16 && ydelta_current < 16) {
+                fprintf(stderr, "\nCOLLISION OVERLAPS BY %d, %d", xdelta_current, ydelta_current);
                 collisions[(*insertion_index)++] = pse;
             }
         }
