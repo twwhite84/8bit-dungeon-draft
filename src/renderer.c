@@ -316,14 +316,26 @@ void renderCleanup(uint16_t pentity) {
 
 void renderEraseSlot() {
     // background redrawn over the item's tile/quad
-    uint16_t pse = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
-    uint8_t sei = beebram[pse + CEF_I];
-    uint8_t sej = beebram[pse + CEF_J];
+    // uint16_t pse = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
+    // uint8_t sei = beebram[pse + CEF_I];
+    // uint8_t sej = beebram[pse + CEF_J];
 
-    renderBGTile(sei, sej);
-    renderBGTile(sei, sej + 1);
-    renderBGTile(sei + 1, sej);
-    renderBGTile(sei + 1, sej + 1);
+    // renderBGTile(sei, sej);
+    // renderBGTile(sei, sej + 1);
+    // renderBGTile(sei + 1, sej);
+    // renderBGTile(sei + 1, sej + 1);
+    // bufferBG(sei, sej, 2);
+    // bufferFGSprite(PLAYER);
+    // renderOffbuffer(sei, sej, 2);
+
+    // renderPlayer();
+
+    uint8_t i = beebram[PLAYER + CEF_I];
+    uint8_t j = beebram[PLAYER + CEF_J];
+    bufferBG(i, j, 3);
+    // statiks2container(i, j);
+    bufferFGSprite(PLAYER);
+    renderOffbuffer(i, j, 3);
 
     // clear the erase slot
     beebram[CAMERA + CAMF_PERASE_LO] = SENTINEL8;

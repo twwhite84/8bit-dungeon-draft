@@ -5,5 +5,6 @@
 
 void movePlayer();
 void handleDrop(uint8_t drop_slot);
+void getPickup();
 
 #endif

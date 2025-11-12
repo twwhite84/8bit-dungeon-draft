@@ -21,6 +21,7 @@ typedef struct {
     bool player_dropA;
     bool player_dropB;
     bool player_dropC;
+    bool player_useRequested;
 } InputFlags;
 
 void init();
@@ -126,10 +127,15 @@ bool input() {
         inputFlags.player_dropA = true;
     }
     if (keystates[SDL_SCANCODE_B]) {
-        inputFlags.player_dropA = true;
+        inputFlags.player_dropB = true;
     }
     if (keystates[SDL_SCANCODE_C]) {
-        inputFlags.player_dropA = true;
+        inputFlags.player_dropC = true;
+    }
+
+    // PLAYER USE
+    if (keystates[SDL_SCANCODE_E]) {
+        inputFlags.player_useRequested = true;
     }
 
     // MAP TEST
@@ -195,6 +201,14 @@ void update() {
         inputFlags.player_moveRun = false;
         movePlayer();
         animateEntity(PLAYER);
+    }
+
+    if (inputFlags.player_useRequested) {
+        // what use request does depends on current state of useaction
+        if (beebram[PLAYER + PLRF_USEACTION] == PLRC_USEACTION_PICKUP) {
+            getPickup();
+        }
+        inputFlags.player_useRequested = false;
     }
 
     animateStatics();

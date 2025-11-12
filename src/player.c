@@ -8,11 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions);
+void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t *collisions);
 uint8_t checkBorderCollision(uint16_t x1, uint16_t y1);
-void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8_t *insertion_index);
-void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions);
-void handlePickup(uint16_t pentity);
+void checkStaticCollisions(uint16_t x1, uint16_t y1, uint8_t *collisions, uint8_t *insertion_index);
+void handleCollisions(uint16_t p0, uint16_t *p1, uint8_t *collisions);
 
 /*----------------------------------------------------------------------------*/
 
@@ -71,7 +70,7 @@ void movePlayer() {
             y1 = (CAMC_HEIGHT - 16 - 1); //  updating beyond screen bottom
     }
 
-    // check target for border crossings
+    // check for screen boundary collisions
     uint8_t current_room = beebram[CAMERA + CAMF_ROOMID];
     uint8_t border_collision = checkBorderCollision(x1, y1);
     uint8_t exit_room =
@@ -99,18 +98,18 @@ void movePlayer() {
     // check player path for walls or statics
 
     // collisions array holds pointers of the items collided with
-    uint16_t collisions[4];
+    uint8_t collisions[(4 * 4)];
     if (xmag > 0) {
-        for (uint8_t i = 0; i < 4; i++)
-            collisions[i] = SENTINEL16;
+        for (uint8_t i = 0; i < (4 * 4); i++)
+            collisions[i] = SENTINEL8;
         checkAxis(x1, y0, xdir, collisions);
         handleCollisions(x0, &x1, collisions);
     }
 
     if (ymag > 0) {
         // note: passing x1 here helps avoid some sticking when moving diagonally
-        for (uint8_t i = 0; i < 4; i++)
-            collisions[i] = SENTINEL16;
+        for (uint8_t i = 0; i < (4 * 4); i++)
+            collisions[i] = SENTINEL8;
         checkAxis(x1, y1, ydir, collisions);
         handleCollisions(y0, &y1, collisions);
     }
@@ -131,27 +130,41 @@ save:
 
 /*----------------------------------------------------------------------------*/
 
-void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
+void handleCollisions(uint16_t p0, uint16_t *p1, uint8_t *collisions) {
 
-    for (uint8_t i = 0; i < 4; i++) {
-        if (collisions[i] == SENTINEL16) {
+    for (uint8_t i = 0; i < 16; i += 4) {
+        if (collisions[i] == SENTINEL8) {
             return;
         }
+
         if (collisions[i] == 0) { // wall
             fprintf(stderr, "\nWALL");
             *p1 = p0;
             return; // not sure if i want this here
         }
-        if (collisions[i] >= SE_DEFS && collisions[i] < PLAYER) {
-            uint8_t se_type = beebram[collisions[i] + SEF_TYPE4_NQUADS4] >> 4;
+
+        uint16_t pstatik = collisions[i] | (collisions[i + 1] << 8);
+        if (pstatik >= SE_DEFS && pstatik < PLAYER) {
+            uint8_t se_type = beebram[pstatik + SEF_TYPE4_NQUADS4] >> 4;
 
             if (se_type == SEC_TYPE_DOORLOCKED) {
                 fprintf(stderr, "\nLOCKED DOOR");
                 *p1 = p0;
             }
+
             if (se_type == SEC_TYPE_PICKUP) {
                 fprintf(stderr, "\nPICKUP");
-                handlePickup(collisions[i]);
+                uint8_t xdelta = collisions[i + 2];
+                uint8_t ydelta = collisions[i + 3];
+                if (xdelta < 8 && ydelta < 8) {
+                    beebram[PLAYER + PLRF_USEACTION] = PLRC_USEACTION_PICKUP;
+                    beebram[PLAYER + PLRF_PPICKUP_LO] = pstatik & 0xFF;
+                    beebram[PLAYER + PLRF_PPICKUP_HI] = pstatik >> 8;
+                } else {
+                    beebram[PLAYER + PLRF_USEACTION] = PLRC_USEACTION_NONE;
+                    beebram[PLAYER + PLRF_PPICKUP_LO] = SENTINEL8;
+                    beebram[PLAYER + PLRF_PPICKUP_HI] = SENTINEL8;
+                }
             }
         }
     }
@@ -159,8 +172,9 @@ void handleCollisions(uint16_t p0, uint16_t *p1, uint16_t *collisions) {
 
 /*----------------------------------------------------------------------------*/
 
-void handlePickup(uint16_t pentity) {
-    // return;
+void getPickup() {
+    uint16_t pentity = beebram[PLAYER + PLRF_PPICKUP_LO] | (beebram[PLAYER + PLRF_PPICKUP_HI] << 8);
+
     // find a free inventory slot, or bail
     uint16_t free_slot = PLAYER + PLRF_PINVA_LO;
     if (beebram[free_slot] != SENTINEL8) // A in use
@@ -185,11 +199,18 @@ void handlePickup(uint16_t pentity) {
 
     // reload statics but don't redraw, we're only dropping the item
     loadStatics(beebram[CAMERA + CAMF_ROOMID], false);
+
+    beebram[PLAYER + PLRF_PPICKUP_LO] = SENTINEL8;
+    beebram[PLAYER + PLRF_PPICKUP_HI] = SENTINEL8;
+    beebram[PLAYER + PLRF_USEACTION] = PLRC_USEACTION_NONE;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void handleDrop(uint8_t drop_slot) {
+    if (beebram[PLAYER + PLRF_PINVA_LO + (drop_slot << 1)] == SENTINEL8)
+        return;
+
     // get the item
     uint16_t pentity =
         beebram[PLAYER + PLRF_PINVA_LO + (drop_slot << 1)] | (beebram[PLAYER + PLRF_PINVA_HI + (drop_slot << 1)]) << 8;
@@ -218,7 +239,7 @@ void handleDrop(uint8_t drop_slot) {
 
 /*----------------------------------------------------------------------------*/
 
-void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions) {
+void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint8_t *collisions) {
     uint8_t insertion_index = 0;
 
     /* -------------------- WALLS CHECK --------------------*/
@@ -251,12 +272,18 @@ void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions) {
                     if (!wall_y && v1 > 0) {
                         wall_y = true;
                         collisions[insertion_index++] = 0;
+                        collisions[insertion_index++] = 0;
+                        collisions[insertion_index++] = 0;
+                        collisions[insertion_index++] = 0;
                     }
                 }
 
                 if (dir == DIR_LEFT || dir == DIR_RIGHT) {
                     if (!wall_x && h1 > 0) {
                         wall_x = true;
+                        collisions[insertion_index++] = 0;
+                        collisions[insertion_index++] = 0;
+                        collisions[insertion_index++] = 0;
                         collisions[insertion_index++] = 0;
                     }
                 }
@@ -271,7 +298,7 @@ void checkAxis(uint16_t x1, uint16_t y1, uint8_t dir, uint16_t *collisions) {
 /*----------------------------------------------------------------------------*/
 
 // returns code for the type involved in the closest collision, or else -1
-void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8_t *insertion_index) {
+void checkStaticCollisions(uint16_t x1, uint16_t y1, uint8_t *collisions, uint8_t *insertion_index) {
 
     uint8_t i1 = y1 >> 3;
     uint8_t j1 = x1 >> 3;
@@ -329,8 +356,10 @@ void checkStaticCollisions(uint16_t x1, uint16_t y1, uint16_t *collisions, uint8
             ydelta_current = (ydelta_current >= 0x80) ? (ydelta_current ^ 0xFF) + 1 : ydelta_current;
 
             if (xdelta_current < 16 && ydelta_current < 16) {
-                fprintf(stderr, "\nCOLLISION OVERLAPS BY %d, %d", xdelta_current, ydelta_current);
-                collisions[(*insertion_index)++] = pse;
+                collisions[(*insertion_index)++] = pse & 0xFF;
+                collisions[(*insertion_index)++] = pse >> 8;
+                collisions[(*insertion_index)++] = xdelta_current;
+                collisions[(*insertion_index)++] = ydelta_current;
             }
         }
     }
