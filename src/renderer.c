@@ -7,25 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void renderOffbufferCell(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j);
-
 /*----------------------------------------------------------------------------*/
 
-// copies portion of background starting from I,J into the offbuffer
-void bufferBG(uint8_t i, uint8_t j, uint8_t dim) {
-    uint16_t penstart = OFFBUFFER;
-    for (int rel_i = 0; rel_i < dim; rel_i++) {
-        for (int rel_j = 0; rel_j < dim; rel_j++) {
-            uint8_t tileID = beebram[BGBUFFER + 40 * (i + rel_i) + (j + rel_j)];
-            uint16_t texture = getTileTextureAddr(tileID);
-            bufferTextureAndMask(rel_i, rel_j, texture, SENTINEL16);
-        }
-    }
-}
-
-/*----------------------------------------------------------------------------*/
-
-// gets texture and mask for one cell of a quad
+// gets a texture cell and optional mask from a quad at I,J
 void getTextureAndMask(uint8_t i, uint8_t j, uint16_t quad, uint16_t *texture, uint16_t *mask) {
     uint16_t ptexture_lo = quad + (4 * i) + (2 * j);
     *texture = beebram[ptexture_lo] | (beebram[ptexture_lo + 1] << 8);
@@ -39,7 +23,7 @@ void getTextureAndMask(uint8_t i, uint8_t j, uint16_t quad, uint16_t *texture, u
 
 /*----------------------------------------------------------------------------*/
 
-// writes a texture cell with optional mask into offbuffer at I,J
+// writes a texture cell with optional mask to offbuffer at I,J
 void bufferTextureAndMask(uint8_t i, uint8_t j, uint16_t texture, uint16_t mask) {
     uint16_t penread, penwrite;
     if (mask != SENTINEL16)
@@ -78,8 +62,22 @@ compdef:
 
 /*----------------------------------------------------------------------------*/
 
-// composites any statiks that have comp flag raised into offbuffer at offsets
-void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen) {
+// writes dim^2 portion from background I,J to offbuffer
+void bufferBG(uint8_t i, uint8_t j, uint8_t dim) {
+    uint16_t penstart = OFFBUFFER;
+    for (int rel_i = 0; rel_i < dim; rel_i++) {
+        for (int rel_j = 0; rel_j < dim; rel_j++) {
+            uint8_t tileID = beebram[BGBUFFER + 40 * (i + rel_i) + (j + rel_j)];
+            uint16_t texture = getTileTextureAddr(tileID);
+            bufferTextureAndMask(rel_i, rel_j, texture, SENTINEL16);
+        }
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+// composites any statiks with raised comp flags to offbuffer relative to sprite container
+void BGstatiks2container(uint8_t MEi_screen, uint8_t MEj_screen) {
     uint16_t psebase = CAMERA + CAMF_PSE0_LO;
     for (uint8_t idx = 0; idx < 10; idx++) {
         uint16_t pse = beebram[psebase] | (beebram[psebase + 1] << 8);
@@ -127,8 +125,83 @@ void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen) {
 
 /*----------------------------------------------------------------------------*/
 
+// composites sprite to offbuffer
+void bufferFGSprite(uint16_t pentity) {
+
+    // get the quad, either directly or via an animdef
+    uint16_t pvizbase = beebram[pentity + CEF_PVIZBASE_LO] | (beebram[pentity + CEF_PVIZBASE_HI] << 8);
+    uint16_t pquad = pvizbase;
+
+    // if the vizdef is an animdef, dereference it to get to the quad
+    if (pvizbase >= AD_TABLE && pvizbase < AD_DEFS) {
+        uint8_t animset = beebram[pentity + MEF_ANIMSET];
+        uint16_t ppanimdef = pvizbase + animset;
+
+        uint16_t panimdef = beebram[ppanimdef] | (beebram[ppanimdef + 1] << 8);
+
+        uint8_t frame_offset = (beebram[PLAYER + CEF_FELAPSED5_FCURRENT3] & 0b111) << 1; // *2 because 2 byte pointer
+        pquad =
+            beebram[panimdef + ADF_PFRAME_LO + frame_offset] | (beebram[panimdef + ADF_PFRAME_HI + frame_offset] << 8);
+    }
+
+    // get the shifts
+    uint8_t rshift = beebram[pentity + MEF_HSHIFT4_VSHIFT4] >> 4;
+    uint8_t lshift = 8 - rshift;
+    uint8_t dshift = beebram[pentity + MEF_HSHIFT4_VSHIFT4] & 0x0F;
+    uint8_t ushift = 8 - dshift;
+
+    // position each sprite tile in the container by its shifts
+    uint8_t tile = 0;
+    for (uint8_t i = 0; i <= 24; i += 24) {
+        for (uint8_t j = 0; j <= 8; j += 8) {
+            uint8_t thop = i + j;
+            uint16_t penstart = OFFBUFFER + dshift + thop;
+            uint16_t ptexture = beebram[pquad + tile] | (beebram[pquad + tile + 1] << 8);
+            uint16_t pmask = beebram[pquad + tile + 8] | (beebram[pquad + tile + 9] << 8);
+
+            uint8_t hflipped = ptexture >> 15;
+            ptexture &= 0x7FFF;
+            pmask &= 0x7FFF;
+
+            for (uint8_t s = 0; s < 8; s++) {
+                uint8_t overL, overR, maskL, maskR;
+                if (!hflipped) {
+                    overL = beebram[ptexture + s] >> rshift;
+                    overR = beebram[ptexture + s] << lshift;
+                    maskL = beebram[pmask + s] >> rshift;
+                    maskR = beebram[pmask + s] << lshift;
+                } else if (hflipped) {
+                    uint8_t texture_data = beebram[ptexture + s];
+                    uint8_t mask_data = beebram[pmask + s];
+                    overL = beebram[LUT_REVERSE + texture_data] >> rshift;
+                    overR = beebram[LUT_REVERSE + texture_data] << lshift;
+                    maskL = beebram[LUT_REVERSE + mask_data] >> rshift;
+                    maskR = beebram[LUT_REVERSE + mask_data] << lshift;
+                }
+
+                // stripes have crossed to lower tile
+                if (s == ushift) {
+                    penstart += 16;
+                }
+
+                // lhs
+                beebram[penstart + s] = beebram[penstart + s] & (maskL ^ 0xFF);
+                beebram[penstart + s] = beebram[penstart + s] | overL;
+
+                // rhs
+                beebram[penstart + 8 + s] = beebram[penstart + 8 + s] & (maskR ^ 0xFF);
+                beebram[penstart + 8 + s] = beebram[penstart + 8 + s] | overR;
+            }
+            tile += 2;
+        }
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
 // renders to framebuffer all statiks held in camera that are marked for redraw
-void renderStatics() {
+// this function is a shortcut that doesnt composite with sprites
+void renderStatiks() {
 
     uint16_t pstart = CAMERA + CAMF_PSE0_LO;
     for (int i = 0; i < 10; i++) {
@@ -193,7 +266,7 @@ void renderPlayer() {
     uint8_t i = beebram[PLAYER + CEF_I];
     uint8_t j = beebram[PLAYER + CEF_J];
     bufferBG(i, j, 3);
-    statiks2container(i, j);
+    BGstatiks2container(i, j);
     bufferFGSprite(PLAYER);
     renderOffbuffer(i, j, 3);
     beebram[PLAYER + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_REDRAW;
@@ -272,7 +345,7 @@ void renderCleanup(uint16_t pentity) {
     if (ymag != 0) {
         if (ydir == DIR_UP) {
             bufferBG(old_i, old_j, 3);
-            statiks2container(old_i, old_j);
+            BGstatiks2container(old_i, old_j);
             renderOffbufferCell(2, 0, old_i + 2, old_j + 0);
             renderOffbufferCell(2, 1, old_i + 2, old_j + 1);
             renderOffbufferCell(2, 2, old_i + 2, old_j + 2);
@@ -281,7 +354,7 @@ void renderCleanup(uint16_t pentity) {
         // moving down, clean above
         else if (ydir == DIR_DOWN) {
             bufferBG(old_i, old_j, 3);
-            statiks2container(old_i, old_j);
+            BGstatiks2container(old_i, old_j);
             renderOffbufferCell(0, 0, old_i, old_j + 0);
             renderOffbufferCell(0, 1, old_i, old_j + 1);
             renderOffbufferCell(0, 2, old_i, old_j + 2);
@@ -292,7 +365,7 @@ void renderCleanup(uint16_t pentity) {
         // moving left, clear right
         if (xdir == DIR_LEFT) {
             bufferBG(old_i, old_j, 3);
-            statiks2container(old_i, old_j);
+            BGstatiks2container(old_i, old_j);
             renderOffbufferCell(0, 2, old_i + 0, old_j + 2);
             renderOffbufferCell(1, 2, old_i + 1, old_j + 2);
             renderOffbufferCell(2, 2, old_i + 2, old_j + 2);
@@ -300,8 +373,9 @@ void renderCleanup(uint16_t pentity) {
 
         // moving right, clear left
         else if (xdir == DIR_RIGHT) {
-            bufferBG(old_i, old_j, 3);
-            statiks2container(old_i, old_j);
+            // bufferBG(old_i, old_j, 3);
+            // BGstatiks2container(old_i, old_j);
+            memset(&beebram[OFFBUFFER], 0, (size_t)(8 * 9));
             renderOffbufferCell(0, 0, old_i + 0, old_j);
             renderOffbufferCell(1, 0, old_i + 1, old_j);
             renderOffbufferCell(2, 0, old_i + 2, old_j);
@@ -313,31 +387,3 @@ void renderCleanup(uint16_t pentity) {
 }
 
 /*----------------------------------------------------------------------------*/
-
-void renderEraseSlot() {
-    // background redrawn over the item's tile/quad
-    // uint16_t pse = beebram[CAMERA + CAMF_PERASE_LO] | (beebram[CAMERA + CAMF_PERASE_HI] << 8);
-    // uint8_t sei = beebram[pse + CEF_I];
-    // uint8_t sej = beebram[pse + CEF_J];
-
-    // renderBGTile(sei, sej);
-    // renderBGTile(sei, sej + 1);
-    // renderBGTile(sei + 1, sej);
-    // renderBGTile(sei + 1, sej + 1);
-    // bufferBG(sei, sej, 2);
-    // bufferFGSprite(PLAYER);
-    // renderOffbuffer(sei, sej, 2);
-
-    // renderPlayer();
-
-    uint8_t i = beebram[PLAYER + CEF_I];
-    uint8_t j = beebram[PLAYER + CEF_J];
-    bufferBG(i, j, 3);
-    // statiks2container(i, j);
-    bufferFGSprite(PLAYER);
-    renderOffbuffer(i, j, 3);
-
-    // clear the erase slot
-    beebram[CAMERA + CAMF_PERASE_LO] = SENTINEL8;
-    beebram[CAMERA + CAMF_PERASE_HI] = SENTINEL8;
-}

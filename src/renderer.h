@@ -10,9 +10,10 @@ void renderBG();
 void renderOffbuffer(uint8_t i, uint8_t j, uint8_t dim);
 void renderPlayer();
 void renderMovables();
-void renderStatics();
+void renderStatiks();
 void renderCleanup(uint16_t pentity);
-void renderEraseSlot();
-void statiks2container(uint8_t MEi_screen, uint8_t MEj_screen);
+void BGstatiks2container(uint8_t MEi_screen, uint8_t MEj_screen);
+void bufferFGSprite(uint16_t pentity);
+void renderOffbufferCell(uint8_t src_i, uint8_t src_j, uint8_t dst_i, uint8_t dst_j);
 
 #endif

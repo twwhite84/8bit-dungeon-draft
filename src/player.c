@@ -194,8 +194,9 @@ void getPickup() {
     beebram[free_slot + 1] = pentity >> 8;
 
     // copy item to erase slot (allows multiquad statics to be cleared)
-    beebram[CAMERA + CAMF_PERASE_LO] = pentity & 0xFF;
-    beebram[CAMERA + CAMF_PERASE_HI] = pentity >> 8;
+    // beebram[CAMERA + CAMF_PERASE_LO] = pentity & 0xFF;
+    // beebram[CAMERA + CAMF_PERASE_HI] = pentity >> 8;
+    beebram[CAMERA + CAMF_REDRAW] |= CAMC_REDRAW_PLAYER;
 
     // reload statics but don't redraw, we're only dropping the item
     loadStatics(beebram[CAMERA + CAMF_ROOMID], false);

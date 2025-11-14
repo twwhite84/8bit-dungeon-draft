@@ -219,18 +219,13 @@ void update() {
 void render() {
     // REDRAW FIELD: .... | player | movables | statics | bg
 
-    // process erase slot (used to delete a static from screen)
-    if (beebram[CAMERA + CAMF_PERASE_LO] != SENTINEL8) {
-        renderEraseSlot();
-    }
-
     if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_BACKGROUND) != 0) {
         renderBG();
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_BACKGROUND;
     }
 
     if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_STATICS) != 0) {
-        renderStatics();
+        renderStatiks();
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_STATICS;
     }
 
