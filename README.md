@@ -7,6 +7,12 @@ C draft base for an 8-bit overhead Zelda-inspired game. I'm designing this to be
 
 ## DEVDIARY NOTES
 
+### 14/11/2025
+### Fixing a Cleanup Bug
+Today I fixed an issue with portions of a sprite being left behind whenever the sprite container position would update. I set the renderCleanup() fuction to just draw blank cells instead of background so I could more easily check if container position updates were registering a cleanup. It turned out they were only firing some of the time. I traced the source of the bug to the renderPlayer() flag check for cleanup. Rewriting this solved the issue; it appears no sprite streaks are being left behind on screen now.
+
+---
+
 ### 08/11/2025
 ### Reducing Redraw
 I created separate flags for redrawing of statiks based on whether that redraw is triggered by collision detection (in which compositing is required) versus things like animation updates (in which case it may not be). That way I can avoid checking every statik in the room for overlaps with the player whenever the player moves. The renderer now knows that ahead of time from the collision detection.
