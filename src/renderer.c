@@ -200,7 +200,7 @@ void bufferFGSprite(uint16_t pentity) {
 /*----------------------------------------------------------------------------*/
 
 // renders to framebuffer all statiks held in camera that are marked for redraw
-// this function is a shortcut that doesnt composite with sprites
+// this function is a shortcut that doesnt composite with sp0000000000000000rites
 void renderStatiks() {
 
     uint16_t pstart = CAMERA + CAMF_PSE0_LO;
