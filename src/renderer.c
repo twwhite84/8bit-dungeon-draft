@@ -259,8 +259,9 @@ void renderStatiks() {
 
 // renders players to framebuffer
 void renderPlayer() {
-    if (beebram[PLAYER + CEF_DRAWOPTS] & CEC_DRAWOPTS_CLEAN != 0) {
+    if ((beebram[PLAYER + CEF_DRAWOPTS] & CEC_DRAWOPTS_CLEAN) != 0) {
         renderCleanup(PLAYER);
+        beebram[PLAYER + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_CLEAN;
     }
 
     uint8_t i = beebram[PLAYER + CEF_I];
@@ -344,8 +345,9 @@ void renderCleanup(uint16_t pentity) {
     // moving up, clear below
     if (ymag != 0) {
         if (ydir == DIR_UP) {
-            bufferBG(old_i, old_j, 3);
-            BGstatiks2container(old_i, old_j);
+            // bufferBG(old_i, old_j, 3);
+            // BGstatiks2container(old_i, old_j);
+            memset(&beebram[OFFBUFFER], 0, (size_t)(8 * 9));
             renderOffbufferCell(2, 0, old_i + 2, old_j + 0);
             renderOffbufferCell(2, 1, old_i + 2, old_j + 1);
             renderOffbufferCell(2, 2, old_i + 2, old_j + 2);
@@ -353,8 +355,9 @@ void renderCleanup(uint16_t pentity) {
 
         // moving down, clean above
         else if (ydir == DIR_DOWN) {
-            bufferBG(old_i, old_j, 3);
-            BGstatiks2container(old_i, old_j);
+            // bufferBG(old_i, old_j, 3);
+            // BGstatiks2container(old_i, old_j);
+            memset(&beebram[OFFBUFFER], 0, (size_t)(8 * 9));
             renderOffbufferCell(0, 0, old_i, old_j + 0);
             renderOffbufferCell(0, 1, old_i, old_j + 1);
             renderOffbufferCell(0, 2, old_i, old_j + 2);
@@ -364,8 +367,9 @@ void renderCleanup(uint16_t pentity) {
     if (xmag != 0) {
         // moving left, clear right
         if (xdir == DIR_LEFT) {
-            bufferBG(old_i, old_j, 3);
-            BGstatiks2container(old_i, old_j);
+            // bufferBG(old_i, old_j, 3);
+            // BGstatiks2container(old_i, old_j);
+            memset(&beebram[OFFBUFFER], 0, (size_t)(8 * 9));
             renderOffbufferCell(0, 2, old_i + 0, old_j + 2);
             renderOffbufferCell(1, 2, old_i + 1, old_j + 2);
             renderOffbufferCell(2, 2, old_i + 2, old_j + 2);
@@ -381,9 +385,6 @@ void renderCleanup(uint16_t pentity) {
             renderOffbufferCell(2, 0, old_i + 2, old_j);
         }
     }
-
-    // lower cleanup flag
-    beebram[pentity + CEF_DRAWOPTS] &= ~CEC_DRAWOPTS_CLEAN;
 }
 
 /*----------------------------------------------------------------------------*/

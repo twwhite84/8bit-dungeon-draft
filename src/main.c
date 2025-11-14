@@ -218,7 +218,6 @@ void update() {
 
 void render() {
     // REDRAW FIELD: .... | player | movables | statics | bg
-
     if ((beebram[CAMERA + CAMF_REDRAW] & CAMC_REDRAW_BACKGROUND) != 0) {
         renderBG();
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_BACKGROUND;
@@ -233,6 +232,7 @@ void render() {
         renderPlayer(PLAYER);
         beebram[CAMERA + CAMF_REDRAW] &= ~CAMC_REDRAW_PLAYER;
     }
+
     mySDLRender();
 }
 
